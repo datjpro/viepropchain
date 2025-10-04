@@ -1,0 +1,207 @@
+:root {
+  --vp-primary: #2563eb;
+  --vp-bg: #0f172a;
+  --vp-text: #ffffff;
+}
+.vp-coming-soon-root {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: var(--vp-bg);
+  color: var(--vp-text);
+}
+.vp-background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+.vp-background-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.vp-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.45),
+    rgba(30, 41, 59, 0.6)
+  );
+}
+.vp-coming-soon-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  z-index: 1;
+}
+.vp-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.vp-main-logo {
+  height: 140px;
+  width: auto;
+  filter: brightness(1.05) contrast(1.05);
+}
+.vp-brand-name {
+  font-family: Manrope, sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--vp-text);
+}
+.vp-content-center {
+  max-width: 800px;
+  width: 100%;
+}
+.vp-main-heading {
+  font-family: Manrope, sans-serif;
+  font-size: 48px;
+  font-weight: 300;
+  margin: 0 0 20px 0;
+  line-height: 1.2;
+}
+.vp-sub-heading {
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  color: #94a3b8;
+  margin: 0 0 40px 0;
+}
+.vp-access-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.vp-password-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 14px 20px;
+  font-size: 15px;
+  color: var(--vp-text);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 50px;
+  outline: none;
+  text-align: center;
+  backdrop-filter: blur(6px);
+}
+.vp-password-input::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+}
+.vp-password-input:focus {
+  border-color: var(--vp-primary);
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.06);
+}
+.vp-submit-btn {
+  padding: 12px 36px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vp-bg);
+  background: var(--vp-text);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  min-width: 120px;
+}
+.vp-submit-btn:hover {
+  background: var(--vp-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.18);
+}
+
+/* notifications */
+.vp-notification {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 500;
+  z-index: 10000;
+  transform: translateX(400px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 360px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+}
+.vp-notification.vp-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+.vp-notification.vp-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.vp-notification.vp-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.vp-notification.vp-info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+/* page transition */
+.vp-page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.vp-page-transition .vp-pt-inner {
+  font-family: Inter, sans-serif;
+  text-align: center;
+}
+.vp-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: vp-spin 1s linear infinite;
+  margin: 12px auto;
+}
+@keyframes vp-spin {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .vp-main-heading {
+    font-size: 34px;
+  }
+  .vp-main-logo {
+    height: 110px;
+  }
+}
