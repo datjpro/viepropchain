@@ -4,37 +4,12 @@ import "./LaunchingSoon.css";
 // A React conversion of the provided static LaunchingSoon HTML/JS
 export default function LaunchingSoon() {
   const passwordRef = useRef(null);
-  const backgroundRef = useRef(null);
 
   useEffect(() => {
     // focus password after a short delay
     const t = setTimeout(() => {
       passwordRef.current && passwordRef.current.focus();
     }, 600);
-
-    // respects prefers-reduced-motion
-    const bg = backgroundRef.current;
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    function handleMotion(e) {
-      if (!bg) return;
-      if (e.matches) {
-        bg.style.filter = "grayscale(20%)";
-        bg.style.opacity = "0.8";
-      } else {
-        bg.style.filter = "none";
-        bg.style.opacity = "1";
-      }
-    }
-
-    mql.addEventListener?.("change", handleMotion);
-    handleMotion(mql);
-
-    function onVisibility() {
-      if (!bg) return;
-      bg.style.animationPlayState = document.hidden ? "paused" : "running";
-    }
-    document.addEventListener("visibilitychange", onVisibility);
 
     // keyboard shortcuts
     function onKey(e) {
@@ -46,7 +21,7 @@ export default function LaunchingSoon() {
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         // submit
-        const form = document.getElementById("vp-password-form");
+        const form = document.getElementById("passwordForm");
         form && form.dispatchEvent(new Event("submit", { bubbles: true }));
       }
     }
@@ -54,15 +29,13 @@ export default function LaunchingSoon() {
 
     return () => {
       clearTimeout(t);
-      mql.removeEventListener?.("change", handleMotion);
-      document.removeEventListener("visibilitychange", onVisibility);
       document.removeEventListener("keydown", onKey);
     };
   }, []);
 
   function showNotification(message, type = "info") {
     const notification = document.createElement("div");
-    notification.className = `vp-notification vp-${type}`;
+    notification.className = `notification ${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
     // animate
@@ -78,9 +51,9 @@ export default function LaunchingSoon() {
 
   function createPageTransition() {
     const transition = document.createElement("div");
-    transition.className = "vp-page-transition";
+    transition.className = "page-transition";
     transition.innerHTML =
-      '<div class="vp-pt-inner"><div>Loading ViePropChain...</div><div class="vp-spinner"></div></div>';
+      '<div class="pt-inner"><div>Loading ViePropChain...</div><div class="spinner"></div></div>';
     document.body.appendChild(transition);
     requestAnimationFrame(() => (transition.style.opacity = "1"));
     return transition;
@@ -122,55 +95,47 @@ export default function LaunchingSoon() {
   }
 
   return (
-    <div className="vp-coming-soon-root">
-      <div className="vp-background-container">
+    <>
+      {/* Background GIF */}
+      <div className="background-container">
         <img
-          ref={backgroundRef}
-          src={
-            process.env.PUBLIC_URL +
-            "/assets/Hong Kong Night GIF by Earth Hour.gif"
-          }
-          alt="background"
-          className="vp-background-gif"
+          src="/hong-kong-night.gif"
+          alt="Background Animation"
+          className="background-gif"
         />
-        <div className="vp-background-overlay" />
+        <div className="background-overlay"></div>
       </div>
 
-      <div className="vp-coming-soon-container">
-        <div className="vp-logo-container">
+      {/* Coming Soon Content */}
+      <div className="coming-soon-container">
+        <div className="logo-container">
           <img
-            src={process.env.PUBLIC_URL + "/assets/logo-removebg-preview.png"}
-            alt="logo"
-            className="vp-main-logo"
+            src="/logo-removebg-preview.png"
+            alt="PropChain Logo"
+            className="main-logo"
           />
-          <h1 className="vp-brand-name">ViePropchain</h1>
+          <h1 className="brand-name">ViePropchain</h1>
         </div>
 
-        <div className="vp-content-center">
-          <h2 className="vp-main-heading">
-            The Future of Real Estate is Upon Us
-          </h2>
-          <p className="vp-sub-heading">Launching Soon</p>
+        <div className="content-center">
+          <h2 className="main-heading">The Future of Real Estate is Upon Us</h2>
+          <p className="sub-heading">Launching Soon</p>
 
-          <form
-            id="vp-password-form"
-            className="vp-access-form"
-            onSubmit={onSubmit}
-          >
+          <form className="access-form" id="passwordForm" onSubmit={onSubmit}>
             <input
               ref={passwordRef}
-              id="passwordInput"
               type="password"
               placeholder="Enter your password"
-              className="vp-password-input"
+              className="password-input"
+              id="passwordInput"
               required
             />
-            <button type="submit" className="vp-submit-btn">
+            <button type="submit" className="submit-btn">
               Submit
             </button>
           </form>
         </div>
       </div>
-    </div>
+    </>
   );
 }
