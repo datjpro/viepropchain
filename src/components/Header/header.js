@@ -1,5 +1,6 @@
 import React from "react";
 import "./header.css";
+import logo from "../../assets/logo-removebg-preview.png";
 
 const Header = ({ web3Api, account, onConnectWallet, error }) => {
   const formatAddress = (address) => {
@@ -13,11 +14,7 @@ const Header = ({ web3Api, account, onConnectWallet, error }) => {
         <div className="header-content">
           {/* Logo Section */}
           <div className="logo-section">
-            <img
-              src="/logo-removebg-preview.png"
-              alt="ViePropChain"
-              className="logo"
-            />
+            <img src={logo} alt="ViePropChain" className="logo" />
             <h1 className="brand-name">ViePropChain</h1>
           </div>
 
@@ -25,16 +22,19 @@ const Header = ({ web3Api, account, onConnectWallet, error }) => {
           <nav className="nav-menu">
             <ul>
               <li>
-                <a href="/">Trang chủ</a>
+                <a href="/">Home</a>
               </li>
               <li>
-                <a href="/properties">Bất động sản</a>
+                <a href="/properties">Properties</a>
               </li>
               <li>
-                <a href="/transactions">Giao dịch</a>
+                <a href="/marketplace">Marketplace</a>
               </li>
               <li>
-                <a href="/about">Giới thiệu</a>
+                <a href="/analytics">Analytics</a>
+              </li>
+              <li>
+                <a href="/about">About</a>
               </li>
             </ul>
           </nav>
@@ -45,9 +45,9 @@ const Header = ({ web3Api, account, onConnectWallet, error }) => {
 
             {account ? (
               <div className="wallet-connected">
-                <span className="wallet-status">Đã kết nối</span>
+                <span className="wallet-status">Connected</span>
                 <div className="wallet-address">
-                  <span className="address-label">Địa chỉ:</span>
+                  <span className="address-label">Address:</span>
                   <span className="address-value" title={account}>
                     {formatAddress(account)}
                   </span>
@@ -60,7 +60,7 @@ const Header = ({ web3Api, account, onConnectWallet, error }) => {
                 disabled={!web3Api.provider}
               >
                 <span className="btn-icon">🔗</span>
-                Kết nối ví
+                Connect Wallet
               </button>
             )}
           </div>
