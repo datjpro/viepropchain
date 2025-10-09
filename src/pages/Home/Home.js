@@ -1,6 +1,9 @@
 ﻿import React, { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Header from "../../components/Header/header";
+import Footer from "../../components/Footer/footer";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { translations } from "../../translations/translations";
 import "./Home.css";
 import hongKongGif from "../../assets/Hong Kong Night GIF by Earth Hour.gif";
 
@@ -25,6 +28,7 @@ const staggerContainer = {
 };
 
 const HeroSection = () => {
+  const { t } = useLanguage();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 300], [0, -50]);
   const y2 = useTransform(scrollY, [0, 300], [0, -100]);
@@ -56,7 +60,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="home-container">
+      <div className="home-hero-content-wrapper">
         <div className="home-hero-content">
           <motion.div
             initial="hidden"
@@ -64,16 +68,15 @@ const HeroSection = () => {
             variants={staggerContainer}
           >
             <motion.h1 variants={fadeInUp} className="home-heading-1">
-              Building the Real Estate
+              {t(translations.hero.title1)}
               <br />
-              <span className="home-gradient-text">Infrastructure Layer</span>
+              <span className="home-gradient-text">
+                {t(translations.hero.title2)}
+              </span>
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="home-hero-subtitle">
-              ViePropChain unifies property data, AI-readiness and blockchain
-              validation into one interoperable platform, so institutions,
-              lenders, asset managers, developers, and proptechs can build the
-              next generation of real estate solutions.
+              {t(translations.hero.subtitle)}
             </motion.p>
           </motion.div>
         </div>
@@ -83,24 +86,7 @@ const HeroSection = () => {
 };
 
 const FoundationsSection = () => {
-  const foundations = [
-    {
-      title: "Unified data foundation",
-      desc: "A structured global dataset that transforms fragmented records into AI-ready, decision-grade intelligence.",
-    },
-    {
-      title: "Trusted by design",
-      desc: "Tamper-proof verification and auditability, secured by blockchain.",
-    },
-    {
-      title: "Actionable solutions",
-      desc: "Real-time reporting, analytics, and operational tools built directly on our core layers.",
-    },
-    {
-      title: "Collaborative ecosystem",
-      desc: "Partnering and investing with stakeholders across the value chain to accelerate innovation and scale.",
-    },
-  ];
+  const { t } = useLanguage();
 
   return (
     <section className="home-section home-foundations-section">
@@ -115,20 +101,27 @@ const FoundationsSection = () => {
             variants={fadeInUp}
             className="home-heading-2 home-foundations-heading"
           >
-            Foundations that power
-            <br />
-            our ecosystem
+            {t(translations.foundations.title)
+              .split("\n")
+              .map((line, i) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i <
+                    t(translations.foundations.title).split("\n").length -
+                      1 && <br />}
+                </React.Fragment>
+              ))}
           </motion.h2>
 
           <div className="home-foundations-grid">
-            {foundations.map((foundation, index) => (
+            {translations.foundations.items.map((foundation, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
                 className="home-foundation-card"
               >
-                <h3 className="home-foundation-title">{foundation.title}</h3>
-                <p className="home-foundation-desc">{foundation.desc}</p>
+                <h3 className="home-foundation-title">{t(foundation.title)}</h3>
+                <p className="home-foundation-desc">{t(foundation.desc)}</p>
               </motion.div>
             ))}
           </div>
@@ -139,77 +132,7 @@ const FoundationsSection = () => {
 };
 
 const PlatformLayers = () => {
-  const layers = [
-    {
-      layer: "Layer 1",
-      title: "Propchain Cloud",
-      subtitle: "Ingestion & Normalisation",
-      features: [
-        {
-          name: "Data Normalisation",
-          desc: "Normalises & orders fragmented datasets across markets, asset classes, and formats. Creating AI-readiness and structure.",
-        },
-        {
-          name: "Data Enrichment",
-          desc: "Fuses transactional, operational, geospatial, macro, and other third-party feeds to raise informational quality.",
-        },
-        {
-          name: "Secure Data-Sharing",
-          desc: "Role-based access, clean rooms, and commercial frameworks to exchange data across stakeholders.",
-        },
-        {
-          name: "APIs & Governance",
-          desc: "Enterprise-grade access, versioning, permissions, lineage, and policy compliance.",
-        },
-      ],
-    },
-    {
-      layer: "Layer 2",
-      title: "Blockchain Validation",
-      subtitle: "",
-      features: [
-        {
-          name: "Provenance & Integrity",
-          desc: "Cryptographic anchoring of critical records and data inputs.",
-        },
-        {
-          name: "Compliance-ready Contracts",
-          desc: "Smart-contract templates for audit trails, permissions, and process controls.",
-        },
-        {
-          name: "Interoperability",
-          desc: "Designed to integrate with institutional systems and external chains where appropriate.",
-        },
-        {
-          name: "Tokenization Readiness",
-          desc: "Built to integrate with modern day tokenization solutions through on-chain data bridges.",
-        },
-      ],
-    },
-    {
-      layer: "Layer 3",
-      title: "Purpose-built Solutions",
-      subtitle: "",
-      features: [
-        {
-          name: "Data Products",
-          desc: "Automated valuation models (AVMs), market intelligence, portfolio analytics.",
-        },
-        {
-          name: "Operational Tools & AI Agents",
-          desc: "Underwriting, reporting, management optimization, workflow automation, compliance monitoring.",
-        },
-        {
-          name: "Specialized Modules",
-          desc: "Risk scoring, ESG compliance, sector specific capabilities like loan servicing and development tooling.",
-        },
-        {
-          name: "APIs & Datasets",
-          desc: "Data enrichment, tailored datasets, on-chain data bridging for tokenization solutions.",
-        },
-      ],
-    },
-  ];
+  const { t } = useLanguage();
 
   return (
     <section className="home-section home-platform-layers-section">
@@ -221,21 +144,21 @@ const PlatformLayers = () => {
           variants={staggerContainer}
         >
           <motion.h2 variants={fadeInUp} className="home-heading-2">
-            Platform Architecture
+            {t(translations.platformLayers.title)}
           </motion.h2>
 
           <div className="home-layers-container">
-            {layers.map((layer, layerIndex) => (
+            {translations.platformLayers.layers.map((layer, layerIndex) => (
               <motion.div
                 key={layerIndex}
                 variants={fadeInUp}
                 className="home-layer-card"
               >
                 <div className="home-layer-header">
-                  <span className="home-layer-badge">{layer.layer}</span>
-                  <h3 className="home-layer-title">{layer.title}</h3>
-                  {layer.subtitle && (
-                    <p className="home-layer-subtitle">{layer.subtitle}</p>
+                  <span className="home-layer-badge">{t(layer.layer)}</span>
+                  <h3 className="home-layer-title">{t(layer.title)}</h3>
+                  {layer.subtitle.en && (
+                    <p className="home-layer-subtitle">{t(layer.subtitle)}</p>
                   )}
                 </div>
 
@@ -249,9 +172,11 @@ const PlatformLayers = () => {
                       className="home-layer-feature"
                     >
                       <h4 className="home-layer-feature-name">
-                        {feature.name}
+                        {t(feature.name)}
                       </h4>
-                      <p className="home-layer-feature-desc">{feature.desc}</p>
+                      <p className="home-layer-feature-desc">
+                        {t(feature.desc)}
+                      </p>
                     </motion.div>
                   ))}
                 </div>
@@ -265,28 +190,7 @@ const PlatformLayers = () => {
 };
 
 const StakeholdersSection = () => {
-  const stakeholders = [
-    {
-      title: "Institutional Investors & Managers",
-      desc: "Portfolio analytics, risk/ESG overlays, market insights, standardised/automated reporting.",
-    },
-    {
-      title: "Developers & property managers",
-      desc: "Operational dashboards, performance KPIs, (predictive) maintenance and occupancy optimisation/automation.",
-    },
-    {
-      title: "Banks & lenders",
-      desc: "Due‑diligence acceleration, valuation confidence, collateral transparency, risk frameworks.",
-    },
-    {
-      title: "PropTech partners",
-      desc: "APIs, enrichment, and blockchain verification to enhance product accuracy and credibility.",
-    },
-    {
-      title: "Governments & Municipalities",
-      desc: "Verified ESG reporting, urban planning insights, transparent zoning and compliance monitoring, improved tax assessment, and affordable housing policy support.",
-    },
-  ];
+  const { t } = useLanguage();
 
   return (
     <section className="home-section home-stakeholders-section">
@@ -298,24 +202,24 @@ const StakeholdersSection = () => {
           variants={staggerContainer}
         >
           <motion.h2 variants={fadeInUp} className="home-heading-2">
-            Built for Every Stakeholder
+            {t(translations.stakeholders.title)}
           </motion.h2>
 
           <motion.p variants={fadeInUp} className="home-section-subtitle">
-            From investors to government bodies, Propchain powers smarter
-            decisions, faster transactions, lower costs, and more trusted data,
-            tailored to your position in the real estate value chain.
+            {t(translations.stakeholders.subtitle)}
           </motion.p>
 
           <div className="home-stakeholders-grid">
-            {stakeholders.map((stakeholder, index) => (
+            {translations.stakeholders.items.map((stakeholder, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
                 className="home-stakeholder-card"
               >
-                <h3 className="home-stakeholder-title">{stakeholder.title}</h3>
-                <p className="home-stakeholder-desc">{stakeholder.desc}</p>
+                <h3 className="home-stakeholder-title">
+                  {t(stakeholder.title)}
+                </h3>
+                <p className="home-stakeholder-desc">{t(stakeholder.desc)}</p>
               </motion.div>
             ))}
           </div>
@@ -326,12 +230,7 @@ const StakeholdersSection = () => {
 };
 
 const StatsSection = () => {
-  const stats = [
-    { number: "120M+", label: "Property Records" },
-    { number: "18+", label: "Global Markets" },
-    { number: "<200ms", label: "Query Speed" },
-    { number: "99.9%", label: "Uptime" },
-  ];
+  const { t } = useLanguage();
 
   const CounterAnimation = ({ value, duration = 2 }) => {
     const [count, setCount] = useState("0");
@@ -388,11 +287,11 @@ const StatsSection = () => {
           variants={staggerContainer}
         >
           <motion.h2 variants={fadeInUp} className="home-heading-2">
-            Global Impact
+            {t(translations.stats.title)}
           </motion.h2>
 
           <div className="home-grid-stats">
-            {stats.map((stat, index) => (
+            {translations.stats.items.map((stat, index) => (
               <motion.div
                 key={index}
                 variants={fadeInUp}
@@ -400,7 +299,7 @@ const StatsSection = () => {
               >
                 <motion.div whileHover={{ scale: 1.05 }} className="home-card">
                   <CounterAnimation value={stat.number} />
-                  <div className="home-stats-label">{stat.label}</div>
+                  <div className="home-stats-label">{t(stat.label)}</div>
                 </motion.div>
               </motion.div>
             ))}
@@ -412,46 +311,37 @@ const StatsSection = () => {
 };
 
 const CTABanner = () => {
+  const { t } = useLanguage();
+
   return (
-    <section className="home-section home-section-gradient-horizontal">
-      <div className="home-container home-text-center">
+    <section className="home-cta-section">
+      <div className="home-container">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={staggerContainer}
+          className="home-cta-content"
         >
-          <motion.h2
-            variants={fadeInUp}
-            className="home-heading-2"
-            style={{ color: "white", marginBottom: "2rem" }}
-          >
-            Ready to transform your real estate data infrastructure?
+          <motion.h2 variants={fadeInUp} className="home-cta-heading">
+            {t(translations.cta.title)}
           </motion.h2>
 
-          <motion.div
-            variants={fadeInUp}
-            className="home-flex home-flex-col home-items-center home-justify-center home-gap-1"
-          >
-            <div
-              className="home-flex home-flex-col home-gap-1"
-              style={{ flexDirection: "row" }}
+          <motion.div variants={fadeInUp} className="home-cta-buttons">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="home-button home-button-primary"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="home-button home-button-white"
-              >
-                Request Demo
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="home-button home-button-outline-white"
-              >
-                Download Deck
-              </motion.button>
-            </div>
+              {t(translations.cta.buttons.getStarted)}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="home-button home-button-secondary"
+            >
+              {t(translations.cta.buttons.contactUs)}
+            </motion.button>
           </motion.div>
         </motion.div>
       </div>
@@ -479,6 +369,7 @@ const Home = () => {
       <StakeholdersSection />
       <StatsSection />
       <CTABanner />
+      <Footer />
     </div>
   );
 };
