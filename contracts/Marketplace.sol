@@ -53,15 +53,18 @@ contract Marketplace {
     }
 
     function listItem(uint256 _tokenId, uint256 _price) external {
-        require(_price > 0, "Price must be greater than zero");
+        require(
+            _price > 0,
+            "Gia phai lon hon 0 (Price must be greater than zero)"
+        );
         require(
             nftContract.ownerOf(_tokenId) == msg.sender,
-            "You must own the NFT to list it"
+            "Ban phai la chu so huu NFT de niem yet (You must own the NFT to list it)"
         );
         require(
             nftContract.getApproved(_tokenId) == address(this) ||
                 nftContract.isApprovedForAll(msg.sender, address(this)),
-            "Marketplace must be approved to transfer the NFT"
+            "Marketplace phai duoc phe duyet de chuyen nhuong NFT (Marketplace must be approved to transfer the NFT)"
         );
 
         _listingIds++;
@@ -83,14 +86,17 @@ contract Marketplace {
 
     function buyItem(uint256 _listingId) external payable {
         Listing storage listing = listings[_listingId];
-        require(listing.listingId != 0, "Listing does not exist");
+        require(
+            listing.listingId != 0,
+            "Niem yet khong ton tai (Listing does not exist)"
+        );
         require(
             listing.status == ListingStatus.Active,
-            "Listing is not active"
+            "Niem yet khong hoat dong (Listing is not active)"
         );
         require(
             msg.value >= listing.price,
-            "Not enough Ether to cover item price and market fee"
+            "Khong du Ether de thanh toan gia va phi thi truong (Not enough Ether to cover item price and market fee)"
         );
 
         // Pay seller and fee account
@@ -112,11 +118,17 @@ contract Marketplace {
 
     function cancelListing(uint256 _listingId) external {
         Listing storage listing = listings[_listingId];
-        require(listing.listingId != 0, "Listing does not exist");
-        require(listing.seller == msg.sender, "You are not the seller");
+        require(
+            listing.listingId != 0,
+            "Niem yet khong ton tai (Listing does not exist)"
+        );
+        require(
+            listing.seller == msg.sender,
+            "Ban khong phai la nguoi ban (You are not the seller)"
+        );
         require(
             listing.status == ListingStatus.Active,
-            "Listing is not active"
+            "Niem yet khong hoat dong (Listing is not active)"
         );
 
         // Update listing status
