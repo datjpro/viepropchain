@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { Link } from "react-router-dom";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -342,6 +343,15 @@ const CTABanner = () => {
             >
               {t(translations.cta.buttons.contactUs)}
             </motion.button>
+            <Link to="/test">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="home-button home-button-secondary"
+              >
+                Test Contract
+              </motion.button>
+            </Link>
           </motion.div>
         </motion.div>
       </div>

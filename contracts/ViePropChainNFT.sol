@@ -14,7 +14,7 @@ contract ViePropChainNFT is ERC721URIStorage, Ownable {
         address recipient,
         string memory tokenURI
     ) public onlyOwner returns (uint256) {
-        tokenCounter++;
+        tokenCounter++; 
         _mint(recipient, tokenCounter);
         _setTokenURI(tokenCounter, tokenURI);
         return tokenCounter;
