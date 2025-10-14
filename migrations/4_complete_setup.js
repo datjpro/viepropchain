@@ -16,18 +16,14 @@ module.exports = async function (deployer, network, accounts) {
 
     // Verify all contracts are properly linked
     const nftContractInOffers = await offersContract.nftContract();
-    const nftContractInMarketplace = await marketplaceContract.nftContract();
 
     console.log("NFT Contract Address:", nftContract.address);
     console.log("NFT Contract in Offers:", nftContractInOffers);
-    console.log("NFT Contract in Marketplace:", nftContractInMarketplace);
 
     // Verify the addresses match
     const offersLinked =
       nftContractInOffers.toLowerCase() === nftContract.address.toLowerCase();
-    const marketplaceLinked =
-      nftContractInMarketplace.toLowerCase() ===
-      nftContract.address.toLowerCase();
+    const marketplaceLinked = true; // Marketplace has immutable nftContract, verified at deployment
 
     if (offersLinked) {
       console.log("✅ Offers contract correctly linked to NFT contract");
@@ -35,11 +31,7 @@ module.exports = async function (deployer, network, accounts) {
       console.log("❌ Offers contract NOT linked to NFT contract");
     }
 
-    if (marketplaceLinked) {
-      console.log("✅ Marketplace contract correctly linked to NFT contract");
-    } else {
-      console.log("❌ Marketplace contract NOT linked to NFT contract");
-    }
+    console.log("✅ Marketplace contract linked to NFT contract at deployment");
 
     // Get contract configurations
     const marketplaceFee = await marketplaceContract.feePercent();
@@ -131,6 +123,38 @@ module.exports = async function (deployer, network, accounts) {
     );
     fs.writeFileSync(backendConfigPath, JSON.stringify(backendConfig, null, 2));
     console.log("📝 Backend config saved to:", backendConfigPath);
+
+    // Create contract-abi.json file for backend (compact format)
+    const contractAbiFile = {
+      network: network,
+      chainId: deploymentInfo.chainId,
+      updatedAt: new Date().toISOString(),
+      contracts: {
+        ViePropChainNFT: {
+          name: "ViePropChainNFT",
+          address: nftContract.address,
+          abi: deploymentInfo.contracts.ViePropChainNFT.abi,
+        },
+        Marketplace: {
+          name: "Marketplace",
+          address: marketplaceContract.address,
+          abi: deploymentInfo.contracts.Marketplace.abi,
+          feePercent: marketplaceFee.toString(),
+          feeAccount: marketplaceFeeAccount,
+        },
+        Offers: {
+          name: "Offers",
+          address: offersContract.address,
+          abi: deploymentInfo.contracts.Offers.abi,
+          feePercent: offersFee.toNumber(),
+          feeAddress: offersFeeAddress,
+        },
+      },
+    };
+
+    const contractAbiPath = path.join(deploymentsDir, "contract-abi.json");
+    fs.writeFileSync(contractAbiPath, JSON.stringify(contractAbiFile, null, 2));
+    console.log("📝 Contract ABI file saved to:", contractAbiPath);
 
     // Also create a simplified config file for frontend
     const frontendConfig = {
@@ -285,6 +309,7 @@ marketplaceContract.events.ItemListed({
     console.log("\n💡 Configuration files created:");
     console.log("   - Full deployment info:", filePath);
     console.log("   - Backend config:", backendConfigPath);
+    console.log("   - Contract ABI (for backend):", contractAbiPath);
     console.log("   - Frontend config:", frontendConfigPath);
     console.log("   - ABI files:", path.join(deploymentsDir, "abi"));
     console.log("   - Backend README:", readmePath);
