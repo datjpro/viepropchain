@@ -29,21 +29,41 @@ module.exports = async function (deployer, network, accounts) {
   const marketplaceContract = await Marketplace.deployed();
   console.log("✅ Marketplace deployed at:", marketplaceContract.address);
 
-  // Save deployment info to JSON file
+  // Get contract ABIs from build artifacts
+  const nftArtifact = require("../build/contracts/ViePropChainNFT.json");
+  const marketplaceArtifact = require("../build/contracts/Marketplace.json");
+
+  // Save deployment info to JSON file with ABIs
   const deploymentInfo = {
     network: network,
     deployedAt: new Date().toISOString(),
     deployer: accounts[0],
+    chainId: await web3.eth.getChainId(),
     contracts: {
       ViePropChainNFT: {
         address: nftContract.address,
         transactionHash: nftContract.transactionHash,
+        abi: nftArtifact.abi,
+        contractName: "ViePropChainNFT",
+        compiler: {
+          version: nftArtifact.compiler.version,
+        },
+        bytecode: nftArtifact.bytecode,
       },
       Marketplace: {
         address: marketplaceContract.address,
         transactionHash: marketplaceContract.transactionHash,
-        feePercent: feePercent,
-        feeAccount: feeAccount,
+        abi: marketplaceArtifact.abi,
+        contractName: "Marketplace",
+        compiler: {
+          version: marketplaceArtifact.compiler.version,
+        },
+        bytecode: marketplaceArtifact.bytecode,
+        config: {
+          feePercent: feePercent,
+          feeAccount: feeAccount,
+          nftContract: nftContract.address,
+        },
       },
     },
   };
@@ -58,6 +78,22 @@ module.exports = async function (deployer, network, accounts) {
   const filePath = path.join(deploymentsDir, `deployment-${network}.json`);
   fs.writeFileSync(filePath, JSON.stringify(deploymentInfo, null, 2));
   console.log("\n📝 Deployment info saved to:", filePath);
+
+  // Save individual ABI files for easy access
+  const abiDir = path.join(deploymentsDir, "abi");
+  if (!fs.existsSync(abiDir)) {
+    fs.mkdirSync(abiDir, { recursive: true });
+  }
+
+  fs.writeFileSync(
+    path.join(abiDir, "ViePropChainNFT.json"),
+    JSON.stringify(nftArtifact.abi, null, 2)
+  );
+  fs.writeFileSync(
+    path.join(abiDir, "Marketplace.json"),
+    JSON.stringify(marketplaceArtifact.abi, null, 2)
+  );
+  console.log("📝 ABI files saved to:", abiDir);
 
   console.log("\n=== Deployment Summary ===");
   console.log("NFT Contract:", nftContract.address);
