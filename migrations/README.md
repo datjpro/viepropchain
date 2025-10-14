@@ -5,9 +5,9 @@ Các file migration này sẽ deploy và cấu hình toàn bộ hệ thống sma
 ## Thứ tự Deploy
 
 1. **1_initial_migration.js** - Deploy contract Migrations (built-in của Truffle)
-2. **2_deploy_contracts.js** - Deploy ViePropChainNFT và Marketplace contracts
-3. **3_deploy_offers.js** - Deploy Offers contract và cấu hình
-4. **4_complete_setup.js** - Verify và hiển thị thông tin deployment
+2. **2_deploy_contracts.js** - Deploy ViePropChainNFT và Marketplace contracts, tạo file deployment info
+3. **3_deploy_offers.js** - Deploy Offers contract và cập nhật deployment info
+4. **4_complete_setup.js** - Verify contracts, hoàn thiện deployment info và tạo frontend config
 
 ## Cách chạy Migration
 
@@ -29,6 +29,92 @@ npx truffle migrate --network mainnet
 
 ```bash
 npx truffle migrate --reset
+```
+
+## 📁 Files được tạo tự động
+
+### 1. Full Deployment Info
+
+**Vị trí:** `deployments/deployment-<network>.json`
+
+Chứa thông tin đầy đủ về deployment:
+
+- Network name và timestamp
+- Địa chỉ deployer và tất cả accounts
+- Địa chỉ và transaction hash của tất cả contracts
+- Cấu hình (fees, addresses, etc.)
+- Trạng thái verification
+
+**Ví dụ:**
+
+```json
+{
+  "network": "development",
+  "deployedAt": "2025-10-15T...",
+  "deployer": "0x...",
+  "contracts": {
+    "ViePropChainNFT": {
+      "address": "0x...",
+      "transactionHash": "0x..."
+    },
+    "Marketplace": {
+      "address": "0x...",
+      "transactionHash": "0x...",
+      "feePercent": 2,
+      "feeAccount": "0x..."
+    },
+    "Offers": {
+      "address": "0x...",
+      "transactionHash": "0x...",
+      "feePercent": 250,
+      "feeAddress": "0x..."
+    }
+  },
+  "accounts": {
+    "deployer": "0x...",
+    "availableAccounts": ["0x...", "0x..."]
+  }
+}
+```
+
+### 2. Frontend Config
+
+**Vị trí:** `src/contracts/config.json`
+
+File cấu hình đơn giản để sử dụng trong frontend:
+
+```json
+{
+  "network": "development",
+  "contracts": {
+    "ViePropChainNFT": "0x...",
+    "Marketplace": "0x...",
+    "Offers": "0x..."
+  },
+  "deployer": "0x..."
+}
+```
+
+## 💡 Sử dụng Deployment Info trong App
+
+### Cách 1: Import Frontend Config
+
+```javascript
+import contractConfig from "./contracts/config.json";
+
+const nftAddress = contractConfig.contracts.ViePropChainNFT;
+const marketplaceAddress = contractConfig.contracts.Marketplace;
+const offersAddress = contractConfig.contracts.Offers;
+```
+
+### Cách 2: Load Full Deployment Info
+
+```javascript
+import deploymentInfo from "../deployments/deployment-development.json";
+
+const nftAddress = deploymentInfo.contracts.ViePropChainNFT.address;
+const deployerAccount = deploymentInfo.deployer;
+const allAccounts = deploymentInfo.accounts.availableAccounts;
 ```
 
 ## Thông tin Contracts

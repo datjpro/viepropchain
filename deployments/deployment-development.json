@@ -1,0 +1,20 @@
+{
+  "network": "development",
+  "deployedAt": "2025-10-14T17:05:36.085Z",
+  "deployer": "0xC6890b26A32d9d92aefbc8635C4588247529CdfE",
+  "contracts": {
+    "ViePropChainNFT": {
+      "address": "0xddD30e97398c1666a30f7a2aaa538E3E1a55aC7B"
+    },
+    "Marketplace": {
+      "address": "0x27175B5FebB2d082FA03e698F9eb0b6525235B84",
+      "feePercent": 2,
+      "feeAccount": "0xC6890b26A32d9d92aefbc8635C4588247529CdfE"
+    },
+    "Offers": {
+      "address": "0xcAa3158C9CDeB9133829F5FD4ba531820B7E83C5",
+      "feePercent": 250,
+      "feeAddress": "0xC6890b26A32d9d92aefbc8635C4588247529CdfE"
+    }
+  }
+}
