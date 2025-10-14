@@ -8,13 +8,14 @@
 const Web3 = require("web3");
 
 // Import contract ABI file
-const contractAbi = require("./deployments/contract-abi.json");
+// File này đang ở trong thư mục deployments, nên import trực tiếp
+const contractAbi = require("./contract-abi.json");
 
 // Hoặc nếu backend ở folder khác:
 // const contractAbi = require('../viepropchain/deployments/contract-abi.json');
 
 // Setup Web3
-const web3 = new Web3(process.env.RPC_URL || "http://localhost:7545");
+const web3 = new Web3(process.env.RPC_URL || "http://localhost:8545");
 
 // Initialize contracts
 const nftContract = new web3.eth.Contract(
