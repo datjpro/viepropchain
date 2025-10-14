@@ -5,7 +5,7 @@
  * Copy file này vào thư mục backend của bạn và điều chỉnh paths
  */
 
-const Web3 = require("web3");
+const { Web3 } = require("web3");
 
 // Import contract ABI file
 // File này đang ở trong thư mục deployments, nên import trực tiếp
