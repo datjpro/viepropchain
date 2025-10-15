@@ -350,19 +350,9 @@ const CTABanner = () => {
 };
 
 const Home = () => {
-  const mockWeb3Api = { provider: null };
-  const mockAccount = null;
-  const mockOnConnectWallet = () => console.log("Connect wallet clicked");
-  const mockError = null;
-
   return (
     <div className="home-page">
-      <Header
-        web3Api={mockWeb3Api}
-        account={mockAccount}
-        onConnectWallet={mockOnConnectWallet}
-        error={mockError}
-      />
+      <Header />
       <HeroSection />
       <FoundationsSection />
       <PlatformLayers />
