@@ -3,8 +3,10 @@ import "./header.css";
 import logo from "../../assets/logo-removebg-preview.png";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useWeb3 } from "../../contexts/Web3Context";
+import { useAdmin } from "../../contexts/AdminContext";
 import { translations } from "../../translations/translations";
 import Toast from "../Toast/Toast";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const { language, toggleLanguage, t } = useLanguage();
@@ -17,6 +19,7 @@ const Header = () => {
     error,
     formatAddress,
   } = useWeb3();
+  const { isAdmin } = useAdmin();
   const [toast, setToast] = useState(null);
 
   const copyToClipboard = (text) => {
@@ -201,36 +204,49 @@ const Header = () => {
               {error && <div className="error-message">{error}</div>}
 
               {account ? (
-                <div className="wallet-connected">
-                  <div className="wallet-info">
-                    <span className="wallet-status">
-                      {t(translations.nav.connected)}
-                    </span>
-                    <div className="wallet-address">
-                      <span className="address-label">
-                        {t(translations.nav.address)}:
+                <>
+                  <div className="wallet-connected">
+                    <div className="wallet-info">
+                      <span className="wallet-status">
+                        {t(translations.nav.connected)}
                       </span>
-                      <span
-                        className="address-value"
-                        title={`${account}\n${
-                          language === "en"
-                            ? "Click to copy"
-                            : "Click để sao chép"
-                        }`}
-                        onClick={() => copyToClipboard(account)}
-                      >
-                        {formatAddress(account)}
-                      </span>
+                      {isAdmin && (
+                        <span className="admin-badge">
+                          👑 {language === "en" ? "ADMIN" : "QUẢN TRỊ"}
+                        </span>
+                      )}
+                      <div className="wallet-address">
+                        <span className="address-label">
+                          {t(translations.nav.address)}:
+                        </span>
+                        <span
+                          className="address-value"
+                          title={`${account}\n${
+                            language === "en"
+                              ? "Click to copy"
+                              : "Click để sao chép"
+                          }`}
+                          onClick={() => copyToClipboard(account)}
+                        >
+                          {formatAddress(account)}
+                        </span>
+                      </div>
                     </div>
+                    <button
+                      className="disconnect-btn"
+                      onClick={disconnectWallet}
+                      title={language === "en" ? "Disconnect" : "Ngắt kết nối"}
+                    >
+                      ✕
+                    </button>
                   </div>
-                  <button
-                    className="disconnect-btn"
-                    onClick={disconnectWallet}
-                    title={language === "en" ? "Disconnect" : "Ngắt kết nối"}
-                  >
-                    ✕
-                  </button>
-                </div>
+                  {isAdmin && (
+                    <Link to="/admin/nft" className="admin-link">
+                      <span>⚙️</span>
+                      {language === "en" ? "Admin Panel" : "Quản lý"}
+                    </Link>
+                  )}
+                </>
               ) : (
                 <button
                   className="connect-wallet-btn"

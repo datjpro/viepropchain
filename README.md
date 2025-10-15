@@ -154,7 +154,7 @@ npm install
 npm install -g truffle
 
 # Start Ganache on port 7575
-ganache-cli -p 7575
+ganache-cli -p 8575
 ```
 
 ### 4. Deploy Smart Contracts
@@ -268,7 +268,7 @@ This project is licensed under the MIT License.
 ## 📞 Contact / Liên hệ
 
 - Website: [ViePropChain](#)
-- Email: contact@viepropchain.com
+- Email: todat2207@gmail.com
 
 ---
 

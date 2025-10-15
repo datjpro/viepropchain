@@ -35,8 +35,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0;
+  padding: 0.8rem 0;
   min-height: 70px;
+  gap: 2rem;
 }
 
 /* Logo Section */
@@ -44,6 +45,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -62,12 +64,20 @@
 }
 
 /* Navigation Menu */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
 .nav-menu ul {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
   gap: 35px;
+  align-items: center;
 }
 
 .nav-menu a {
@@ -108,7 +118,8 @@
 .wallet-section {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 /* Language Switcher */
@@ -119,7 +130,7 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 9px 14px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: "Inter", sans-serif;
@@ -128,6 +139,7 @@
   font-size: 0.9rem;
   min-width: 85px;
   justify-content: center;
+  height: 40px;
 }
 
 .language-switcher:hover {
@@ -178,57 +190,119 @@
   );
   backdrop-filter: blur(15px);
   border: 1px solid rgba(79, 139, 255, 0.3);
-  border-radius: 12px;
-  padding: 14px 22px;
+  border-radius: 10px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   box-shadow: 0 4px 20px rgba(79, 139, 255, 0.15);
+  height: 40px;
+}
+
+/* Admin Badge */
+.admin-badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 15px rgba(251, 191, 36, 0.6);
+  }
+}
+
+/* Admin Link */
+.admin-link {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: "Inter", sans-serif;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  height: 40px;
+}
+
+.admin-link:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  color: #fcd34d;
+}
+
+.admin-link:active {
+  transform: translateY(-1px);
 }
 
 .wallet-info {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
   flex: 1;
 }
 
 .wallet-status {
   color: #2ed573;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   font-family: "Inter", sans-serif;
+  white-space: nowrap;
 }
 
 .wallet-address {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
 .address-label {
   color: rgba(230, 236, 255, 0.7);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-family: "Inter", sans-serif;
+  white-space: nowrap;
 }
 
 .address-value {
   color: #e6ecff;
   font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   background: linear-gradient(
     135deg,
     rgba(0, 0, 0, 0.3) 0%,
     rgba(0, 0, 0, 0.5) 100%
   );
-  padding: 6px 12px;
+  padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid rgba(79, 139, 255, 0.2);
+  white-space: nowrap;
 }
 
 .address-value:hover {
@@ -246,7 +320,7 @@
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  padding: 12px 24px;
+  padding: 0 24px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 0.95rem;
@@ -259,6 +333,8 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  height: 40px;
+  white-space: nowrap;
 }
 
 .connect-wallet-btn::before {
@@ -327,18 +403,19 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #ef4444;
-  padding: 8px 12px;
+  padding: 0;
   border-radius: 6px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   font-family: "Inter", sans-serif;
+  flex-shrink: 0;
 }
 
 .disconnect-btn:hover {
@@ -396,7 +473,22 @@
   }
 
   .wallet-connected {
-    padding: 12px 18px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+  }
+
+  .wallet-info {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .address-label {
+    font-size: 0.8rem;
+  }
+
+  .address-value {
+    font-size: 0.8rem;
+    padding: 4px 8px;
   }
 
   .connect-wallet-btn {
@@ -445,6 +537,27 @@
   }
 
   .wallet-connected {
-    padding: 10px 16px;
+    padding: 8px 14px;
+    max-width: 100%;
+  }
+
+  .wallet-status {
+    font-size: 0.65rem;
+  }
+
+  .address-label {
+    display: none; /* Ẩn label "Địa chỉ:" trên mobile */
+  }
+
+  .address-value {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .disconnect-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+    padding: 4px 8px;
   }
 }
