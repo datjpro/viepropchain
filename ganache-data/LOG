@@ -1,0 +1,5 @@
+2025/10/15-14:22:22.435 35dc Recovering log #13
+2025/10/15-14:22:22.435 35dc Level-0 table #15: started
+2025/10/15-14:22:22.442 35dc Level-0 table #15: 6577 bytes OK
+2025/10/15-14:22:22.455 35dc Delete type=0 #13
+2025/10/15-14:22:22.455 35dc Delete type=3 #11
