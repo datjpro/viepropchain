@@ -29,6 +29,7 @@ truffle exec scripts/export-contracts.js --network development
 Sau khi chạy, các file sau sẽ được tạo trong thư mục `backend/`:
 
 ### 1. `contracts.json` (Tất cả thông tin)
+
 ```json
 {
   "network": {
@@ -50,6 +51,7 @@ Sau khi chạy, các file sau sẽ được tạo trong thư mục `backend/`:
 ```
 
 ### 2. `ViePropChainNFT.json` (Riêng biệt)
+
 ```json
 {
   "address": "0x...",
@@ -58,6 +60,7 @@ Sau khi chạy, các file sau sẽ được tạo trong thư mục `backend/`:
 ```
 
 ### 3. `Marketplace.json` (Riêng biệt)
+
 ```json
 {
   "address": "0x...",
@@ -66,6 +69,7 @@ Sau khi chạy, các file sau sẽ được tạo trong thư mục `backend/`:
 ```
 
 ### 4. `.env.contracts` (Environment variables)
+
 ```env
 NFT_CONTRACT_ADDRESS=0x...
 MARKETPLACE_CONTRACT_ADDRESS=0x...
@@ -77,17 +81,17 @@ NETWORK_ID=1337
 ### Node.js/Express Example
 
 ```javascript
-const Web3 = require('web3');
-const fs = require('fs');
-const path = require('path');
+const Web3 = require("web3");
+const fs = require("fs");
+const path = require("path");
 
 // Đọc thông tin contracts
 const contractsData = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'backend/contracts.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, "backend/contracts.json"), "utf8")
 );
 
 // Khởi tạo Web3
-const web3 = new Web3('http://localhost:8545');
+const web3 = new Web3("http://localhost:8545");
 
 // Khởi tạo contract instances
 const nftContract = new web3.eth.Contract(
@@ -145,8 +149,8 @@ def get_all_listings():
 ### TypeScript/NestJS Example
 
 ```typescript
-import Web3 from 'web3';
-import * as contractsData from './backend/contracts.json';
+import Web3 from "web3";
+import * as contractsData from "./backend/contracts.json";
 
 export class Web3Service {
   private web3: Web3;
@@ -154,8 +158,8 @@ export class Web3Service {
   private marketplaceContract: any;
 
   constructor() {
-    this.web3 = new Web3('http://localhost:8545');
-    
+    this.web3 = new Web3("http://localhost:8545");
+
     this.nftContract = new this.web3.eth.Contract(
       contractsData.contracts.ViePropChainNFT.abi as any,
       contractsData.contracts.ViePropChainNFT.address
@@ -184,7 +188,7 @@ Bạn có thể sử dụng file `.env.contracts` để load địa chỉ contra
 ### Node.js với dotenv
 
 ```javascript
-require('dotenv').config({ path: './backend/.env.contracts' });
+require("dotenv").config({ path: "./backend/.env.contracts" });
 
 const NFT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
 const MARKETPLACE_ADDRESS = process.env.MARKETPLACE_CONTRACT_ADDRESS;
@@ -212,6 +216,7 @@ MARKETPLACE_ADDRESS = os.getenv('MARKETPLACE_CONTRACT_ADDRESS')
 ## Troubleshooting
 
 ### Contract not deployed
+
 ```bash
 # Chạy migration trước
 truffle migrate --network development
@@ -220,6 +225,7 @@ truffle exec scripts/export-contracts.js --network development
 ```
 
 ### File không được tạo
+
 ```bash
 # Kiểm tra quyền ghi file
 # Thử tạo thư mục backend thủ công
