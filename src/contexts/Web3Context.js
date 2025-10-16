@@ -54,6 +54,11 @@ export const Web3Provider = ({ children }) => {
         const provider = await detectEthereumProvider();
 
         if (provider) {
+          // Tăng max listeners để tránh warning
+          if (provider.setMaxListeners) {
+            provider.setMaxListeners(20);
+          }
+
           const web3Instance = new Web3(provider);
           setWeb3Api({
             provider,
@@ -109,6 +114,26 @@ export const Web3Provider = ({ children }) => {
 
   // Listen for account changes
   useEffect(() => {
+    if (!web3Api.provider) return;
+
+    // Tăng maxListeners nếu provider hỗ trợ
+    if (web3Api.provider.setMaxListeners) {
+      web3Api.provider.setMaxListeners(20);
+    }
+
+    // Kiểm tra xem listener đã được add chưa
+    const existingListeners = web3Api.provider.listenerCount
+      ? web3Api.provider.listenerCount("accountsChanged")
+      : 0;
+
+    // Chỉ add listeners nếu chưa có
+    if (existingListeners > 0) {
+      console.log(
+        `⚠️ Listeners already exist (${existingListeners}), skipping...`
+      );
+      return;
+    }
+
     const handleAccountsChanged = (accounts) => {
       if (accounts.length === 0) {
         // User disconnected wallet
@@ -128,21 +153,18 @@ export const Web3Provider = ({ children }) => {
       window.location.reload();
     };
 
-    if (web3Api.provider) {
-      web3Api.provider.on("accountsChanged", handleAccountsChanged);
-      web3Api.provider.on("chainChanged", handleChainChanged);
-    }
+    console.log("➕ Adding event listeners...");
+    web3Api.provider.on("accountsChanged", handleAccountsChanged);
+    web3Api.provider.on("chainChanged", handleChainChanged);
 
     return () => {
-      if (web3Api.provider && web3Api.provider.removeListener) {
-        web3Api.provider.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-        web3Api.provider.removeListener("chainChanged", handleChainChanged);
+      console.log("➖ Removing event listeners...");
+      if (web3Api.provider && web3Api.provider.removeAllListeners) {
+        web3Api.provider.removeAllListeners("accountsChanged");
+        web3Api.provider.removeAllListeners("chainChanged");
       }
     };
-  }, [web3Api.provider, account]);
+  }, [web3Api.provider]);
 
   // Get balance when account changes
   useEffect(() => {
