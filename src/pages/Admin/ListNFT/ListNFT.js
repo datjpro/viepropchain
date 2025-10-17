@@ -353,28 +353,118 @@ const ListNFT = () => {
                   )}
 
                   {selectedNFT.nft?.isMinted && (
-                    <div className="detail-section">
-                      <h3>📋 Thông tin NFT</h3>
-                      <div className="detail-item">
+                    <div className="detail-section nft-section">
+                      <h3>🎨 Thông tin NFT On-Chain</h3>
+
+                      <div className="detail-item highlight">
                         <strong>Token ID:</strong>
-                        <code>#{selectedNFT.nft.tokenId}</code>
+                        <span className="token-id-badge">
+                          #{selectedNFT.nft.tokenId}
+                        </span>
                       </div>
+
                       <div className="detail-item">
-                        <strong>Contract:</strong>
-                        <code>{selectedNFT.nft.contractAddress}</code>
+                        <strong>Contract Address:</strong>
+                        <code className="contract-code">
+                          {selectedNFT.nft.contractAddress}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedNFT.nft.contractAddress
+                            );
+                            alert("Đã copy contract address!");
+                          }}
+                          title="Copy contract address"
+                        >
+                          📋
+                        </button>
                       </div>
+
                       <div className="detail-item">
-                        <strong>Owner:</strong>
-                        <code>{selectedNFT.nft.owner}</code>
+                        <strong>Owner (Wallet):</strong>
+                        <code className="owner-code">
+                          {selectedNFT.nft.owner}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedNFT.nft.owner
+                            );
+                            alert("Đã copy owner address!");
+                          }}
+                          title="Copy owner address"
+                        >
+                          📋
+                        </button>
                       </div>
+
                       <div className="detail-item">
                         <strong>Transaction Hash:</strong>
-                        <code>{selectedNFT.nft.transactionHash}</code>
+                        <code className="tx-code">
+                          {selectedNFT.nft.transactionHash}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedNFT.nft.transactionHash
+                            );
+                            alert("Đã copy transaction hash!");
+                          }}
+                          title="Copy transaction hash"
+                        >
+                          📋
+                        </button>
                       </div>
-                      {selectedNFT.nft.ipfsHash && (
+
+                      {selectedNFT.nft.tokenURI && (
                         <div className="detail-item">
-                          <strong>IPFS Hash:</strong>
-                          <code>{selectedNFT.nft.ipfsHash}</code>
+                          <strong>Token URI:</strong>
+                          <code className="uri-code">
+                            {selectedNFT.nft.tokenURI}
+                          </code>
+                          <a
+                            href={selectedNFT.nft.tokenURI}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-view-link"
+                            title="Xem metadata"
+                          >
+                            🔗
+                          </a>
+                        </div>
+                      )}
+
+                      {selectedNFT.ipfsMetadataCid && (
+                        <div className="detail-item highlight-ipfs">
+                          <strong>IPFS Metadata CID:</strong>
+                          <code className="ipfs-code">
+                            {selectedNFT.ipfsMetadataCid}
+                          </code>
+                          <button
+                            className="btn-copy"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                selectedNFT.ipfsMetadataCid
+                              );
+                              alert("Đã copy IPFS CID!");
+                            }}
+                            title="Copy IPFS CID"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      )}
+
+                      {selectedNFT.nft.mintedAt && (
+                        <div className="detail-item">
+                          <strong>Minted At:</strong>
+                          <span className="date-value">
+                            {formatDate(selectedNFT.nft.mintedAt)}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -430,21 +520,44 @@ const ListNFT = () => {
                   )}
 
                   <div className="modal-actions">
-                    {selectedNFT.nft?.ipfsHash && (
+                    {selectedNFT.ipfsMetadataCid && (
                       <a
-                        href={`https://gateway.pinata.cloud/ipfs/${selectedNFT.nft.ipfsHash}`}
+                        href={`https://gateway.pinata.cloud/ipfs/${selectedNFT.ipfsMetadataCid}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-action primary"
+                        title="Xem metadata JSON trên IPFS"
+                      >
+                        🔗 Xem Metadata trên IPFS
+                      </a>
+                    )}
+                    {selectedNFT.nft?.tokenURI && (
+                      <a
+                        href={selectedNFT.nft.tokenURI}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-action"
+                        title="Xem Token URI"
                       >
-                        🔗 Xem trên IPFS
+                        🌐 Xem Token URI
+                      </a>
+                    )}
+                    {selectedNFT.media?.images?.[0]?.url && (
+                      <a
+                        href={selectedNFT.media.images[0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-action"
+                        title="Xem ảnh gốc"
+                      >
+                        🖼️ Xem ảnh gốc
                       </a>
                     )}
                     <button
                       onClick={closeNFTDetail}
                       className="btn-action secondary"
                     >
-                      Đóng
+                      ✖️ Đóng
                     </button>
                   </div>
                 </div>

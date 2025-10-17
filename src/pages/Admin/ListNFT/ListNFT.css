@@ -599,51 +599,272 @@
 .nft-price {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  margin: 8px 0;
-  text-align: center;
-}
-
-.modal-price {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-  padding: 12px 16px;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 16px;
-  margin: 16px 0;
+  font-weight: 700;
+  font-size: 15px;
   text-align: center;
-}
-
-.analytics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
   margin-top: 12px;
 }
 
-.analytic-item {
-  background: #f7fafc;
+/* Enhanced NFT Detail Modal Styles */
+.nft-section {
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.detail-item.highlight {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.15) 0%,
+    rgba(255, 193, 7, 0.1) 100%
+  );
+  padding: 14px;
   border-radius: 8px;
-  padding: 16px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  margin-bottom: 16px;
+}
+
+.detail-item.highlight-ipfs {
+  background: linear-gradient(
+    135deg,
+    rgba(76, 175, 80, 0.1) 0%,
+    rgba(56, 142, 60, 0.08) 100%
+  );
+  padding: 14px;
+  border-radius: 8px;
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  margin-bottom: 16px;
+}
+
+.token-id-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  letter-spacing: 1px;
+}
+
+.detail-item code {
+  display: block;
+  background: #f7fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #667eea;
+  word-break: break-all;
+  font-family: "Courier New", monospace;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.detail-item code.contract-code {
+  background: rgba(102, 126, 234, 0.05);
+  color: #5568d3;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.detail-item code.owner-code {
+  background: rgba(76, 175, 80, 0.05);
+  color: #38a169;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.detail-item code.tx-code {
+  background: rgba(255, 152, 0, 0.05);
+  color: #f57c00;
+  border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.detail-item code.ipfs-code {
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  font-weight: 600;
+}
+
+.detail-item code.uri-code {
+  background: rgba(33, 150, 243, 0.05);
+  color: #1976d2;
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  font-size: 11px;
+}
+
+.btn-copy,
+.btn-view-link {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.btn-copy:hover,
+.btn-view-link:hover {
+  background: #667eea;
+  border-color: #667eea;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.btn-view-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.detail-item {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.detail-item strong {
+  display: block;
+  font-size: 12px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.date-value {
+  display: block;
+  background: #f7fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
   text-align: center;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action.primary {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+}
+
+.btn-action.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(72, 187, 120, 0.4);
+}
+
+.btn-action:not(.secondary):not(.primary) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.btn-action:not(.secondary):not(.primary):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-action.secondary {
+  background: white;
+  color: #e53e3e;
+  border: 2px solid #e2e8f0;
+}
+
+.btn-action.secondary:hover {
+  background: #fff5f5;
+  border-color: #feb2b2;
+  transform: translateY(-2px);
+}
+
+.modal-price {
+  background: linear-gradient(
+    135deg,
+    rgba(72, 187, 120, 0.1) 0%,
+    rgba(56, 161, 105, 0.08) 100%
+  );
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #2d3748;
+  margin: 16px 0;
+  border: 2px solid rgba(72, 187, 120, 0.2);
+}
+
+.modal-price strong {
+  color: #38a169;
+  font-size: 20px;
+}
+
+/* Analytics Grid Enhancement */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.analytic-item {
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.05) 0%,
+    rgba(118, 75, 162, 0.03) 100%
+  );
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid rgba(102, 126, 234, 0.1);
 }
 
 .analytic-value {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 800;
   color: #667eea;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .analytic-label {
-  font-size: 13px;
+  font-size: 11px;
   color: #718096;
-  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
+/* Status Badges */
 .status-draft {
   background-color: #edf2f7;
   color: #4a5568;
@@ -664,14 +885,37 @@
   color: #22543d;
 }
 
+.status-for-sale {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+
+.status-in-transaction {
+  background-color: #fbd38d;
+  color: #7c2d12;
+}
+
+.status-sold {
+  background-color: #9ae6b4;
+  color: #1c4532;
+}
+
 .status-archived {
   background-color: #e2e8f0;
   color: #2d3748;
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .analytics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-action {
+    width: 100%;
   }
 }
-

@@ -489,13 +489,17 @@ const Nft = () => {
 
           {mintResult && (
             <div className="mint-result">
-              <h3>🎉 Hoàn thành NFT hóa bất động sản</h3>
+              <h3>🎉 Hoàn thành NFT hóa bất động sản - Quy trình 12 bước</h3>
 
               {propertyResult && (
                 <div className="result-section">
-                  <h4>📋 Thông tin bất động sản</h4>
+                  <h4>📋 GIAI ĐOẠN 1: OFF-CHAIN (Hoàn tất ✅)</h4>
                   <div className="result-item">
-                    <strong>Property ID:</strong> {propertyResult._id}
+                    <strong>✅ Bước 1-3:</strong> Tạo Property trong MongoDB
+                  </div>
+                  <div className="result-item">
+                    <strong>Property ID:</strong>
+                    <code>{propertyResult._id}</code>
                   </div>
                   <div className="result-item">
                     <strong>Tên:</strong> {propertyResult.name}
@@ -503,16 +507,42 @@ const Nft = () => {
                   <div className="result-item">
                     <strong>Loại:</strong> {propertyResult.propertyType}
                   </div>
+
+                  {propertyResult.ipfsMetadataCid && (
+                    <>
+                      <div className="result-item highlight">
+                        <strong>✅ Bước 4:</strong> Metadata uploaded to IPFS
+                      </div>
+                      <div className="result-item">
+                        <strong>IPFS Metadata CID:</strong>
+                        <code>{propertyResult.ipfsMetadataCid}</code>
+                      </div>
+                    </>
+                  )}
+
                   <div className="result-item">
-                    <strong>Trạng thái:</strong> {propertyResult.status}
+                    <strong>✅ Bước 5:</strong> Lưu MongoDB với ipfsMetadataCid
+                  </div>
+                  <div className="result-item">
+                    <strong>Trạng thái:</strong>
+                    <span className="status-badge">
+                      {propertyResult.status}
+                    </span>
                   </div>
                 </div>
               )}
 
               <div className="result-section">
-                <h4>🎨 Thông tin NFT</h4>
+                <h4>🎨 GIAI ĐOẠN 2: ON-CHAIN (Hoàn tất ✅)</h4>
                 <div className="result-item">
-                  <strong>Token ID:</strong> {mintResult.nft.tokenId}
+                  <strong>✅ Bước 6:</strong> Gửi tokenURI → Minting Service
+                </div>
+                <div className="result-item">
+                  <strong>✅ Bước 7-8:</strong> Mint NFT lên Blockchain
+                </div>
+                <div className="result-item">
+                  <strong>Token ID:</strong>
+                  <span className="token-id">#{mintResult.nft.tokenId}</span>
                 </div>
                 <div className="result-item">
                   <strong>Contract Address:</strong>
@@ -526,29 +556,46 @@ const Nft = () => {
                   <strong>Transaction Hash:</strong>
                   <code>{mintResult.nft.transactionHash}</code>
                 </div>
-                {mintResult.nft.ipfsHash && (
-                  <div className="result-item">
-                    <strong>IPFS Hash:</strong>
-                    <code>{mintResult.nft.ipfsHash}</code>
-                  </div>
-                )}
                 {mintResult.nft.tokenURI && (
                   <div className="result-item">
                     <strong>Token URI:</strong>
-                    <code>{mintResult.nft.tokenURI}</code>
+                    <code className="small-code">
+                      {mintResult.nft.tokenURI}
+                    </code>
                   </div>
                 )}
               </div>
 
+              <div className="result-section">
+                <h4>✅ GIAI ĐOẠN 3: HOÀN TẤT</h4>
+                <div className="result-item">
+                  <strong>✅ Bước 9-12:</strong> Update MongoDB & Response
+                  Frontend
+                </div>
+                <div className="result-item success-message">
+                  🎊 NFT hóa bất động sản hoàn tất 100%!
+                </div>
+              </div>
+
               <div className="result-actions">
-                {mintResult.nft.ipfsHash && (
+                {propertyResult.ipfsMetadataCid && (
                   <a
-                    href={`https://gateway.pinata.cloud/ipfs/${mintResult.nft.ipfsHash}`}
+                    href={`https://gateway.pinata.cloud/ipfs/${propertyResult.ipfsMetadataCid}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-view-ipfs"
                   >
-                    🔗 Xem trên IPFS
+                    🔗 Xem Metadata trên IPFS
+                  </a>
+                )}
+                {mintResult.nft.tokenURI && (
+                  <a
+                    href={mintResult.nft.tokenURI}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-view-ipfs secondary"
+                  >
+                    🌐 Xem Token URI
                   </a>
                 )}
                 <button
