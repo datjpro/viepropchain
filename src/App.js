@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import Home from "./pages/Home/Home";
 import Nft from "./pages/Admin/NFT/Nft";
+import ListNFT from "./pages/Admin/ListNFT/ListNFT";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Web3Provider } from "./contexts/Web3Context";
 import { AdminProvider } from "./contexts/AdminContext";
@@ -22,6 +23,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Nft />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/list-nft"
+                  element={
+                    <ProtectedRoute>
+                      <ListNFT />
                     </ProtectedRoute>
                   }
                 />

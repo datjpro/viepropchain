@@ -79,8 +79,58 @@
   color: #2d3748;
 }
 
+/* Property Type Selection */
+.property-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.property-type-card {
+  padding: 24px 16px;
+  border: 3px solid #e2e8f0;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.property-type-card:hover {
+  border-color: #667eea;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+}
+
+.property-type-card.active {
+  border-color: #667eea;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.property-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.property-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.property-type-card.active .property-name {
+  color: #667eea;
+}
+
 .form-input,
-.form-textarea {
+.form-textarea,
+.form-select {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
@@ -91,10 +141,18 @@
 }
 
 .form-input:focus,
-.form-textarea:focus {
+.form-textarea:focus,
+.form-select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input.readonly {
+  background-color: #f7fafc;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: not-allowed;
 }
 
 .form-textarea {
@@ -121,6 +179,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+}
+
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.attribute-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attribute-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5568;
 }
 
 .btn-add-attribute {
@@ -226,6 +307,14 @@
     font-size: 24px;
   }
 
+  .property-type-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .attributes-grid {
+    grid-template-columns: 1fr;
+  }
+
   .attribute-row {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -233,6 +322,16 @@
 
   .btn-remove-attribute {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .property-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-actions {
+    flex-direction: column;
   }
 }
 
@@ -253,4 +352,96 @@
   border-top-color: transparent;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
+}
+
+/* Mint Result Styles */
+.mint-result {
+  background: linear-gradient(135deg, #d4f4dd 0%, #c3e6cb 100%);
+  border: 2px solid #48bb78;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.mint-result h3 {
+  color: #155724;
+  font-size: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+}
+
+.result-item strong {
+  display: block;
+  color: #2d3748;
+  font-size: 13px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-item code {
+  display: block;
+  background: #f7fafc;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #667eea;
+  word-break: break-all;
+  margin-top: 4px;
+  font-family: "Courier New", monospace;
+}
+
+.result-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-view-ipfs,
+.btn-close-result {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-view-ipfs {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-view-ipfs:hover {
+  background-color: #5568d3;
+  transform: translateY(-2px);
+}
+
+.btn-close-result {
+  background-color: white;
+  color: #2d3748;
+  border: 2px solid #e2e8f0;
+}
+
+.btn-close-result:hover {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
 }
