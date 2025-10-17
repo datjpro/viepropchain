@@ -367,7 +367,26 @@
 .mint-result h3 {
   color: #155724;
   font-size: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  justify-content: center;
+}
+
+.result-section {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
   margin-bottom: 16px;
+}
+
+.result-section h4 {
+  color: #2d3748;
+  font-size: 16px;
+  margin-bottom: 12px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -376,29 +395,35 @@
 .result-item {
   margin-bottom: 12px;
   padding: 12px;
-  background: white;
+  background: #f7fafc;
   border-radius: 6px;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
 }
 
 .result-item strong {
   display: block;
-  color: #2d3748;
-  font-size: 13px;
-  margin-bottom: 4px;
+  color: #4a5568;
+  font-size: 12px;
+  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .result-item code {
   display: block;
-  background: #f7fafc;
+  background: white;
   padding: 8px 12px;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 12px;
   color: #667eea;
   word-break: break-all;
   margin-top: 4px;
   font-family: "Courier New", monospace;
+  border: 1px solid #e2e8f0;
 }
 
 .result-actions {
@@ -444,4 +469,42 @@
 .btn-close-result:hover {
   background-color: #f7fafc;
   border-color: #cbd5e0;
+}
+
+/* Location Grid */
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.location-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.location-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.location-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.price-display {
+  color: #48bb78;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 4px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .location-grid {
+    grid-template-columns: 1fr;
+  }
 }

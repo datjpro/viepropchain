@@ -9,11 +9,17 @@ const Nft = () => {
     name: "",
     description: "",
     image: "",
+    price: "",
+    city: "TP. Hồ Chí Minh",
+    district: "",
+    ward: "",
+    address: "",
     attributes: [],
   });
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [propertyResult, setPropertyResult] = useState(null);
   const [mintResult, setMintResult] = useState(null);
 
   // Định nghĩa template cho từng loại BĐS
@@ -363,47 +369,106 @@ const Nft = () => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: "", text: "" });
+    setPropertyResult(null);
+    setMintResult(null);
 
     try {
-      const response = await fetch("http://localhost:3002/mint", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      console.log("� Tạo và mint NFT trong 1 lần...");
+
+      // Chuyển đổi attributes thành details object
+      const details = {};
+      formData.attributes.forEach((attr) => {
+        if (attr.value) {
+          // Chuyển tên thuộc tính thành key không dấu
+          const key = attr.trait_type
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .toLowerCase();
+          details[key] = attr.value;
+        }
       });
+
+      const requestData = {
+        recipient: formData.recipient,
+        propertyType: propertyType,
+        name: formData.name,
+        description: formData.description,
+        price: {
+          amount: parseFloat(formData.price),
+          currency: "VND",
+        },
+        location: {
+          address: formData.address,
+          ward: formData.ward,
+          district: formData.district,
+          city: formData.city,
+        },
+        details: details,
+        media: {
+          images: [
+            {
+              url: formData.image,
+              isPrimary: true,
+            },
+          ],
+        },
+        status: "published",
+      };
+
+      // Gọi endpoint create-and-mint - TẤT CẢ TRONG 1 LẦN
+      const response = await fetch(
+        "http://localhost:3003/properties/create-and-mint",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       const data = await response.json();
 
-      if (data.success) {
-        setMessage({
-          type: "success",
-          text: `NFT đã được mint thành công! Token ID: ${data.tokenId}`,
-        });
-        setMintResult(data);
-
-        // Reset form sau 3 giây
-        setTimeout(() => {
-          setPropertyType("");
-          setFormData({
-            recipient: "",
-            name: "",
-            description: "",
-            image: "",
-            attributes: [],
-          });
-        }, 3000);
-      } else {
-        setMessage({
-          type: "error",
-          text: data.error || "Có lỗi xảy ra khi tạo NFT",
-        });
-        setMintResult(null);
+      if (!data.success) {
+        throw new Error(data.message || data.error || "Không thể tạo NFT");
       }
+
+      console.log("✅ Hoàn thành:", data.data);
+
+      setPropertyResult(data.data.property);
+      setMintResult(data.data);
+
+      setMessage({
+        type: "success",
+        text: `🎉 Thành công! Bất động sản đã được tạo và mint thành NFT. Token ID: ${data.data.nft.tokenId}`,
+      });
+
+      // Reset form sau 5 giây
+      setTimeout(() => {
+        setPropertyType("");
+        setFormData({
+          recipient: "",
+          name: "",
+          description: "",
+          image: "",
+          price: "",
+          city: "TP. Hồ Chí Minh",
+          district: "",
+          ward: "",
+          address: "",
+          attributes: [],
+        });
+        setPropertyResult(null);
+        setMintResult(null);
+      }, 5000);
     } catch (error) {
+      console.error("❌ Lỗi:", error);
       setMessage({
         type: "error",
-        text: "Không thể kết nối đến server: " + error.message,
+        text: "Lỗi: " + error.message,
       });
     } finally {
       setLoading(false);
@@ -424,41 +489,73 @@ const Nft = () => {
 
           {mintResult && (
             <div className="mint-result">
-              <h3>✅ Thông tin NFT đã tạo</h3>
-              <div className="result-item">
-                <strong>Token ID:</strong> {mintResult.tokenId}
-              </div>
-              <div className="result-item">
-                <strong>Transaction Hash:</strong>
-                <code>{mintResult.transactionHash}</code>
-              </div>
-              <div className="result-item">
-                <strong>Contract Address:</strong>
-                <code>0x52B42Ac0e051A4c3386791b04391510C3cE06632</code>
-              </div>
-              {mintResult.ipfsHash && (
-                <div className="result-item">
-                  <strong>IPFS Hash:</strong>
-                  <code>{mintResult.ipfsHash}</code>
+              <h3>🎉 Hoàn thành NFT hóa bất động sản</h3>
+
+              {propertyResult && (
+                <div className="result-section">
+                  <h4>📋 Thông tin bất động sản</h4>
+                  <div className="result-item">
+                    <strong>Property ID:</strong> {propertyResult._id}
+                  </div>
+                  <div className="result-item">
+                    <strong>Tên:</strong> {propertyResult.name}
+                  </div>
+                  <div className="result-item">
+                    <strong>Loại:</strong> {propertyResult.propertyType}
+                  </div>
+                  <div className="result-item">
+                    <strong>Trạng thái:</strong> {propertyResult.status}
+                  </div>
                 </div>
               )}
-              {mintResult.tokenURI && (
+
+              <div className="result-section">
+                <h4>🎨 Thông tin NFT</h4>
                 <div className="result-item">
-                  <strong>Token URI:</strong>
-                  <code>{mintResult.tokenURI}</code>
+                  <strong>Token ID:</strong> {mintResult.nft.tokenId}
                 </div>
-              )}
+                <div className="result-item">
+                  <strong>Contract Address:</strong>
+                  <code>{mintResult.nft.contractAddress}</code>
+                </div>
+                <div className="result-item">
+                  <strong>Owner:</strong>
+                  <code>{mintResult.nft.owner}</code>
+                </div>
+                <div className="result-item">
+                  <strong>Transaction Hash:</strong>
+                  <code>{mintResult.nft.transactionHash}</code>
+                </div>
+                {mintResult.nft.ipfsHash && (
+                  <div className="result-item">
+                    <strong>IPFS Hash:</strong>
+                    <code>{mintResult.nft.ipfsHash}</code>
+                  </div>
+                )}
+                {mintResult.nft.tokenURI && (
+                  <div className="result-item">
+                    <strong>Token URI:</strong>
+                    <code>{mintResult.nft.tokenURI}</code>
+                  </div>
+                )}
+              </div>
+
               <div className="result-actions">
-                <a
-                  href={`https://gateway.pinata.cloud/ipfs/${mintResult.ipfsHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-view-ipfs"
-                >
-                  🔗 Xem trên IPFS
-                </a>
+                {mintResult.nft.ipfsHash && (
+                  <a
+                    href={`https://gateway.pinata.cloud/ipfs/${mintResult.nft.ipfsHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-view-ipfs"
+                  >
+                    🔗 Xem trên IPFS
+                  </a>
+                )}
                 <button
-                  onClick={() => setMintResult(null)}
+                  onClick={() => {
+                    setMintResult(null);
+                    setPropertyResult(null);
+                  }}
                   className="btn-close-result"
                 >
                   Đóng
@@ -533,6 +630,91 @@ const Nft = () => {
                 className="form-textarea"
                 rows="4"
               />
+            </div>
+
+            {/* Price */}
+            <div className="form-group">
+              <label htmlFor="price">Giá (VND) *</label>
+              <input
+                type="number"
+                id="price"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                placeholder="Ví dụ: 5000000000"
+                required
+                className="form-input"
+              />
+              {formData.price && (
+                <small className="price-display">
+                  ≈ {(parseFloat(formData.price) / 1000000000).toFixed(2)} tỷ
+                  VND
+                </small>
+              )}
+            </div>
+
+            {/* Location */}
+            <div className="form-group">
+              <label>Địa chỉ *</label>
+              <div className="location-grid">
+                <div className="location-field">
+                  <label htmlFor="city">Thành phố</label>
+                  <select
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    required
+                    className="form-select"
+                  >
+                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                    <option value="Hà Nội">Hà Nội</option>
+                    <option value="Đà Nẵng">Đà Nẵng</option>
+                    <option value="Cần Thơ">Cần Thơ</option>
+                    <option value="Bình Dương">Bình Dương</option>
+                    <option value="Đồng Nai">Đồng Nai</option>
+                  </select>
+                </div>
+                <div className="location-field">
+                  <label htmlFor="district">Quận/Huyện</label>
+                  <input
+                    type="text"
+                    id="district"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                    placeholder="VD: Quận 1"
+                    required
+                    className="form-input"
+                  />
+                </div>
+                <div className="location-field">
+                  <label htmlFor="ward">Phường/Xã</label>
+                  <input
+                    type="text"
+                    id="ward"
+                    name="ward"
+                    value={formData.ward}
+                    onChange={handleInputChange}
+                    placeholder="VD: Phường Bến Nghé"
+                    required
+                    className="form-input"
+                  />
+                </div>
+                <div className="location-field full-width">
+                  <label htmlFor="address">Địa chỉ chi tiết</label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="VD: 123 Nguyễn Văn A"
+                    required
+                    className="form-input"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Image URL */}
