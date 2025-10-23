@@ -1,9 +1,9 @@
 {
   "network": "development",
-  "deployedAt": "2025-10-16T14:21:02.775Z",
+  "deployedAt": "2025-10-23T15:57:10.992Z",
   "contracts": {
     "ViePropChainNFT": {
-      "address": "0x52B42Ac0e051A4c3386791b04391510C3cE06632",
+      "address": "0x5995e09c8CE97519539213cEC3349a023095780b",
       "abi": [
         {
           "inputs": [],
@@ -624,7 +624,7 @@
       ]
     },
     "Marketplace": {
-      "address": "0x92cC24282b11952cE0266cc08dDf9eAe5Ce82c11",
+      "address": "0xddD30e97398c1666a30f7a2aaa538E3E1a55aC7B",
       "abi": [
         {
           "inputs": [
