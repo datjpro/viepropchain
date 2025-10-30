@@ -14,3 +14,4 @@ export { default as userService } from "./userService";
 export { default as propertyService } from "./propertyService";
 export { default as ipfsService } from "./ipfsService";
 export { default as blockchainService } from "./blockchainService";
+export { default as marketplaceService } from "./marketplaceService";
