@@ -65,7 +65,10 @@ export const handleApiError = (error, customMessage = "An error occurred") => {
     // Server responded with error
     return {
       success: false,
-      message: error.response.data?.message || error.response.data?.error || customMessage,
+      message:
+        error.response.data?.message ||
+        error.response.data?.error ||
+        customMessage,
       status: error.response.status,
       data: error.response.data,
     };

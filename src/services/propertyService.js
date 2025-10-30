@@ -35,7 +35,9 @@ const propertyService = {
    */
   getPropertyById: async (propertyId) => {
     try {
-      const response = await apiClient.get(`/api/query/properties/${propertyId}`);
+      const response = await apiClient.get(
+        `/api/query/properties/${propertyId}`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get property");
@@ -48,9 +50,12 @@ const propertyService = {
    */
   getFeaturedProperties: async (limit = 10) => {
     try {
-      const response = await apiClient.get("/api/query/properties/featured/list", {
-        params: { limit },
-      });
+      const response = await apiClient.get(
+        "/api/query/properties/featured/list",
+        {
+          params: { limit },
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get featured properties");
@@ -64,9 +69,12 @@ const propertyService = {
    */
   trackView: async (propertyId, userId = null) => {
     try {
-      const response = await apiClient.post(`/api/query/properties/${propertyId}/view`, {
-        userId,
-      });
+      const response = await apiClient.post(
+        `/api/query/properties/${propertyId}/view`,
+        {
+          userId,
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to track view");
@@ -91,7 +99,9 @@ const propertyService = {
    */
   getPriceTrends: async (params = {}) => {
     try {
-      const response = await apiClient.get("/api/query/stats/price-trends", { params });
+      const response = await apiClient.get("/api/query/stats/price-trends", {
+        params,
+      });
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get price trends");
@@ -148,7 +158,10 @@ const propertyService = {
    */
   createProperty: async (propertyData) => {
     try {
-      const response = await apiClient.post("/api/admin/properties", propertyData);
+      const response = await apiClient.post(
+        "/api/admin/properties",
+        propertyData
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to create property");
@@ -162,7 +175,10 @@ const propertyService = {
    */
   updateProperty: async (propertyId, propertyData) => {
     try {
-      const response = await apiClient.put(`/api/admin/properties/${propertyId}`, propertyData);
+      const response = await apiClient.put(
+        `/api/admin/properties/${propertyId}`,
+        propertyData
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to update property");
@@ -175,7 +191,9 @@ const propertyService = {
    */
   deleteProperty: async (propertyId) => {
     try {
-      const response = await apiClient.delete(`/api/admin/properties/${propertyId}`);
+      const response = await apiClient.delete(
+        `/api/admin/properties/${propertyId}`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to delete property");
@@ -189,9 +207,12 @@ const propertyService = {
    */
   mintPropertyNFT: async (propertyId, recipient) => {
     try {
-      const response = await apiClient.post(`/api/admin/properties/${propertyId}/mint`, {
-        recipient,
-      });
+      const response = await apiClient.post(
+        `/api/admin/properties/${propertyId}/mint`,
+        {
+          recipient,
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to mint NFT");
@@ -203,7 +224,9 @@ const propertyService = {
    */
   getAdminStatistics: async () => {
     try {
-      const response = await apiClient.get("/api/admin/properties/stats/overview");
+      const response = await apiClient.get(
+        "/api/admin/properties/stats/overview"
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get admin statistics");

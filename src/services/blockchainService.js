@@ -43,7 +43,9 @@ const blockchainService = {
    */
   getNFTsByOwner: async (ownerAddress) => {
     try {
-      const response = await apiClient.get(`/api/blockchain/nfts/${ownerAddress}`);
+      const response = await apiClient.get(
+        `/api/blockchain/nfts/${ownerAddress}`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get NFTs by owner");

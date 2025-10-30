@@ -23,11 +23,15 @@ const ipfsService = {
         formData.append("propertyId", propertyId);
       }
 
-      const response = await apiClient.post("/api/ipfs/upload/image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiClient.post(
+        "/api/ipfs/upload/image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to upload image");
@@ -41,7 +45,12 @@ const ipfsService = {
    * @param {string} documentType - Document type (e.g., 'legal', 'certificate')
    * @param {string} documentName - Document name
    */
-  uploadDocument: async (file, propertyId = null, documentType = "legal", documentName = null) => {
+  uploadDocument: async (
+    file,
+    propertyId = null,
+    documentType = "legal",
+    documentName = null
+  ) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -55,11 +64,15 @@ const ipfsService = {
         formData.append("documentName", documentName);
       }
 
-      const response = await apiClient.post("/api/ipfs/upload/document", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiClient.post(
+        "/api/ipfs/upload/document",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to upload document");
@@ -72,7 +85,10 @@ const ipfsService = {
    */
   uploadMetadata: async (metadata) => {
     try {
-      const response = await apiClient.post("/api/ipfs/upload/metadata", metadata);
+      const response = await apiClient.post(
+        "/api/ipfs/upload/metadata",
+        metadata
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to upload metadata");

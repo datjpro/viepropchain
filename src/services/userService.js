@@ -42,7 +42,10 @@ const userService = {
    */
   updateProfile: async (userId, profileData) => {
     try {
-      const response = await apiClient.put(`/api/user/profile/user/${userId}`, profileData);
+      const response = await apiClient.put(
+        `/api/user/profile/user/${userId}`,
+        profileData
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to update profile");
@@ -55,7 +58,9 @@ const userService = {
    */
   getFavorites: async (userId) => {
     try {
-      const response = await apiClient.get(`/api/user/profile/user/${userId}/favorites`);
+      const response = await apiClient.get(
+        `/api/user/profile/user/${userId}/favorites`
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to get favorites");
@@ -69,9 +74,12 @@ const userService = {
    */
   addFavorite: async (userId, propertyId) => {
     try {
-      const response = await apiClient.post(`/api/user/profile/user/${userId}/favorites`, {
-        propertyId,
-      });
+      const response = await apiClient.post(
+        `/api/user/profile/user/${userId}/favorites`,
+        {
+          propertyId,
+        }
+      );
       return response.data;
     } catch (error) {
       throw handleApiError(error, "Failed to add favorite");

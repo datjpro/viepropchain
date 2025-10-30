@@ -23,12 +23,14 @@ API Gateway (Port 4000) - Điểm vào duy nhất
 ## 🚀 Khởi Động Services
 
 ### 1. Start API Gateway
+
 ```bash
 cd database_viepropchain_microservice/services/api-gateway
 npm start
 ```
 
 ### 2. Start Backend Services
+
 ```bash
 # Terminal 1: Auth Service (Gmail OAuth)
 cd database_viepropchain_microservice/services/auth-service
@@ -60,6 +62,7 @@ npm start
 ```
 
 ### 3. Start Frontend
+
 ```bash
 cd viepropchain
 npm start
@@ -68,6 +71,7 @@ npm start
 ## 📡 API Routes
 
 ### Auth Service (Gmail OAuth)
+
 - `GET  /api/auth/google` - Đăng nhập bằng Gmail
 - `GET  /api/auth/me` - Lấy thông tin user hiện tại
 - `POST /api/auth/logout` - Đăng xuất
@@ -76,6 +80,7 @@ npm start
 - `POST /api/auth/unlink-wallet` - Unlink wallet
 
 ### KYC Service
+
 - `POST /api/kyc` - Submit KYC
 - `GET  /api/kyc/me` - Lấy KYC của user hiện tại
 - `GET  /api/kyc/me/verified` - Check trạng thái verified
@@ -83,6 +88,7 @@ npm start
 - `GET  /api/kyc/statistics` - Thống kê KYC
 
 ### User Service
+
 - `GET  /api/user/profile/me` - Lấy profile của user hiện tại
 - `GET  /api/user/profile/user/:userId` - Lấy profile theo userId
 - `PUT  /api/user/profile/user/:userId` - Cập nhật profile
@@ -91,6 +97,7 @@ npm start
 - `DELETE /api/user/profile/user/:userId/favorites/:propertyId` - Xóa favorite
 
 ### Property Service (Admin)
+
 - `POST /api/admin/properties` - Tạo property mới
 - `GET  /api/admin/properties` - Lấy danh sách properties
 - `GET  /api/admin/properties/:id` - Lấy chi tiết property
@@ -99,6 +106,7 @@ npm start
 - `POST /api/admin/properties/:id/mint` - Mint property thành NFT
 
 ### Property Service (Query - Public)
+
 - `GET  /api/query/properties` - Search properties với filters
 - `GET  /api/query/properties/:id` - Lấy chi tiết property
 - `GET  /api/query/properties/featured/list` - Lấy featured properties
@@ -110,12 +118,14 @@ npm start
 - `GET  /api/query/locations/districts` - Lấy danh sách districts
 
 ### IPFS Service
+
 - `POST /api/ipfs/upload/image` - Upload ảnh
 - `POST /api/ipfs/upload/document` - Upload tài liệu
 - `POST /api/ipfs/upload/metadata` - Upload metadata JSON
 - `GET  /api/ipfs/content/:cid` - Lấy content theo CID
 
 ### Blockchain Service
+
 - `GET  /api/blockchain/health` - Health check
 - `POST /api/blockchain/mint` - Mint NFT (Admin)
 - `GET  /api/blockchain/nft/:tokenId` - Lấy NFT info
@@ -126,6 +136,7 @@ npm start
 ## 💻 Sử Dụng Trong Frontend
 
 ### Import Services
+
 ```javascript
 import {
   authService,
@@ -134,10 +145,11 @@ import {
   propertyService,
   ipfsService,
   blockchainService,
-} from './services';
+} from "./services";
 ```
 
 ### Example: Gmail Login
+
 ```javascript
 // AuthContext.js đã tích hợp sẵn
 // User chỉ cần click "Login with Gmail"
@@ -148,57 +160,60 @@ login(); // Redirect đến Google OAuth
 
 // Check user
 if (isAuthenticated) {
-  console.log('User:', user);
-  console.log('Email:', user.email);
-  console.log('Wallet:', user.walletAddress); // null nếu chưa link
+  console.log("User:", user);
+  console.log("Email:", user.email);
+  console.log("Wallet:", user.walletAddress); // null nếu chưa link
 }
 ```
 
 ### Example: Submit KYC
+
 ```javascript
-import { kycService } from '../services';
+import { kycService } from "../services";
 
 const submitKYC = async () => {
   try {
     const result = await kycService.submitKYC({
       fullName: "Nguyen Van A",
-      idNumber: "123456789012"
+      idNumber: "123456789012",
     });
-    
-    console.log('KYC submitted:', result);
+
+    console.log("KYC submitted:", result);
   } catch (error) {
-    console.error('KYC error:', error);
+    console.error("KYC error:", error);
   }
 };
 ```
 
 ### Example: Link Wallet
+
 ```javascript
-import { authService } from '../services';
-import { ethers } from 'ethers';
+import { authService } from "../services";
+import { ethers } from "ethers";
 
 const linkWallet = async (walletAddress) => {
   try {
     // 1. Get message to sign
     const { message } = await authService.getLinkWalletMessage(walletAddress);
-    
+
     // 2. Sign message with MetaMask
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     const signature = await signer.signMessage(message);
-    
+
     // 3. Link wallet
     const result = await authService.linkWallet(walletAddress, signature);
-    console.log('Wallet linked:', result);
+    console.log("Wallet linked:", result);
   } catch (error) {
-    console.error('Link wallet error:', error);
+    console.error("Link wallet error:", error);
   }
 };
 ```
 
 ### Example: Search Properties
+
 ```javascript
-import { propertyService } from '../services';
+import { propertyService } from "../services";
 
 const searchProperties = async () => {
   try {
@@ -208,37 +223,39 @@ const searchProperties = async () => {
       city: "Ho Chi Minh City",
       minPrice: 1000000000,
       maxPrice: 5000000000,
-      propertyType: "villa"
+      propertyType: "villa",
     });
-    
-    console.log('Properties:', result.data);
-    console.log('Total:', result.pagination.total);
+
+    console.log("Properties:", result.data);
+    console.log("Total:", result.pagination.total);
   } catch (error) {
-    console.error('Search error:', error);
+    console.error("Search error:", error);
   }
 };
 ```
 
 ### Example: Upload Image
+
 ```javascript
-import { ipfsService } from '../services';
+import { ipfsService } from "../services";
 
 const uploadImage = async (file, propertyId) => {
   try {
     const result = await ipfsService.uploadImage(file, propertyId);
-    
-    console.log('Image uploaded:', result.data.cid);
-    console.log('URL:', result.data.url);
-    console.log('IPFS URL:', result.data.ipfsUrl);
+
+    console.log("Image uploaded:", result.data.cid);
+    console.log("URL:", result.data.url);
+    console.log("IPFS URL:", result.data.ipfsUrl);
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
   }
 };
 ```
 
 ### Example: Mint NFT (Admin)
+
 ```javascript
-import { propertyService } from '../services';
+import { propertyService } from "../services";
 
 const mintPropertyNFT = async (propertyId, recipientWallet) => {
   try {
@@ -246,11 +263,11 @@ const mintPropertyNFT = async (propertyId, recipientWallet) => {
       propertyId,
       recipientWallet
     );
-    
-    console.log('NFT minted:', result.data.tokenId);
-    console.log('Transaction:', result.data.transactionHash);
+
+    console.log("NFT minted:", result.data.tokenId);
+    console.log("Transaction:", result.data.transactionHash);
   } catch (error) {
-    console.error('Mint error:', error);
+    console.error("Mint error:", error);
   }
 };
 ```
@@ -258,6 +275,7 @@ const mintPropertyNFT = async (propertyId, recipientWallet) => {
 ## 🔐 Authentication Flow
 
 ### 1. Gmail OAuth Login
+
 ```
 User clicks "Login with Gmail"
     ↓
@@ -281,6 +299,7 @@ Frontend uses token for API calls
 ```
 
 ### 2. API Authentication
+
 ```javascript
 // Token tự động được thêm vào header
 // File: services/api.js
@@ -297,16 +316,19 @@ apiClient.interceptors.request.use((config) => {
 ## 📝 Environment Variables
 
 ### Frontend (.env)
+
 ```env
 REACT_APP_API_URL=http://localhost:4000
 ```
 
 ### API Gateway (.env)
+
 ```env
 PORT=4000
 ```
 
 ### Auth Service (.env)
+
 ```env
 PORT=4010
 MONGODB_URI=mongodb+srv://...
@@ -320,11 +342,13 @@ FRONTEND_URL=http://localhost:3000
 ## 🧪 Testing
 
 ### Test với Postman
+
 Import file: `ViePropChain_Gmail_OAuth_Flow.postman_collection.json`
 
 **Lưu ý:** Google OAuth phải test bằng Browser, không test được trong Postman!
 
 ### Test Flow
+
 1. Start tất cả services
 2. Mở browser: `http://localhost:4010/auth/google`
 3. Login bằng Gmail
@@ -335,12 +359,14 @@ Import file: `ViePropChain_Gmail_OAuth_Flow.postman_collection.json`
 ## 🐛 Troubleshooting
 
 ### API Gateway not available
+
 ```bash
 # Check API Gateway đang chạy
 curl http://localhost:4000/health
 ```
 
 ### Service not responding
+
 ```bash
 # Check từng service
 curl http://localhost:4010/health  # Auth
@@ -353,12 +379,16 @@ curl http://localhost:4007/health  # KYC
 ```
 
 ### CORS Error
+
 Đảm bảo API Gateway có CORS config cho frontend:
+
 ```javascript
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 ```
 
 ## 📚 Tài Liệu Tham Khảo
