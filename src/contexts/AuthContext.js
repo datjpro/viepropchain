@@ -2,6 +2,8 @@
  * ========================================================================
  * AUTH CONTEXT - Gmail OAuth Authentication
  * ========================================================================
+ * Tất cả requests đi qua API Gateway
+ * ========================================================================
  */
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -9,7 +11,8 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
-const AUTH_SERVICE_URL = "http://localhost:4010";
+// API Gateway URL - điểm vào duy nhất
+const API_GATEWAY_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -51,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         authToken.substring(0, 20) + "..."
       );
 
-      const response = await axios.get(`${AUTH_SERVICE_URL}/auth/me`, {
+      const response = await axios.get(`${API_GATEWAY_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -75,9 +78,9 @@ export const AuthProvider = ({ children }) => {
         !err.response
       ) {
         console.warn(
-          "⚠️ Auth service not available. Please start auth-service on port 4010"
+          "⚠️ API Gateway not available. Please start API Gateway on port 4000"
         );
-        setError("Auth service unavailable");
+        setError("API Gateway unavailable");
         // Don't logout, just clear user
         setUser(null);
       }
@@ -97,8 +100,8 @@ export const AuthProvider = ({ children }) => {
   const login = () => {
     // Save current URL to return after login
     localStorage.setItem("viepropchain_return_url", window.location.pathname);
-    // Redirect to Google OAuth
-    window.location.href = `${AUTH_SERVICE_URL}/auth/google`;
+    // Redirect to Google OAuth via API Gateway
+    window.location.href = `${API_GATEWAY_URL}/api/auth/google`;
   };
 
   // Handle OAuth callback (call this when redirected back with token)
@@ -140,7 +143,7 @@ export const AuthProvider = ({ children }) => {
       // Call logout endpoint
       if (token) {
         await axios.post(
-          `${AUTH_SERVICE_URL}/auth/logout`,
+          `${API_GATEWAY_URL}/api/auth/logout`,
           {},
           {
             headers: {
