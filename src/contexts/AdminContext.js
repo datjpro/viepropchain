@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useWeb3 } from "./Web3Context";
+import { useAuth } from "./AuthContext";
 
 const AdminContext = createContext();
 
@@ -12,21 +12,25 @@ export const useAdmin = () => {
 };
 
 export const AdminProvider = ({ children }) => {
-  const { account, web3Api } = useWeb3();
+  const { user, isAuthenticated } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [contractOwner, setContractOwner] = useState(null);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
 
-  // Địa chỉ owner của smart contract (thay bằng địa chỉ thực tế)
-  // Bạn có thể lấy từ contract hoặc hard code
-  const ADMIN_ADDRESSES = [
-    "0xC6890b26A32d9d92aefbc8635C4588247529CdfE".toLowerCase(),
-  ];
+  // Địa chỉ email admin (thay bằng email admin thực tế)
+  // Move outside component to prevent recreating on every render
+  const ADMIN_EMAILS = React.useMemo(
+    () => [
+      "todat2207@gmail.com",
+      "datto2207@gmail.com",
+      // Thêm các email admin khác vào đây
+    ],
+    []
+  );
 
-  // Check xem account hiện tại có phải admin không
+  // Check xem user hiện tại có phải admin không
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (!account) {
+      if (!user || !isAuthenticated) {
         setIsAdmin(false);
         return;
       }
@@ -34,35 +38,18 @@ export const AdminProvider = ({ children }) => {
       setIsCheckingAdmin(true);
 
       try {
-        const accountLower = account.toLowerCase();
+        // Kiểm tra xem email có trong danh sách admin không
+        const isInAdminList = ADMIN_EMAILS.includes(user.email?.toLowerCase());
 
-        // Kiểm tra xem account có trong danh sách admin không
-        const isInAdminList = ADMIN_ADDRESSES.includes(accountLower);
+        // Hoặc check từ role trong user object
+        const isAdminRole = user.role === "admin";
 
-        // Nếu có contract, có thể check owner từ contract
-        if (web3Api.web3 && window.CONTRACT_ADDRESS) {
-          try {
-            // TODO: Thay bằng ABI và address thực tế của contract
-            // const contract = new web3Api.web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-            // const owner = await contract.methods.owner().call();
-            // const ownerLower = owner.toLowerCase();
-            // setContractOwner(ownerLower);
-            // setIsAdmin(accountLower === ownerLower || isInAdminList);
-
-            // Tạm thời chỉ dùng danh sách admin
-            setIsAdmin(isInAdminList);
-          } catch (err) {
-            console.error("Error checking contract owner:", err);
-            // Fallback to admin list
-            setIsAdmin(isInAdminList);
-          }
-        } else {
-          setIsAdmin(isInAdminList);
-        }
+        setIsAdmin(isInAdminList || isAdminRole);
 
         console.log("🔐 Admin check:", {
-          account: accountLower,
-          isAdmin: isInAdminList,
+          email: user.email,
+          role: user.role,
+          isAdmin: isInAdminList || isAdminRole,
         });
       } catch (err) {
         console.error("Error checking admin status:", err);
@@ -73,13 +60,12 @@ export const AdminProvider = ({ children }) => {
     };
 
     checkAdminStatus();
-  }, [account, web3Api.web3]);
+  }, [user, isAuthenticated, ADMIN_EMAILS]);
 
   const value = {
     isAdmin,
-    contractOwner,
     isCheckingAdmin,
-    ADMIN_ADDRESSES,
+    ADMIN_EMAILS,
   };
 
   return (

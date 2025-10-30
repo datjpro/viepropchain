@@ -120,6 +120,208 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  min-width: 0;
+}
+
+/* User Menu Container */
+.user-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.user-icon-btn {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 139, 255, 0.15) 0%,
+    rgba(155, 92, 255, 0.15) 100%
+  );
+  border: 2px solid rgba(79, 139, 255, 0.3);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.user-icon-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 139, 255, 0.25) 0%,
+    rgba(155, 92, 255, 0.25) 100%
+  );
+  border-color: rgba(79, 139, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(79, 139, 255, 0.3);
+}
+
+.user-icon {
+  font-size: 1.5rem;
+  filter: grayscale(0);
+}
+
+.admin-crown {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+  animation: crownGlow 2s ease-in-out infinite;
+}
+
+@keyframes crownGlow {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 15px rgba(251, 191, 36, 0.7);
+  }
+}
+
+/* User Dropdown */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: rgba(15, 15, 20, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(79, 139, 255, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: dropdownFadeIn 0.2s ease-out;
+  z-index: 10000;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-status {
+  color: #2ed573;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Inter", sans-serif;
+}
+
+.dropdown-admin-badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1f2937;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.user-dropdown-email {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(79, 139, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.user-dropdown-email:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 139, 255, 0.15) 0%,
+    rgba(155, 92, 255, 0.15) 100%
+  );
+  border-color: rgba(79, 139, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.email-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.email-text {
+  color: #e6ecff;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  word-break: break-all;
+  flex: 1;
+}
+
+.dropdown-logout-btn {
+  width: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(220, 38, 38, 0.15) 100%
+  );
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: "Inter", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dropdown-logout-btn:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.25) 0%,
+    rgba(220, 38, 38, 0.25) 100%
+  );
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.dropdown-logout-btn:active {
+  transform: translateY(-1px);
 }
 
 /* Language Switcher */
@@ -137,9 +339,10 @@
   color: white;
   font-weight: 500;
   font-size: 0.9rem;
-  min-width: 85px;
+  width: 70px;
   justify-content: center;
   height: 40px;
+  flex-shrink: 0;
 }
 
 .language-switcher:hover {
@@ -166,7 +369,6 @@
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  min-width: 24px;
   text-align: center;
 }
 
@@ -179,50 +381,11 @@
   font-weight: 500;
   box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
   font-family: "Inter", sans-serif;
-}
-
-/* Connected Wallet Display */
-.wallet-connected {
-  background: linear-gradient(
-    135deg,
-    rgba(79, 139, 255, 0.1) 0%,
-    rgba(155, 92, 255, 0.1) 100%
-  );
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(79, 139, 255, 0.3);
-  border-radius: 10px;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 20px rgba(79, 139, 255, 0.15);
-  height: 40px;
-}
-
-/* Admin Badge */
-.admin-badge {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: #1f2937;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-family: "Inter", sans-serif;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
-  animation: glow 2s ease-in-out infinite;
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
-  }
-  50% {
-    box-shadow: 0 2px 15px rgba(251, 191, 36, 0.6);
-  }
+  z-index: 10001;
 }
 
 /* Admin Link */
@@ -243,6 +406,7 @@
   gap: 8px;
   white-space: nowrap;
   height: 40px;
+  flex-shrink: 0;
 }
 
 .admin-link:hover {
@@ -257,64 +421,6 @@
   transform: translateY(-1px);
 }
 
-.wallet-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.wallet-status {
-  color: #2ed573;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: "Inter", sans-serif;
-  white-space: nowrap;
-}
-
-.wallet-address {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.address-label {
-  color: rgba(230, 236, 255, 0.7);
-  font-size: 0.85rem;
-  font-family: "Inter", sans-serif;
-  white-space: nowrap;
-}
-
-.address-value {
-  color: #e6ecff;
-  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
-  font-weight: 600;
-  font-size: 0.85rem;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
-  padding: 5px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(79, 139, 255, 0.2);
-  white-space: nowrap;
-}
-
-.address-value:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(79, 139, 255, 0.2) 0%,
-    rgba(155, 92, 255, 0.2) 100%
-  );
-  border-color: rgba(79, 139, 255, 0.4);
-  transform: translateY(-1px);
-}
-
 /* Connect Wallet Button */
 .connect-wallet-btn {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
@@ -323,7 +429,7 @@
   padding: 0 24px;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -335,6 +441,8 @@
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
   height: 40px;
   white-space: nowrap;
+  min-width: fit-content;
+  flex-shrink: 0;
 }
 
 .connect-wallet-btn::before {
@@ -398,37 +506,6 @@
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
 }
 
-/* Disconnect Button */
-.disconnect-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-  padding: 0;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  font-family: "Inter", sans-serif;
-  flex-shrink: 0;
-}
-
-.disconnect-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.disconnect-btn:active {
-  transform: scale(0.95);
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
   .nav-menu ul {
@@ -438,6 +515,11 @@
   .nav-menu a {
     padding: 8px 14px;
     font-size: 0.95rem;
+  }
+
+  .admin-link {
+    padding: 8px 14px;
+    font-size: 0.85rem;
   }
 }
 
@@ -466,34 +548,29 @@
   .wallet-section {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 10px;
   }
 
   .language-switcher {
     padding: 8px 12px;
+    width: 65px;
   }
 
-  .wallet-connected {
-    padding: 10px 16px;
-    flex-wrap: wrap;
-  }
-
-  .wallet-info {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .address-label {
-    font-size: 0.8rem;
-  }
-
-  .address-value {
-    font-size: 0.8rem;
-    padding: 4px 8px;
+  .user-dropdown {
+    min-width: 260px;
+    right: 50%;
+    transform: translateX(50%);
   }
 
   .connect-wallet-btn {
     padding: 12px 24px;
     font-size: 0.95rem;
+  }
+
+  .admin-link {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    gap: 6px;
   }
 }
 
@@ -525,6 +602,8 @@
 
   .language-switcher {
     padding: 6px 10px;
+    width: 60px;
+    height: 38px;
   }
 
   .language-code {
@@ -534,30 +613,49 @@
   .connect-wallet-btn {
     padding: 10px 20px;
     font-size: 0.9rem;
+    height: 38px;
   }
 
-  .wallet-connected {
-    padding: 8px 14px;
-    max-width: 100%;
+  .user-icon-btn {
+    width: 38px;
+    height: 38px;
   }
 
-  .wallet-status {
-    font-size: 0.65rem;
+  .user-icon {
+    font-size: 1.3rem;
   }
 
-  .address-label {
-    display: none; /* Ẩn label "Địa chỉ:" trên mobile */
-  }
-
-  .address-value {
+  .admin-crown {
     font-size: 0.75rem;
-    padding: 4px 8px;
   }
 
-  .disconnect-btn {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
-    padding: 4px 8px;
+  .user-dropdown {
+    min-width: 240px;
+    padding: 12px;
+  }
+
+  .dropdown-status {
+    font-size: 0.7rem;
+  }
+
+  .dropdown-admin-badge {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+
+  .email-text {
+    font-size: 0.8rem;
+  }
+
+  .dropdown-logout-btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .admin-link {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    gap: 6px;
+    height: 38px;
   }
 }
