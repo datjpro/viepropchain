@@ -1,15 +1,20 @@
 {
   "network": "development",
-  "deployedAt": "2025-10-24T16:14:42.218Z",
+  "deployedAt": "2025-10-31T17:03:38.840Z",
   "contracts": {
     "ViePropChainNFT": {
-      "address": "0xA267FDe37dB76B67aFFbbcE711c6168207E4C4D6",
+      "address": "0x4Cf97592f58e9f266BAce5405602c97c9bFc4F48",
       "abi": [
         {
           "inputs": [],
           "stateMutability": "nonpayable",
           "type": "constructor",
           "signature": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "ERC721EnumerableForbiddenBatchMint",
+          "type": "error"
         },
         {
           "inputs": [
@@ -112,6 +117,22 @@
             }
           ],
           "name": "ERC721NonexistentToken",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "index",
+              "type": "uint256"
+            }
+          ],
+          "name": "ERC721OutOfBoundsIndex",
           "type": "error"
         },
         {
@@ -487,27 +508,6 @@
           "signature": "0xa22cb465"
         },
         {
-          "inputs": [
-            {
-              "internalType": "bytes4",
-              "name": "interfaceId",
-              "type": "bytes4"
-            }
-          ],
-          "name": "supportsInterface",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x01ffc9a7"
-        },
-        {
           "inputs": [],
           "name": "symbol",
           "outputs": [
@@ -521,6 +521,27 @@
           "type": "function",
           "constant": true,
           "signature": "0x95d89b41"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "index",
+              "type": "uint256"
+            }
+          ],
+          "name": "tokenByIndex",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x4f6ccce7"
         },
         {
           "inputs": [],
@@ -540,23 +561,43 @@
         {
           "inputs": [
             {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
               "internalType": "uint256",
-              "name": "tokenId",
+              "name": "index",
               "type": "uint256"
             }
           ],
-          "name": "tokenURI",
+          "name": "tokenOfOwnerByIndex",
           "outputs": [
             {
-              "internalType": "string",
+              "internalType": "uint256",
               "name": "",
-              "type": "string"
+              "type": "uint256"
             }
           ],
           "stateMutability": "view",
           "type": "function",
           "constant": true,
-          "signature": "0xc87b56dd"
+          "signature": "0x2f745c59"
+        },
+        {
+          "inputs": [],
+          "name": "totalSupply",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x18160ddd"
         },
         {
           "inputs": [
@@ -620,11 +661,53 @@
           "stateMutability": "nonpayable",
           "type": "function",
           "signature": "0xd0def521"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x01ffc9a7"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "tokenURI",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0xc87b56dd"
         }
       ]
     },
     "Marketplace": {
-      "address": "0x9436b9Cba8618eE2aea7a0B20e68DFd058D4dbc5",
+      "address": "0xcA41659cCfcD6a385381f22A2CE53c2b451e3c38",
       "abi": [
         {
           "inputs": [

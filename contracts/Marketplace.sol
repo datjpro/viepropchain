@@ -88,23 +88,37 @@ contract Marketplace {
             listing.status == ListingStatus.Active,
             "Listing is not active"
         );
+
+        // Yêu cầu người mua trả ĐÚNG BẰNG giá niêm yết
         require(
-            msg.value >= listing.price,
-            "Not enough Ether to cover item price and market fee"
+            msg.value == listing.price, // Dùng '==' thay vì '>=' để tránh rắc rối
+            "Please send the exact listing price"
         );
 
-        // Pay seller and fee account
+        // Tính toán tiền
         address seller = listing.seller;
         uint256 price = listing.price;
         uint256 fee = (price * feePercent) / 100;
 
-        payable(seller).transfer(price);
-        payable(feeAccount).transfer(fee);
+        // Đảm bảo giá đủ lớn để trừ phí
+        require(price > fee, "Price too low to cover fee");
 
-        // Update listing status
+        uint256 sellerProceeds = price - fee; // Tiền người bán thực nhận
+
+        // Update listing status (NÊN làm trước khi gửi tiền)
         listing.status = ListingStatus.Sold;
 
-        // Transfer NFT to the buyer
+        // --- Thanh toán (Sửa ở đây) ---
+        // 1. Trả tiền cho người bán (phần sau khi trừ phí)
+        (bool sentSeller, ) = payable(seller).call{value: sellerProceeds}("");
+        require(sentSeller, "Failed to send Ether to seller");
+
+        // 2. Trả tiền phí cho sàn
+        (bool sentFee, ) = payable(feeAccount).call{value: fee}("");
+        require(sentFee, "Failed to send Ether to fee account");
+
+        // --- Chuyển NFT ---
+        // (NÊN làm cuối cùng sau khi tiền đã xong)
         nftContract.transferFrom(address(this), msg.sender, listing.tokenId);
 
         emit ItemSold(_listingId, msg.sender, listing.tokenId);
