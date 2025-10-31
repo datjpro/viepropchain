@@ -17,8 +17,8 @@ const ListNFT = () => {
   const fetchNFTs = async () => {
     try {
       setLoading(true);
-      // Gọi Property Service thay vì Minting Service
-      const response = await fetch("http://localhost:3003/properties");
+      // Gọi Admin Service để lấy properties
+      const response = await fetch("http://localhost:4003/api/properties");
       const data = await response.json();
 
       if (data.success) {

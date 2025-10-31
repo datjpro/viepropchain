@@ -420,7 +420,7 @@ const Nft = () => {
 
       // Gọi endpoint create-and-mint - TẤT CẢ TRONG 1 LẦN
       const response = await fetch(
-        "http://localhost:3003/properties/create-and-mint",
+        "http://localhost:4003/api/properties/create-and-mint",
         {
           method: "POST",
           headers: {
