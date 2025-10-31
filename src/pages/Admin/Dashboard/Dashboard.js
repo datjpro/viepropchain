@@ -29,9 +29,7 @@ const Dashboard = () => {
       const propertiesData = await propertiesResponse.json();
 
       // Fetch users stats từ auth service
-      const usersResponse = await fetch(
-        "http://localhost:4010/api/auth/stats"
-      );
+      const usersResponse = await fetch("http://localhost:4010/api/auth/stats");
       const usersData = await usersResponse.json();
 
       // Fetch NFTs stats từ blockchain service
@@ -86,9 +84,9 @@ const Dashboard = () => {
     const healthChecks = await Promise.allSettled(
       services.map(async (service) => {
         try {
-          const response = await fetch(service.url, { 
+          const response = await fetch(service.url, {
             method: "GET",
-            timeout: 5000 
+            timeout: 5000,
           });
           return {
             name: service.name,
@@ -261,7 +259,10 @@ const Dashboard = () => {
               </div>
               <div className="stat-label">Doanh thu (VND)</div>
               <div className="stat-details">
-                <span>📈 Tháng này: {(stats.revenue.thisMonth / 1000000000).toFixed(1)}B</span>
+                <span>
+                  📈 Tháng này:{" "}
+                  {(stats.revenue.thisMonth / 1000000000).toFixed(1)}B
+                </span>
               </div>
             </div>
           </div>
@@ -272,10 +273,7 @@ const Dashboard = () => {
           <h2>🏥 Trạng thái hệ thống</h2>
           <div className="health-grid">
             {Object.entries(systemHealth).map(([serviceName, health]) => (
-              <div
-                key={serviceName}
-                className={`health-card ${health.status}`}
-              >
+              <div key={serviceName} className={`health-card ${health.status}`}>
                 <div className="health-name">{health.name}</div>
                 <div className="health-status">
                   {health.status === "healthy" && "✅ Hoạt động"}
@@ -330,19 +328,19 @@ const Dashboard = () => {
               <div className="action-title">Tạo NFT mới</div>
               <div className="action-desc">Mint NFT cho BĐS</div>
             </a>
-            
+
             <a href="/admin/list-nft" className="action-card">
               <div className="action-icon">📊</div>
               <div className="action-title">Quản lý NFT</div>
               <div className="action-desc">Xem tất cả NFT</div>
             </a>
-            
+
             <a href="/admin/users" className="action-card">
               <div className="action-icon">👥</div>
               <div className="action-title">Quản lý User</div>
               <div className="action-desc">Xem người dùng</div>
             </a>
-            
+
             <a href="/admin/properties" className="action-card">
               <div className="action-icon">🏠</div>
               <div className="action-title">Quản lý BĐS</div>

@@ -361,8 +361,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
@@ -370,25 +374,25 @@
   .dashboard-container {
     padding: 10px;
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     gap: 15px;
     text-align: center;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .health-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .actions-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .activity-header {
     flex-direction: column;
     align-items: flex-start;

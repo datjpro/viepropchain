@@ -109,12 +109,14 @@ const Users = () => {
     };
 
     const roleInfo = roleMap[role] || { text: role, class: "" };
-    return <span className={`role-badge ${roleInfo.class}`}>{roleInfo.text}</span>;
+    return (
+      <span className={`role-badge ${roleInfo.class}`}>{roleInfo.text}</span>
+    );
   };
 
   const getAuthMethods = (authMethods) => {
     if (!authMethods || authMethods.length === 0) return [];
-    
+
     return authMethods.map((method) => ({
       type: method.type,
       icon: method.type === "google" ? "🔗" : "🔗",
@@ -153,11 +155,11 @@ const Users = () => {
             user._id === userId ? { ...user, role: newRole } : user
           )
         );
-        
+
         if (selectedUser && selectedUser._id === userId) {
           setSelectedUser({ ...selectedUser, role: newRole });
         }
-        
+
         alert("Cập nhật role thành công!");
       } else {
         alert("Lỗi: " + data.message);
@@ -322,9 +324,13 @@ const Users = () => {
                       </div>
                       <div className="user-details">
                         <div className="user-name">
-                          {user.profile?.displayName || user.profile?.name || "Chưa có tên"}
+                          {user.profile?.displayName ||
+                            user.profile?.name ||
+                            "Chưa có tên"}
                         </div>
-                        <div className="user-id">ID: {user._id.substring(0, 8)}...</div>
+                        <div className="user-id">
+                          ID: {user._id.substring(0, 8)}...
+                        </div>
                       </div>
                     </td>
                     <td className="user-email">
@@ -383,11 +389,12 @@ const Users = () => {
             >
               ← Trước
             </button>
-            
+
             <span className="pagination-info">
-              Trang {pagination.page} / {pagination.totalPages} ({pagination.total} người dùng)
+              Trang {pagination.page} / {pagination.totalPages} (
+              {pagination.total} người dùng)
             </span>
-            
+
             <button
               onClick={() => changePage(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
@@ -419,7 +426,11 @@ const Users = () => {
                     className="user-detail-avatar"
                   />
                   <div className="user-detail-info">
-                    <h2>{selectedUser.profile?.displayName || selectedUser.profile?.name || "Chưa có tên"}</h2>
+                    <h2>
+                      {selectedUser.profile?.displayName ||
+                        selectedUser.profile?.name ||
+                        "Chưa có tên"}
+                    </h2>
                     <p className="user-detail-email">{selectedUser.email}</p>
                     {getRoleBadge(selectedUser.role)}
                   </div>
@@ -449,7 +460,11 @@ const Users = () => {
                     </div>
                     <div className="detail-item">
                       <strong>Đăng nhập lần cuối:</strong>
-                      <span>{selectedUser.lastLoginAt ? formatDate(selectedUser.lastLoginAt) : "Chưa có"}</span>
+                      <span>
+                        {selectedUser.lastLoginAt
+                          ? formatDate(selectedUser.lastLoginAt)
+                          : "Chưa có"}
+                      </span>
                     </div>
                   </div>
 
@@ -458,11 +473,15 @@ const Users = () => {
                       <h3>🔗 Thông tin Wallet</h3>
                       <div className="detail-item">
                         <strong>Wallet Address:</strong>
-                        <code className="wallet-full">{selectedUser.walletAddress}</code>
+                        <code className="wallet-full">
+                          {selectedUser.walletAddress}
+                        </code>
                         <button
                           className="btn-copy"
                           onClick={() => {
-                            navigator.clipboard.writeText(selectedUser.walletAddress);
+                            navigator.clipboard.writeText(
+                              selectedUser.walletAddress
+                            );
                             alert("Đã copy wallet address!");
                           }}
                         >
@@ -482,10 +501,15 @@ const Users = () => {
 
                   <div className="detail-section">
                     <h3>🔐 Phương thức xác thực</h3>
-                    {selectedUser.authMethods && selectedUser.authMethods.length > 0 ? (
+                    {selectedUser.authMethods &&
+                    selectedUser.authMethods.length > 0 ? (
                       selectedUser.authMethods.map((method, idx) => (
                         <div key={idx} className="auth-method-detail">
-                          <strong>{method.type === "google" ? "🔗 Google OAuth" : "🔗 Wallet"}</strong>
+                          <strong>
+                            {method.type === "google"
+                              ? "🔗 Google OAuth"
+                              : "🔗 Wallet"}
+                          </strong>
                           <span>Liên kết: {formatDate(method.linkedAt)}</span>
                         </div>
                       ))
@@ -494,12 +518,15 @@ const Users = () => {
                     )}
                   </div>
 
-                  {selectedUser.favorites && selectedUser.favorites.length > 0 && (
-                    <div className="detail-section">
-                      <h3>❤️ Yêu thích</h3>
-                      <p>{selectedUser.favorites.length} bất động sản yêu thích</p>
-                    </div>
-                  )}
+                  {selectedUser.favorites &&
+                    selectedUser.favorites.length > 0 && (
+                      <div className="detail-section">
+                        <h3>❤️ Yêu thích</h3>
+                        <p>
+                          {selectedUser.favorites.length} bất động sản yêu thích
+                        </p>
+                      </div>
+                    )}
 
                   {selectedUser.profile && (
                     <div className="detail-section">
@@ -526,7 +553,9 @@ const Users = () => {
                     <select
                       id="roleSelect"
                       value={selectedUser.role}
-                      onChange={(e) => updateUserRole(selectedUser._id, e.target.value)}
+                      onChange={(e) =>
+                        updateUserRole(selectedUser._id, e.target.value)
+                      }
                       className="role-select"
                     >
                       <option value="user">Người dùng</option>
@@ -534,7 +563,7 @@ const Users = () => {
                       <option value="admin">Quản trị</option>
                     </select>
                   </div>
-                  
+
                   <button onClick={closeUserDetail} className="btn-close">
                     Đóng
                   </button>

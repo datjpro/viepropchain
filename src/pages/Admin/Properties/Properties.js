@@ -23,9 +23,9 @@ const Properties = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
-      
+
       let url = `http://localhost:4003/api/properties?page=${pagination.page}&limit=${pagination.limit}`;
-      
+
       // Add filter to URL if not ALL
       if (filter !== "ALL") {
         const statusMap = {
@@ -49,7 +49,9 @@ const Properties = () => {
         setPagination((prev) => ({
           ...prev,
           total: data.data.total || data.data.length,
-          totalPages: data.data.totalPages || Math.ceil((data.data.total || data.data.length) / prev.limit),
+          totalPages:
+            data.data.totalPages ||
+            Math.ceil((data.data.total || data.data.length) / prev.limit),
         }));
         setError("");
       } else {
@@ -71,9 +73,15 @@ const Properties = () => {
         (property) =>
           property.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           property.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.location?.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          property.propertyType?.toLowerCase().includes(searchTerm.toLowerCase())
+          property.description
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          property.location?.address
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          property.propertyType
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
 
@@ -93,7 +101,9 @@ const Properties = () => {
   const formatPrice = (price) => {
     if (!price) return "Chưa có giá";
     if (typeof price === "object" && price.amount) {
-      return `${(price.amount / 1000000000).toFixed(2)} tỷ ${price.currency || "VND"}`;
+      return `${(price.amount / 1000000000).toFixed(2)} tỷ ${
+        price.currency || "VND"
+      }`;
     }
     return `${(price / 1000000000).toFixed(2)} tỷ VND`;
   };
@@ -119,8 +129,11 @@ const Properties = () => {
       archived: { text: "Lưu trữ", icon: "📦" },
     };
 
-    const statusInfo = statusMap[displayStatus] || { text: displayStatus, icon: "❓" };
-    
+    const statusInfo = statusMap[displayStatus] || {
+      text: displayStatus,
+      icon: "❓",
+    };
+
     return (
       <span className={className}>
         {statusInfo.icon} {statusInfo.text}
@@ -166,11 +179,11 @@ const Properties = () => {
         setProperties((prevProperties) =>
           prevProperties.filter((p) => p._id !== propertyId)
         );
-        
+
         if (selectedProperty && selectedProperty._id === propertyId) {
           setSelectedProperty(null);
         }
-        
+
         alert("Xóa bất động sản thành công!");
       } else {
         alert("Lỗi: " + data.message);
@@ -323,12 +336,14 @@ const Properties = () => {
                     alt={property.name || property.title}
                     className="property-image"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/300?text=No+Image";
+                      e.target.src =
+                        "https://via.placeholder.com/300?text=No+Image";
                     }}
                   />
                   {getStatusBadge(property.status, property.nft)}
                   <div className="property-type-badge">
-                    {getPropertyTypeIcon(property.propertyType)} {property.propertyType}
+                    {getPropertyTypeIcon(property.propertyType)}{" "}
+                    {property.propertyType}
                   </div>
                 </div>
 
@@ -338,8 +353,12 @@ const Properties = () => {
                   </h3>
 
                   <div className="property-location">
-                    📍 {property.location?.address || property.address?.street || "Chưa có địa chỉ"}
-                    {property.location?.district && `, ${property.location.district}`}
+                    📍{" "}
+                    {property.location?.address ||
+                      property.address?.street ||
+                      "Chưa có địa chỉ"}
+                    {property.location?.district &&
+                      `, ${property.location.district}`}
                     {property.location?.city && `, ${property.location.city}`}
                   </div>
 
@@ -354,7 +373,8 @@ const Properties = () => {
                       </div>
                       {property.nft.owner && (
                         <div className="nft-owner">
-                          👤 {property.nft.owner.substring(0, 6)}...{property.nft.owner.substring(-4)}
+                          👤 {property.nft.owner.substring(0, 6)}...
+                          {property.nft.owner.substring(-4)}
                         </div>
                       )}
                     </div>
@@ -384,11 +404,12 @@ const Properties = () => {
             >
               ← Trước
             </button>
-            
+
             <span className="pagination-info">
-              Trang {pagination.page} / {pagination.totalPages} ({pagination.total} BĐS)
+              Trang {pagination.page} / {pagination.totalPages} (
+              {pagination.total} BĐS)
             </span>
-            
+
             <button
               onClick={() => changePage(pagination.page + 1)}
               disabled={pagination.page === pagination.totalPages}
@@ -418,16 +439,21 @@ const Properties = () => {
                       }
                       alt={selectedProperty.name || selectedProperty.title}
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/400?text=No+Image";
+                        e.target.src =
+                          "https://via.placeholder.com/400?text=No+Image";
                       }}
                     />
                   </div>
                   <div className="property-detail-info">
                     <h2>{selectedProperty.name || selectedProperty.title}</h2>
                     <div className="property-type">
-                      {getPropertyTypeIcon(selectedProperty.propertyType)} {selectedProperty.propertyType}
+                      {getPropertyTypeIcon(selectedProperty.propertyType)}{" "}
+                      {selectedProperty.propertyType}
                     </div>
-                    {getStatusBadge(selectedProperty.status, selectedProperty.nft)}
+                    {getStatusBadge(
+                      selectedProperty.status,
+                      selectedProperty.nft
+                    )}
                     <div className="property-price-large">
                       💰 {formatPrice(selectedProperty.price)}
                     </div>
@@ -443,7 +469,9 @@ const Properties = () => {
                     </div>
                     <div className="detail-item">
                       <strong>Tên:</strong>
-                      <span>{selectedProperty.name || selectedProperty.title}</span>
+                      <span>
+                        {selectedProperty.name || selectedProperty.title}
+                      </span>
                     </div>
                     <div className="detail-item">
                       <strong>Mô tả:</strong>
@@ -455,7 +483,10 @@ const Properties = () => {
                     </div>
                     <div className="detail-item">
                       <strong>Trạng thái:</strong>
-                      {getStatusBadge(selectedProperty.status, selectedProperty.nft)}
+                      {getStatusBadge(
+                        selectedProperty.status,
+                        selectedProperty.nft
+                      )}
                     </div>
                     <div className="detail-item">
                       <strong>Ngày tạo:</strong>
@@ -472,23 +503,39 @@ const Properties = () => {
                       <h3>📍 Vị trí</h3>
                       <div className="detail-item">
                         <strong>Địa chỉ:</strong>
-                        <span>{selectedProperty.location.address || selectedProperty.address?.street}</span>
+                        <span>
+                          {selectedProperty.location.address ||
+                            selectedProperty.address?.street}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <strong>Phường/Xã:</strong>
-                        <span>{selectedProperty.location.ward || selectedProperty.address?.ward}</span>
+                        <span>
+                          {selectedProperty.location.ward ||
+                            selectedProperty.address?.ward}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <strong>Quận/Huyện:</strong>
-                        <span>{selectedProperty.location.district || selectedProperty.address?.district}</span>
+                        <span>
+                          {selectedProperty.location.district ||
+                            selectedProperty.address?.district}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <strong>Thành phố:</strong>
-                        <span>{selectedProperty.location.city || selectedProperty.address?.city}</span>
+                        <span>
+                          {selectedProperty.location.city ||
+                            selectedProperty.address?.city}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <strong>Quốc gia:</strong>
-                        <span>{selectedProperty.location.country || selectedProperty.address?.country || "Việt Nam"}</span>
+                        <span>
+                          {selectedProperty.location.country ||
+                            selectedProperty.address?.country ||
+                            "Việt Nam"}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -498,7 +545,9 @@ const Properties = () => {
                       <h3>🎨 Thông tin NFT</h3>
                       <div className="detail-item highlight">
                         <strong>Token ID:</strong>
-                        <span className="token-id-badge">#{selectedProperty.nft.tokenId}</span>
+                        <span className="token-id-badge">
+                          #{selectedProperty.nft.tokenId}
+                        </span>
                       </div>
                       <div className="detail-item">
                         <strong>Contract Address:</strong>
@@ -508,7 +557,9 @@ const Properties = () => {
                         <button
                           className="btn-copy"
                           onClick={() => {
-                            navigator.clipboard.writeText(selectedProperty.nft.contractAddress);
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.contractAddress
+                            );
                             alert("Đã copy contract address!");
                           }}
                         >
@@ -523,7 +574,9 @@ const Properties = () => {
                         <button
                           className="btn-copy"
                           onClick={() => {
-                            navigator.clipboard.writeText(selectedProperty.nft.owner);
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.owner
+                            );
                             alert("Đã copy owner address!");
                           }}
                         >
@@ -538,7 +591,9 @@ const Properties = () => {
                         <button
                           className="btn-copy"
                           onClick={() => {
-                            navigator.clipboard.writeText(selectedProperty.nft.transactionHash);
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.transactionHash
+                            );
                             alert("Đã copy transaction hash!");
                           }}
                         >
@@ -548,7 +603,9 @@ const Properties = () => {
                       {selectedProperty.nft.mintedAt && (
                         <div className="detail-item">
                           <strong>Minted At:</strong>
-                          <span>{formatDate(selectedProperty.nft.mintedAt)}</span>
+                          <span>
+                            {formatDate(selectedProperty.nft.mintedAt)}
+                          </span>
                         </div>
                       )}
                       {selectedProperty.ipfsMetadataCid && (
@@ -570,49 +627,56 @@ const Properties = () => {
                     </div>
                   )}
 
-                  {selectedProperty.details && Object.keys(selectedProperty.details).length > 0 && (
-                    <div className="detail-section">
-                      <h3>🏷️ Chi tiết kỹ thuật</h3>
-                      <div className="attributes-grid">
-                        {Object.entries(selectedProperty.details).map(([key, value], idx) => (
-                          <div key={idx} className="attribute-item">
-                            <div className="attribute-type">{key}</div>
-                            <div className="attribute-value">{value}</div>
-                          </div>
-                        ))}
+                  {selectedProperty.details &&
+                    Object.keys(selectedProperty.details).length > 0 && (
+                      <div className="detail-section">
+                        <h3>🏷️ Chi tiết kỹ thuật</h3>
+                        <div className="attributes-grid">
+                          {Object.entries(selectedProperty.details).map(
+                            ([key, value], idx) => (
+                              <div key={idx} className="attribute-item">
+                                <div className="attribute-type">{key}</div>
+                                <div className="attribute-value">{value}</div>
+                              </div>
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {selectedProperty.features && selectedProperty.features.length > 0 && (
-                    <div className="detail-section">
-                      <h3>✨ Tiện ích</h3>
-                      <div className="features-list">
-                        {selectedProperty.features.map((feature, idx) => (
-                          <span key={idx} className="feature-item">
-                            ✅ {feature}
-                          </span>
-                        ))}
+                  {selectedProperty.features &&
+                    selectedProperty.features.length > 0 && (
+                      <div className="detail-section">
+                        <h3>✨ Tiện ích</h3>
+                        <div className="features-list">
+                          {selectedProperty.features.map((feature, idx) => (
+                            <span key={idx} className="feature-item">
+                              ✅ {feature}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {selectedProperty.media?.images && selectedProperty.media.images.length > 1 && (
-                    <div className="detail-section">
-                      <h3>🖼️ Hình ảnh</h3>
-                      <div className="images-grid">
-                        {selectedProperty.media.images.map((image, idx) => (
-                          <img
-                            key={idx}
-                            src={image.url || image}
-                            alt={`Property ${idx + 1}`}
-                            className="detail-image"
-                            onClick={() => window.open(image.url || image, "_blank")}
-                          />
-                        ))}
+                  {selectedProperty.media?.images &&
+                    selectedProperty.media.images.length > 1 && (
+                      <div className="detail-section">
+                        <h3>🖼️ Hình ảnh</h3>
+                        <div className="images-grid">
+                          {selectedProperty.media.images.map((image, idx) => (
+                            <img
+                              key={idx}
+                              src={image.url || image}
+                              alt={`Property ${idx + 1}`}
+                              className="detail-image"
+                              onClick={() =>
+                                window.open(image.url || image, "_blank")
+                              }
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
 
                 <div className="property-detail-actions">
@@ -626,15 +690,18 @@ const Properties = () => {
                       🔗 Xem Metadata
                     </a>
                   )}
-                  
+
                   <button
                     onClick={() => deleteProperty(selectedProperty._id)}
                     className="btn-action danger"
                   >
                     🗑️ Xóa BĐS
                   </button>
-                  
-                  <button onClick={closePropertyDetail} className="btn-action secondary">
+
+                  <button
+                    onClick={closePropertyDetail}
+                    className="btn-action secondary"
+                  >
                     ✖️ Đóng
                   </button>
                 </div>
