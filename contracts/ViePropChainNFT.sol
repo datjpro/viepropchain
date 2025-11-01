@@ -11,7 +11,6 @@ contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
 
     constructor() ERC721("ViePropChain", "VPC") Ownable(msg.sender) {}
 
-    // Hàm mint giữ nguyên
     function mint(
         address recipient,
         string memory tokenURI
@@ -22,10 +21,9 @@ contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return tokenCounter;
     }
 
-    // Các hàm override này là CHÍNH XÁC, giữ nguyên
     function _update(address to, uint256 tokenId, address auth)
         internal
-        override(ERC721, ERC721Enumerable) // Chỗ này giữ nguyên ERC721
+        override(ERC721, ERC721Enumerable) 
         returns (address)
     {
         return super._update(to, tokenId, auth);
@@ -33,27 +31,24 @@ contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
 
     function _increaseBalance(address account, uint128 amount)
         internal
-        override(ERC721, ERC721Enumerable) // Chỗ này giữ nguyên ERC721
+        override(ERC721, ERC721Enumerable)
     {
         super._increaseBalance(account, amount);
     }
 
-    // === SỬA LỖI Ở ĐÂY ===
-    // Sửa override list
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Enumerable, ERC721URIStorage) // SỬA Ở ĐÂY
+        override(ERC721Enumerable, ERC721URIStorage) 
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
 
-    // Thêm hàm mới để sửa lỗi 'tokenURI'
     function tokenURI(uint256 tokenId)
         public
         view
-        override(ERC721, ERC721URIStorage) // THÊM HÀM NÀY
+        override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
         return super.tokenURI(tokenId);
