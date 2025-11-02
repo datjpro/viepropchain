@@ -1,9 +1,9 @@
 {
   "network": "development",
-  "deployedAt": "2025-10-31T17:03:38.840Z",
+  "deployedAt": "2025-11-02T08:55:05.846Z",
   "contracts": {
     "ViePropChainNFT": {
-      "address": "0x4Cf97592f58e9f266BAce5405602c97c9bFc4F48",
+      "address": "0x17Aaf4b68DF5bA409FAEBE59ff771E27e1db85E2",
       "abi": [
         {
           "inputs": [],
@@ -234,6 +234,26 @@
           "inputs": [
             {
               "indexed": false,
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "existingTokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "DuplicateMintAttempted",
+          "type": "event",
+          "signature": "0x8feb60410033c10c76b770b28508e9cf80cd80c164840f6491aae4d5966e9d2e"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
               "internalType": "uint256",
               "name": "_tokenId",
               "type": "uint256"
@@ -242,6 +262,32 @@
           "name": "MetadataUpdate",
           "type": "event",
           "signature": "0xf8e1a15aba9398e019f0b49df1a4fde98ee17ae345cb5f6b5e2c27f5033e8ce7"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            }
+          ],
+          "name": "NFTMinted",
+          "type": "event",
+          "signature": "0x06becd955c918828f6e985541acbf49cc842c9e9bd569fffc7698e721ef13575"
         },
         {
           "anonymous": false,
@@ -646,7 +692,7 @@
             },
             {
               "internalType": "string",
-              "name": "tokenURI",
+              "name": "_tokenURI",
               "type": "string"
             }
           ],
@@ -661,6 +707,48 @@
           "stateMutability": "nonpayable",
           "type": "function",
           "signature": "0xd0def521"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_tokenURI",
+              "type": "string"
+            }
+          ],
+          "name": "tokenURIExists",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x43d32ae7"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "string",
+              "name": "_tokenURI",
+              "type": "string"
+            }
+          ],
+          "name": "getTokenIdByURI",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x118f9708"
         },
         {
           "inputs": [
@@ -707,7 +795,7 @@
       ]
     },
     "Marketplace": {
-      "address": "0xcA41659cCfcD6a385381f22A2CE53c2b451e3c38",
+      "address": "0x0d32Dc114C7fba20bef83509CcaBE58d81e296cb",
       "abi": [
         {
           "inputs": [
