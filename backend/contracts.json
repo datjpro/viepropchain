@@ -1,9 +1,9 @@
 {
   "network": "development",
-  "deployedAt": "2025-11-02T08:55:05.846Z",
+  "deployedAt": "2025-11-13T13:05:07.308Z",
   "contracts": {
     "ViePropChainNFT": {
-      "address": "0x17Aaf4b68DF5bA409FAEBE59ff771E27e1db85E2",
+      "address": "0x55f732E0d866A155b3A151A862996A13a22C0e8e",
       "abi": [
         {
           "inputs": [],
@@ -336,6 +336,32 @@
           "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
         },
         {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint64",
+              "name": "expires",
+              "type": "uint64"
+            }
+          ],
+          "name": "UpdateUser",
+          "type": "event",
+          "signature": "0x4e06b4e7000e659094299b3533b47b6aa8ad048e95e872d23d1f4ee55af89cfe"
+        },
+        {
           "inputs": [
             {
               "internalType": "address",
@@ -554,6 +580,30 @@
           "signature": "0xa22cb465"
         },
         {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "expires",
+              "type": "uint64"
+            }
+          ],
+          "name": "setUser",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "signature": "0xe030565e"
+        },
+        {
           "inputs": [],
           "name": "symbol",
           "outputs": [
@@ -686,6 +736,48 @@
         {
           "inputs": [
             {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "userExpires",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x8fc88c48"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "userOf",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0xc2f1f14a"
+        },
+        {
+          "inputs": [
+            {
               "internalType": "address",
               "name": "recipient",
               "type": "address"
@@ -795,7 +887,7 @@
       ]
     },
     "Marketplace": {
-      "address": "0x0d32Dc114C7fba20bef83509CcaBE58d81e296cb",
+      "address": "0x67bC8255530323abd8ae3f4215Dd531ba6425ee3",
       "abi": [
         {
           "inputs": [
@@ -818,6 +910,33 @@
           "stateMutability": "nonpayable",
           "type": "constructor",
           "signature": "constructor"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableInvalidOwner",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableUnauthorizedAccount",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "ReentrancyGuardReentrantCall",
+          "type": "error"
         },
         {
           "anonymous": false,
@@ -845,11 +964,49 @@
               "internalType": "uint256",
               "name": "price",
               "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "enum Marketplace.ListingType",
+              "name": "listingType",
+              "type": "uint8"
             }
           ],
           "name": "ItemListed",
           "type": "event",
-          "signature": "0xb7070c3c377d2fb697e5ddc72b0283eb751116d682ff1cdb579eab77bcc4013b"
+          "signature": "0x82079eff9b9fca218e303814f1c1d7b5d5de38eedc50b2fb28f9fbbbb1e528c4"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "listingId",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "renter",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint64",
+              "name": "expires",
+              "type": "uint64"
+            }
+          ],
+          "name": "ItemRented",
+          "type": "event",
+          "signature": "0xc65f06f3b3d927df5cdd517adc0acb67cf478335e499e2893d92606dd3a3ebbd"
         },
         {
           "anonymous": false,
@@ -890,6 +1047,26 @@
           "name": "ListingCancelled",
           "type": "event",
           "signature": "0x411aee90354c51b1b04cd563fcab2617142a9d50da19232d888547c8a1b7fd8a"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         {
           "inputs": [],
@@ -955,12 +1132,59 @@
               "internalType": "enum Marketplace.ListingStatus",
               "name": "status",
               "type": "uint8"
+            },
+            {
+              "internalType": "enum Marketplace.ListingType",
+              "name": "listingType",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rentalDuration",
+              "type": "uint256"
             }
           ],
           "stateMutability": "view",
           "type": "function",
           "constant": true,
           "signature": "0xde74e57b"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x8da5cb5b"
+        },
+        {
+          "inputs": [],
+          "name": "renounceOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "signature": "0x715018a6"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "transferOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "signature": "0xf2fde38b"
         },
         {
           "inputs": [
@@ -985,6 +1209,30 @@
           "inputs": [
             {
               "internalType": "uint256",
+              "name": "_tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_pricePerDay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_maxRentalDurationDays",
+              "type": "uint256"
+            }
+          ],
+          "name": "listForRent",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "signature": "0x945ec30e"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
               "name": "_listingId",
               "type": "uint256"
             }
@@ -995,6 +1243,26 @@
           "type": "function",
           "payable": true,
           "signature": "0xe7fb74c7"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "_listingId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_rentalDays",
+              "type": "uint256"
+            }
+          ],
+          "name": "rentItem",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function",
+          "payable": true,
+          "signature": "0xa29e4e5d"
         },
         {
           "inputs": [
@@ -1046,6 +1314,16 @@
                   "internalType": "enum Marketplace.ListingStatus",
                   "name": "status",
                   "type": "uint8"
+                },
+                {
+                  "internalType": "enum Marketplace.ListingType",
+                  "name": "listingType",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "rentalDuration",
+                  "type": "uint256"
                 }
               ],
               "internalType": "struct Marketplace.Listing",
@@ -1072,6 +1350,69 @@
           "type": "function",
           "constant": true,
           "signature": "0x87ed92d7"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "_tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "isRented",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0xaa15d40f"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "_tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getCurrentRenter",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x0ed75930"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "_tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "getRentalExpiry",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "constant": true,
+          "signature": "0x2517a536"
         }
       ]
     }
