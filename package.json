@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.12.2",
     "bulma": "^1.0.4",
+    "double-contracts": "^1.0.5",
     "framer-motion": "^12.23.22",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

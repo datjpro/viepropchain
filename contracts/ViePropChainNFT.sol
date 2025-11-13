@@ -5,8 +5,15 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./ERC4907.sol";
 
-contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
+// THÊM ERC4907 vào danh sách kế thừa
+contract ViePropChainNFT is
+    ERC721URIStorage,
+    ERC721Enumerable,
+    Ownable,
+    ERC4907
+{
     uint256 public tokenCounter;
 
     // Mapping to check if a tokenURI already exists
@@ -60,11 +67,14 @@ contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return _tokenURIToTokenId[_tokenURI];
     }
 
+    // --- CẬP NHẬT GHI ĐÈ (OVERRIDE) ---
+
+    // Thêm ERC4907 vào danh sách ghi đè
     function _update(
         address to,
         uint256 tokenId,
         address auth
-    ) internal override(ERC721, ERC721Enumerable) returns (address) {
+    ) internal override(ERC721, ERC721Enumerable, ERC4907) returns (address) {
         return super._update(to, tokenId, auth);
     }
 
@@ -72,18 +82,26 @@ contract ViePropChainNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         address account,
         uint128 amount
     ) internal override(ERC721, ERC721Enumerable) {
+        // ERC4907 không ghi đè hàm này, nên giữ nguyên
         super._increaseBalance(account, amount);
     }
 
+    // Thêm ERC4907 vào danh sách ghi đè
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(ERC721Enumerable, ERC721URIStorage) returns (bool) {
+    )
+        public
+        view
+        override(ERC721Enumerable, ERC721URIStorage, ERC4907)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        // ERC4907 không ghi đè hàm này, nên giữ nguyên
         return super.tokenURI(tokenId);
     }
 }
