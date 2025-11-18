@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AdminHeader from "../../../components/AdminHeader/AdminHeader";
 import AdminStatusChecker from "../../../components/AdminStatusChecker/AdminStatusChecker";
 import { API_ENDPOINTS } from "../../../config/api";
 import "./Dashboard.css";
@@ -188,171 +187,165 @@ const Dashboard = () => {
 
   if (stats.loading) {
     return (
-      <>
-        <AdminHeader />
-        <div className="dashboard-container">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Đang tải dashboard...</p>
-          </div>
+      <div className="dashboard-container">
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Đang tải dashboard...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <AdminHeader />
-      <div className="dashboard-container">
-        <div className="dashboard-header">
-          <h1>📊 Dashboard Admin</h1>
-          <p>Tổng quan hệ thống ViePropChain</p>
-          <button onClick={fetchDashboardData} className="btn-refresh">
-            🔄 Làm mới
-          </button>
-        </div>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>📊 Dashboard Admin</h1>
+        <p>Tổng quan hệ thống ViePropChain</p>
+        <button onClick={fetchDashboardData} className="btn-refresh">
+          🔄 Làm mới
+        </button>
+      </div>
 
-        {/* Admin Status Checker - Debug Tool */}
-        <AdminStatusChecker />
+      {/* Admin Status Checker - Debug Tool */}
+      <AdminStatusChecker />
 
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card properties">
-            <div className="stat-icon">🏠</div>
-            <div className="stat-content">
-              <div className="stat-number">{stats.properties.total}</div>
-              <div className="stat-label">Tổng BĐS</div>
-              <div className="stat-details">
-                <span>📋 Đã mint: {stats.properties.minted}</span>
-                <span>🏪 Đang bán: {stats.properties.forSale}</span>
-                <span>✅ Đã bán: {stats.properties.sold}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card users">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <div className="stat-number">{stats.users.total}</div>
-              <div className="stat-label">Người dùng</div>
-              <div className="stat-details">
-                <span>🔗 Có wallet: {stats.users.withWallet}</span>
-                <span>✅ Verified: {stats.users.verified}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card nfts">
-            <div className="stat-icon">🎨</div>
-            <div className="stat-content">
-              <div className="stat-number">{stats.nfts.total}</div>
-              <div className="stat-label">NFTs</div>
-              <div className="stat-details">
-                <span>🔄 Transfers: {stats.nfts.transfers}</span>
-                <span>⛓️ On-chain</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-card revenue">
-            <div className="stat-icon">💰</div>
-            <div className="stat-content">
-              <div className="stat-number">
-                {(stats.revenue.total / 1000000000).toFixed(1)}B
-              </div>
-              <div className="stat-label">Doanh thu (VND)</div>
-              <div className="stat-details">
-                <span>
-                  📈 Tháng này:{" "}
-                  {(stats.revenue.thisMonth / 1000000000).toFixed(1)}B
-                </span>
-              </div>
+      {/* Stats Cards */}
+      <div className="stats-grid">
+        <div className="stat-card properties">
+          <div className="stat-icon">🏠</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.properties.total}</div>
+            <div className="stat-label">Tổng BĐS</div>
+            <div className="stat-details">
+              <span>📋 Đã mint: {stats.properties.minted}</span>
+              <span>🏪 Đang bán: {stats.properties.forSale}</span>
+              <span>✅ Đã bán: {stats.properties.sold}</span>
             </div>
           </div>
         </div>
 
-        {/* System Health */}
-        <div className="system-health">
-          <h2>🏥 Trạng thái hệ thống</h2>
-          <div className="health-grid">
-            {Object.entries(systemHealth).map(([serviceName, health]) => (
-              <div key={serviceName} className={`health-card ${health.status}`}>
-                <div className="health-name">{health.name}</div>
-                <div className="health-status">
-                  {health.status === "healthy" && "✅ Hoạt động"}
-                  {health.status === "unhealthy" && "⚠️ Có vấn đề"}
-                  {health.status === "down" && "❌ Ngừng hoạt động"}
-                  {health.status === "error" && "🔥 Lỗi"}
-                </div>
-                {health.error && (
-                  <div className="health-error">{health.error}</div>
-                )}
-              </div>
-            ))}
+        <div className="stat-card users">
+          <div className="stat-icon">👥</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.users.total}</div>
+            <div className="stat-label">Người dùng</div>
+            <div className="stat-details">
+              <span>🔗 Có wallet: {stats.users.withWallet}</span>
+              <span>✅ Verified: {stats.users.verified}</span>
+            </div>
           </div>
         </div>
 
-        {/* Recent Activities */}
-        <div className="recent-activities">
-          <h2>📝 Hoạt động gần đây</h2>
-          <div className="activities-list">
-            {recentActivities.length === 0 ? (
-              <div className="no-activities">Chưa có hoạt động nào</div>
-            ) : (
-              recentActivities.map((activity) => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon">{activity.icon}</div>
-                  <div className="activity-content">
-                    <div className="activity-header">
-                      <span className="activity-action">{activity.action}</span>
-                      <span className="activity-time">
-                        {formatDate(activity.timestamp)}
-                      </span>
-                    </div>
-                    <div className="activity-description">
-                      {activity.description}
-                    </div>
-                  </div>
-                  <div className={`activity-status ${activity.status}`}>
-                    {activity.status}
-                  </div>
-                </div>
-              ))
-            )}
+        <div className="stat-card nfts">
+          <div className="stat-icon">🎨</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.nfts.total}</div>
+            <div className="stat-label">NFTs</div>
+            <div className="stat-details">
+              <span>🔄 Transfers: {stats.nfts.transfers}</span>
+              <span>⛓️ On-chain</span>
+            </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="quick-actions">
-          <h2>⚡ Thao tác nhanh</h2>
-          <div className="actions-grid">
-            <a href="/admin/nft" className="action-card">
-              <div className="action-icon">🎨</div>
-              <div className="action-title">Tạo NFT mới</div>
-              <div className="action-desc">Mint NFT cho BĐS</div>
-            </a>
-
-            <a href="/admin/list-nft" className="action-card">
-              <div className="action-icon">📊</div>
-              <div className="action-title">Quản lý NFT</div>
-              <div className="action-desc">Xem tất cả NFT</div>
-            </a>
-
-            <a href="/admin/users" className="action-card">
-              <div className="action-icon">👥</div>
-              <div className="action-title">Quản lý User</div>
-              <div className="action-desc">Xem người dùng</div>
-            </a>
-
-            <a href="/admin/properties" className="action-card">
-              <div className="action-icon">🏠</div>
-              <div className="action-title">Quản lý BĐS</div>
-              <div className="action-desc">Properties database</div>
-            </a>
+        <div className="stat-card revenue">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {(stats.revenue.total / 1000000000).toFixed(1)}B
+            </div>
+            <div className="stat-label">Doanh thu (VND)</div>
+            <div className="stat-details">
+              <span>
+                📈 Tháng này:{" "}
+                {(stats.revenue.thisMonth / 1000000000).toFixed(1)}B
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* System Health */}
+      <div className="system-health">
+        <h2>🏥 Trạng thái hệ thống</h2>
+        <div className="health-grid">
+          {Object.entries(systemHealth).map(([serviceName, health]) => (
+            <div key={serviceName} className={`health-card ${health.status}`}>
+              <div className="health-name">{health.name}</div>
+              <div className="health-status">
+                {health.status === "healthy" && "✅ Hoạt động"}
+                {health.status === "unhealthy" && "⚠️ Có vấn đề"}
+                {health.status === "down" && "❌ Ngừng hoạt động"}
+                {health.status === "error" && "🔥 Lỗi"}
+              </div>
+              {health.error && (
+                <div className="health-error">{health.error}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Activities */}
+      <div className="recent-activities">
+        <h2>📝 Hoạt động gần đây</h2>
+        <div className="activities-list">
+          {recentActivities.length === 0 ? (
+            <div className="no-activities">Chưa có hoạt động nào</div>
+          ) : (
+            recentActivities.map((activity) => (
+              <div key={activity.id} className="activity-item">
+                <div className="activity-icon">{activity.icon}</div>
+                <div className="activity-content">
+                  <div className="activity-header">
+                    <span className="activity-action">{activity.action}</span>
+                    <span className="activity-time">
+                      {formatDate(activity.timestamp)}
+                    </span>
+                  </div>
+                  <div className="activity-description">
+                    {activity.description}
+                  </div>
+                </div>
+                <div className={`activity-status ${activity.status}`}>
+                  {activity.status}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <h2>⚡ Thao tác nhanh</h2>
+        <div className="actions-grid">
+          <a href="/admin/nft" className="action-card">
+            <div className="action-icon">🎨</div>
+            <div className="action-title">Tạo NFT mới</div>
+            <div className="action-desc">Mint NFT cho BĐS</div>
+          </a>
+
+          <a href="/admin/list-nft" className="action-card">
+            <div className="action-icon">📊</div>
+            <div className="action-title">Quản lý NFT</div>
+            <div className="action-desc">Xem tất cả NFT</div>
+          </a>
+
+          <a href="/admin/users" className="action-card">
+            <div className="action-icon">👥</div>
+            <div className="action-title">Quản lý User</div>
+            <div className="action-desc">Xem người dùng</div>
+          </a>
+
+          <a href="/admin/properties" className="action-card">
+            <div className="action-icon">🏠</div>
+            <div className="action-title">Quản lý BĐS</div>
+            <div className="action-desc">Properties database</div>
+          </a>
+        </div>
+      </div>
+    </div>
   );
 };
 

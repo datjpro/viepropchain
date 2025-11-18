@@ -25,6 +25,11 @@
   font-weight: 700;
   font-size: 20px;
   text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.admin-logo:hover {
+  opacity: 0.9;
 }
 
 .logo-icon {
@@ -33,6 +38,50 @@
 
 .logo-text {
   letter-spacing: -0.5px;
+}
+
+/* User Menu */
+.admin-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.user-email {
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.95;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-logout:active {
+  transform: translateY(0);
 }
 
 /* Desktop Navigation */
@@ -87,15 +136,37 @@
 
 .coming-soon {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: #f56565;
   color: white;
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 10px;
+  font-size: 8px;
+  padding: 2px 5px;
+  border-radius: 8px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+}
+
+/* Mobile User Section */
+.mobile-user-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 8px;
+}
+
+.mobile-user-section .user-email {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  max-width: 100%;
+}
+
+.mobile-user-section .btn-logout {
+  width: 100%;
 }
 
 /* Mobile Menu Toggle */
@@ -135,6 +206,34 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .admin-header-container {
+    flex-wrap: wrap;
+  }
+
+  .admin-nav.desktop-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 4px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .nav-icon {
+    font-size: 16px;
+  }
+
+  .user-email {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-header-container {
     height: 60px;
@@ -149,6 +248,10 @@
   }
 
   .desktop-nav {
+    display: none;
+  }
+
+  .admin-user-menu {
     display: none;
   }
 

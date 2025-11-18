@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import AdminHeader from "../../../components/AdminHeader/AdminHeader";
 import { API_ENDPOINTS } from "../../../config/api";
 import "./Nft.css";
 
@@ -474,344 +473,334 @@ const Nft = () => {
   };
 
   return (
-    <>
-      <AdminHeader />
-      <div className="nft-admin-container">
-        <div className="nft-admin-wrapper">
-          <h1 className="nft-admin-title">NFT Hóa Bất Động Sản</h1>
-          <p className="nft-admin-subtitle">Tạo NFT cho tài sản bất động sản</p>
+    <div className="nft-admin-container">
+      <div className="nft-admin-wrapper">
+        <h1 className="nft-admin-title">NFT Hóa Bất Động Sản</h1>
+        <p className="nft-admin-subtitle">Tạo NFT cho tài sản bất động sản</p>
 
-          {message.text && (
-            <div className={`message ${message.type}`}>{message.text}</div>
-          )}
+        {message.text && (
+          <div className={`message ${message.type}`}>{message.text}</div>
+        )}
 
-          {mintResult && (
-            <div className="mint-result">
-              <h3>🎉 Hoàn thành NFT hóa bất động sản - Quy trình 12 bước</h3>
+        {mintResult && (
+          <div className="mint-result">
+            <h3>🎉 Hoàn thành NFT hóa bất động sản - Quy trình 12 bước</h3>
 
-              {propertyResult && (
-                <div className="result-section">
-                  <h4>📋 GIAI ĐOẠN 1: OFF-CHAIN (Hoàn tất ✅)</h4>
-                  <div className="result-item">
-                    <strong>✅ Bước 1-3:</strong> Tạo Property trong MongoDB
-                  </div>
-                  <div className="result-item">
-                    <strong>Property ID:</strong>
-                    <code>{propertyResult._id}</code>
-                  </div>
-                  <div className="result-item">
-                    <strong>Tên:</strong> {propertyResult.name}
-                  </div>
-                  <div className="result-item">
-                    <strong>Loại:</strong> {propertyResult.propertyType}
-                  </div>
-
-                  {propertyResult.ipfsMetadataCid && (
-                    <>
-                      <div className="result-item highlight">
-                        <strong>✅ Bước 4:</strong> Metadata uploaded to IPFS
-                      </div>
-                      <div className="result-item">
-                        <strong>IPFS Metadata CID:</strong>
-                        <code>{propertyResult.ipfsMetadataCid}</code>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="result-item">
-                    <strong>✅ Bước 5:</strong> Lưu MongoDB với ipfsMetadataCid
-                  </div>
-                  <div className="result-item">
-                    <strong>Trạng thái:</strong>
-                    <span className="status-badge">
-                      {propertyResult.status}
-                    </span>
-                  </div>
-                </div>
-              )}
-
+            {propertyResult && (
               <div className="result-section">
-                <h4>🎨 GIAI ĐOẠN 2: ON-CHAIN (Hoàn tất ✅)</h4>
+                <h4>📋 GIAI ĐOẠN 1: OFF-CHAIN (Hoàn tất ✅)</h4>
                 <div className="result-item">
-                  <strong>✅ Bước 6:</strong> Gửi tokenURI → Minting Service
+                  <strong>✅ Bước 1-3:</strong> Tạo Property trong MongoDB
                 </div>
                 <div className="result-item">
-                  <strong>✅ Bước 7-8:</strong> Mint NFT lên Blockchain
+                  <strong>Property ID:</strong>
+                  <code>{propertyResult._id}</code>
                 </div>
                 <div className="result-item">
-                  <strong>Token ID:</strong>
-                  <span className="token-id">#{mintResult.nft.tokenId}</span>
+                  <strong>Tên:</strong> {propertyResult.name}
                 </div>
                 <div className="result-item">
-                  <strong>Contract Address:</strong>
-                  <code>{mintResult.nft.contractAddress}</code>
+                  <strong>Loại:</strong> {propertyResult.propertyType}
                 </div>
-                <div className="result-item">
-                  <strong>Owner:</strong>
-                  <code>{mintResult.nft.owner}</code>
-                </div>
-                <div className="result-item">
-                  <strong>Transaction Hash:</strong>
-                  <code>{mintResult.nft.transactionHash}</code>
-                </div>
-                {mintResult.nft.tokenURI && (
-                  <div className="result-item">
-                    <strong>Token URI:</strong>
-                    <code className="small-code">
-                      {mintResult.nft.tokenURI}
-                    </code>
-                  </div>
-                )}
-              </div>
 
-              <div className="result-section">
-                <h4>✅ GIAI ĐOẠN 3: HOÀN TẤT</h4>
-                <div className="result-item">
-                  <strong>✅ Bước 9-12:</strong> Update MongoDB & Response
-                  Frontend
-                </div>
-                <div className="result-item success-message">
-                  🎊 NFT hóa bất động sản hoàn tất 100%!
-                </div>
-              </div>
-
-              <div className="result-actions">
                 {propertyResult.ipfsMetadataCid && (
-                  <a
-                    href={`https://gateway.pinata.cloud/ipfs/${propertyResult.ipfsMetadataCid}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-view-ipfs"
-                  >
-                    🔗 Xem Metadata trên IPFS
-                  </a>
-                )}
-                {mintResult.nft.tokenURI && (
-                  <a
-                    href={mintResult.nft.tokenURI}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-view-ipfs secondary"
-                  >
-                    🌐 Xem Token URI
-                  </a>
-                )}
-                <button
-                  onClick={() => {
-                    setMintResult(null);
-                    setPropertyResult(null);
-                  }}
-                  className="btn-close-result"
-                >
-                  Đóng
-                </button>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="nft-form">
-            {/* Property Type Selection */}
-            <div className="form-group">
-              <label htmlFor="propertyType">Chọn loại bất động sản *</label>
-              <div className="property-type-grid">
-                {Object.keys(propertyTemplates).map((key) => {
-                  const template = propertyTemplates[key];
-                  return (
-                    <div
-                      key={key}
-                      className={`property-type-card ${
-                        propertyType === key ? "active" : ""
-                      }`}
-                      onClick={() => handlePropertyTypeChange(key)}
-                    >
-                      <div className="property-icon">{template.icon}</div>
-                      <div className="property-name">{template.name}</div>
+                  <>
+                    <div className="result-item highlight">
+                      <strong>✅ Bước 4:</strong> Metadata uploaded to IPFS
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                    <div className="result-item">
+                      <strong>IPFS Metadata CID:</strong>
+                      <code>{propertyResult.ipfsMetadataCid}</code>
+                    </div>
+                  </>
+                )}
 
-            {/* Recipient Address */}
-            <div className="form-group">
-              <label htmlFor="recipient">Địa chỉ ví người nhận *</label>
-              <input
-                type="text"
-                id="recipient"
-                name="recipient"
-                value={formData.recipient}
-                onChange={handleInputChange}
-                placeholder="0x..."
-                required
-                className="form-input"
-              />
-            </div>
-
-            {/* Property Name */}
-            <div className="form-group">
-              <label htmlFor="name">Tên bất động sản *</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Ví dụ: Căn hộ Vinhomes Central Park"
-                required
-                className="form-input"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label htmlFor="description">Mô tả *</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Mô tả chi tiết về bất động sản..."
-                required
-                className="form-textarea"
-                rows="4"
-              />
-            </div>
-
-            {/* Price */}
-            <div className="form-group">
-              <label htmlFor="price">Giá (VND) *</label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                placeholder="Ví dụ: 5000000000"
-                required
-                className="form-input"
-              />
-              {formData.price && (
-                <small className="price-display">
-                  ≈ {(parseFloat(formData.price) / 1000000000).toFixed(2)} tỷ
-                  VND
-                </small>
-              )}
-            </div>
-
-            {/* Location */}
-            <div className="form-group">
-              <label>Địa chỉ *</label>
-              <div className="location-grid">
-                <div className="location-field">
-                  <label htmlFor="city">Thành phố</label>
-                  <select
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    required
-                    className="form-select"
-                  >
-                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                    <option value="Hà Nội">Hà Nội</option>
-                    <option value="Đà Nẵng">Đà Nẵng</option>
-                    <option value="Cần Thơ">Cần Thơ</option>
-                    <option value="Bình Dương">Bình Dương</option>
-                    <option value="Đồng Nai">Đồng Nai</option>
-                  </select>
+                <div className="result-item">
+                  <strong>✅ Bước 5:</strong> Lưu MongoDB với ipfsMetadataCid
                 </div>
-                <div className="location-field">
-                  <label htmlFor="district">Quận/Huyện</label>
-                  <input
-                    type="text"
-                    id="district"
-                    name="district"
-                    value={formData.district}
-                    onChange={handleInputChange}
-                    placeholder="VD: Quận 1"
-                    required
-                    className="form-input"
-                  />
-                </div>
-                <div className="location-field">
-                  <label htmlFor="ward">Phường/Xã</label>
-                  <input
-                    type="text"
-                    id="ward"
-                    name="ward"
-                    value={formData.ward}
-                    onChange={handleInputChange}
-                    placeholder="VD: Phường Bến Nghé"
-                    required
-                    className="form-input"
-                  />
-                </div>
-                <div className="location-field full-width">
-                  <label htmlFor="address">Địa chỉ chi tiết</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="VD: 123 Nguyễn Văn A"
-                    required
-                    className="form-input"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Image URL */}
-            <div className="form-group">
-              <label htmlFor="image">URL hình ảnh *</label>
-              <input
-                type="url"
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleInputChange}
-                placeholder="https://example.com/image.jpg"
-                required
-                className="form-input"
-              />
-              {formData.image && (
-                <div className="image-preview">
-                  <img src={formData.image} alt="Preview" />
-                </div>
-              )}
-            </div>
-
-            {/* Dynamic Attributes based on Property Type */}
-            {propertyType && propertyTemplates[propertyType] && (
-              <div className="form-group">
-                <label className="attributes-label">
-                  Thông tin chi tiết {propertyTemplates[propertyType].name}
-                </label>
-
-                <div className="attributes-grid">
-                  {propertyTemplates[propertyType].fields.map(
-                    (field, index) => (
-                      <div key={index} className="attribute-field">
-                        <label>{field.trait_type}</label>
-                        {renderAttributeField(field, index)}
-                      </div>
-                    )
-                  )}
+                <div className="result-item">
+                  <strong>Trạng thái:</strong>
+                  <span className="status-badge">{propertyResult.status}</span>
                 </div>
               </div>
             )}
 
-            {/* Submit Button */}
-            <div className="form-actions">
-              <button type="submit" disabled={loading} className="btn-submit">
-                {loading ? "Đang xử lý..." : "Tạo NFT"}
+            <div className="result-section">
+              <h4>🎨 GIAI ĐOẠN 2: ON-CHAIN (Hoàn tất ✅)</h4>
+              <div className="result-item">
+                <strong>✅ Bước 6:</strong> Gửi tokenURI → Minting Service
+              </div>
+              <div className="result-item">
+                <strong>✅ Bước 7-8:</strong> Mint NFT lên Blockchain
+              </div>
+              <div className="result-item">
+                <strong>Token ID:</strong>
+                <span className="token-id">#{mintResult.nft.tokenId}</span>
+              </div>
+              <div className="result-item">
+                <strong>Contract Address:</strong>
+                <code>{mintResult.nft.contractAddress}</code>
+              </div>
+              <div className="result-item">
+                <strong>Owner:</strong>
+                <code>{mintResult.nft.owner}</code>
+              </div>
+              <div className="result-item">
+                <strong>Transaction Hash:</strong>
+                <code>{mintResult.nft.transactionHash}</code>
+              </div>
+              {mintResult.nft.tokenURI && (
+                <div className="result-item">
+                  <strong>Token URI:</strong>
+                  <code className="small-code">{mintResult.nft.tokenURI}</code>
+                </div>
+              )}
+            </div>
+
+            <div className="result-section">
+              <h4>✅ GIAI ĐOẠN 3: HOÀN TẤT</h4>
+              <div className="result-item">
+                <strong>✅ Bước 9-12:</strong> Update MongoDB & Response
+                Frontend
+              </div>
+              <div className="result-item success-message">
+                🎊 NFT hóa bất động sản hoàn tất 100%!
+              </div>
+            </div>
+
+            <div className="result-actions">
+              {propertyResult.ipfsMetadataCid && (
+                <a
+                  href={`https://gateway.pinata.cloud/ipfs/${propertyResult.ipfsMetadataCid}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-view-ipfs"
+                >
+                  🔗 Xem Metadata trên IPFS
+                </a>
+              )}
+              {mintResult.nft.tokenURI && (
+                <a
+                  href={mintResult.nft.tokenURI}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-view-ipfs secondary"
+                >
+                  🌐 Xem Token URI
+                </a>
+              )}
+              <button
+                onClick={() => {
+                  setMintResult(null);
+                  setPropertyResult(null);
+                }}
+                className="btn-close-result"
+              >
+                Đóng
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="nft-form">
+          {/* Property Type Selection */}
+          <div className="form-group">
+            <label htmlFor="propertyType">Chọn loại bất động sản *</label>
+            <div className="property-type-grid">
+              {Object.keys(propertyTemplates).map((key) => {
+                const template = propertyTemplates[key];
+                return (
+                  <div
+                    key={key}
+                    className={`property-type-card ${
+                      propertyType === key ? "active" : ""
+                    }`}
+                    onClick={() => handlePropertyTypeChange(key)}
+                  >
+                    <div className="property-icon">{template.icon}</div>
+                    <div className="property-name">{template.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recipient Address */}
+          <div className="form-group">
+            <label htmlFor="recipient">Địa chỉ ví người nhận *</label>
+            <input
+              type="text"
+              id="recipient"
+              name="recipient"
+              value={formData.recipient}
+              onChange={handleInputChange}
+              placeholder="0x..."
+              required
+              className="form-input"
+            />
+          </div>
+
+          {/* Property Name */}
+          <div className="form-group">
+            <label htmlFor="name">Tên bất động sản *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              placeholder="Ví dụ: Căn hộ Vinhomes Central Park"
+              required
+              className="form-input"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="form-group">
+            <label htmlFor="description">Mô tả *</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Mô tả chi tiết về bất động sản..."
+              required
+              className="form-textarea"
+              rows="4"
+            />
+          </div>
+
+          {/* Price */}
+          <div className="form-group">
+            <label htmlFor="price">Giá (VND) *</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              placeholder="Ví dụ: 5000000000"
+              required
+              className="form-input"
+            />
+            {formData.price && (
+              <small className="price-display">
+                ≈ {(parseFloat(formData.price) / 1000000000).toFixed(2)} tỷ VND
+              </small>
+            )}
+          </div>
+
+          {/* Location */}
+          <div className="form-group">
+            <label>Địa chỉ *</label>
+            <div className="location-grid">
+              <div className="location-field">
+                <label htmlFor="city">Thành phố</label>
+                <select
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  required
+                  className="form-select"
+                >
+                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                  <option value="Hà Nội">Hà Nội</option>
+                  <option value="Đà Nẵng">Đà Nẵng</option>
+                  <option value="Cần Thơ">Cần Thơ</option>
+                  <option value="Bình Dương">Bình Dương</option>
+                  <option value="Đồng Nai">Đồng Nai</option>
+                </select>
+              </div>
+              <div className="location-field">
+                <label htmlFor="district">Quận/Huyện</label>
+                <input
+                  type="text"
+                  id="district"
+                  name="district"
+                  value={formData.district}
+                  onChange={handleInputChange}
+                  placeholder="VD: Quận 1"
+                  required
+                  className="form-input"
+                />
+              </div>
+              <div className="location-field">
+                <label htmlFor="ward">Phường/Xã</label>
+                <input
+                  type="text"
+                  id="ward"
+                  name="ward"
+                  value={formData.ward}
+                  onChange={handleInputChange}
+                  placeholder="VD: Phường Bến Nghé"
+                  required
+                  className="form-input"
+                />
+              </div>
+              <div className="location-field full-width">
+                <label htmlFor="address">Địa chỉ chi tiết</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="VD: 123 Nguyễn Văn A"
+                  required
+                  className="form-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Image URL */}
+          <div className="form-group">
+            <label htmlFor="image">URL hình ảnh *</label>
+            <input
+              type="url"
+              id="image"
+              name="image"
+              value={formData.image}
+              onChange={handleInputChange}
+              placeholder="https://example.com/image.jpg"
+              required
+              className="form-input"
+            />
+            {formData.image && (
+              <div className="image-preview">
+                <img src={formData.image} alt="Preview" />
+              </div>
+            )}
+          </div>
+
+          {/* Dynamic Attributes based on Property Type */}
+          {propertyType && propertyTemplates[propertyType] && (
+            <div className="form-group">
+              <label className="attributes-label">
+                Thông tin chi tiết {propertyTemplates[propertyType].name}
+              </label>
+
+              <div className="attributes-grid">
+                {propertyTemplates[propertyType].fields.map((field, index) => (
+                  <div key={index} className="attribute-field">
+                    <label>{field.trait_type}</label>
+                    {renderAttributeField(field, index)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="form-actions">
+            <button type="submit" disabled={loading} className="btn-submit">
+              {loading ? "Đang xử lý..." : "Tạo NFT"}
+            </button>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 

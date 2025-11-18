@@ -7,6 +7,7 @@ import Dashboard from "./pages/Admin/Dashboard/Dashboard";
 import Users from "./pages/Admin/Users/Users";
 import Properties from "./pages/Admin/Properties/Properties";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
+import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Web3Provider } from "./contexts/Web3Context";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -31,7 +32,9 @@ function App() {
                     path="/admin"
                     element={
                       <ProtectedRoute>
-                        <Dashboard />
+                        <AdminLayout>
+                          <Dashboard />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
@@ -39,7 +42,9 @@ function App() {
                     path="/admin/dashboard"
                     element={
                       <ProtectedRoute>
-                        <Dashboard />
+                        <AdminLayout>
+                          <Dashboard />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
@@ -47,7 +52,9 @@ function App() {
                     path="/admin/nft"
                     element={
                       <ProtectedRoute>
-                        <Nft />
+                        <AdminLayout>
+                          <Nft />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
@@ -55,7 +62,9 @@ function App() {
                     path="/admin/list-nft"
                     element={
                       <ProtectedRoute>
-                        <ListNFT />
+                        <AdminLayout>
+                          <ListNFT />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
@@ -63,7 +72,9 @@ function App() {
                     path="/admin/users"
                     element={
                       <ProtectedRoute>
-                        <Users />
+                        <AdminLayout>
+                          <Users />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
@@ -71,7 +82,9 @@ function App() {
                     path="/admin/properties"
                     element={
                       <ProtectedRoute>
-                        <Properties />
+                        <AdminLayout>
+                          <Properties />
+                        </AdminLayout>
                       </ProtectedRoute>
                     }
                   />
