@@ -2,15 +2,15 @@
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #f6f7f8;
+  background: #0f172a;
 }
 
 /* Sidebar */
 .admin-sidebar {
   width: 280px;
   min-width: 280px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  background: #1e293b;
+  border-right: 1px solid #334155;
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -25,7 +25,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
 }
 
 /* Sidebar Header */
@@ -43,9 +43,9 @@
 }
 
 .logo-icon {
-  width: 32px;
-  height: 32px;
-  color: #197fe6;
+  width: 36px;
+  height: 36px;
+  color: #3b82f6;
 }
 
 .logo-icon svg {
@@ -56,7 +56,7 @@
 .logo-text {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #ffffff;
   margin: 0;
 }
 
@@ -72,10 +72,10 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -87,14 +87,20 @@
   text-align: left;
 }
 
+.nav-icon-svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 .nav-item:hover:not(.disabled) {
-  background: #f1f5f9;
-  color: #334155;
+  background: #334155;
+  color: #e2e8f0;
 }
 
 .nav-item.active {
-  background: rgba(25, 127, 230, 0.1);
-  color: #197fe6;
+  background: #334155;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -124,9 +130,17 @@
 
 /* Sidebar Footer */
 .sidebar-footer {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #334155;
   padding-top: 1rem;
   margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-btn,
+.logout-btn {
+  justify-content: flex-start;
 }
 
 /* Main Content Area */
@@ -135,12 +149,13 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: #0f172a;
 }
 
 /* Top Header */
 .admin-topbar {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
   padding: 1rem 2.5rem;
   display: flex;
   align-items: center;
@@ -165,13 +180,13 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .page-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #ffffff;
   margin: 0;
 }
 
@@ -187,7 +202,8 @@
 .search-box {
   display: flex;
   align-items: center;
-  background: #f1f5f9;
+  background: #0f172a;
+  border: 1px solid #334155;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   gap: 0.5rem;
@@ -204,13 +220,13 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #1a202c;
+  color: #e2e8f0;
   font-size: 0.875rem;
   width: 100%;
 }
 
 .search-input::placeholder {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 /* Icon Button */
@@ -221,14 +237,16 @@
   width: 40px;
   height: 40px;
   border-radius: 0.5rem;
-  background: #f1f5f9;
-  border: none;
+  background: #0f172a;
+  border: 1px solid #334155;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: #94a3b8;
 }
 
 .icon-btn:hover {
-  background: #e2e8f0;
+  background: #334155;
+  color: #e2e8f0;
 }
 
 .icon-btn .icon {
@@ -264,12 +282,12 @@
 .user-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #ffffff;
 }
 
 .user-email {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 /* Main Content */

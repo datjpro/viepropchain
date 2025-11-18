@@ -318,30 +318,112 @@ const Dashboard = () => {
 
       {/* Quick Actions */}
       <div className="quick-actions">
-        <h2>⚡ Thao tác nhanh</h2>
+        <h2>Quick Actions</h2>
         <div className="actions-grid">
           <a href="/admin/nft" className="action-card">
-            <div className="action-icon">🎨</div>
-            <div className="action-title">Tạo NFT mới</div>
-            <div className="action-desc">Mint NFT cho BĐS</div>
-          </a>
-
-          <a href="/admin/list-nft" className="action-card">
-            <div className="action-icon">📊</div>
-            <div className="action-title">Quản lý NFT</div>
-            <div className="action-desc">Xem tất cả NFT</div>
-          </a>
-
-          <a href="/admin/users" className="action-card">
-            <div className="action-icon">👥</div>
-            <div className="action-title">Quản lý User</div>
-            <div className="action-desc">Xem người dùng</div>
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="action-title">Mint NFT</div>
+            <div className="action-desc">Create a new NFT for a property</div>
           </a>
 
           <a href="/admin/properties" className="action-card">
-            <div className="action-icon">🏠</div>
-            <div className="action-title">Quản lý BĐS</div>
-            <div className="action-desc">Properties database</div>
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+              </svg>
+            </div>
+            <div className="action-title">Quản lý Bất động sản</div>
+            <div className="action-desc">View and manage all properties</div>
+          </a>
+
+          <a
+            href="/admin/marketplace"
+            className="action-card"
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="action-title">Quản lý Sàn niêm yết</div>
+            <div className="action-desc">
+              Oversee active marketplace listings
+            </div>
+          </a>
+
+          <a href="/admin/users" className="action-card">
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+            </div>
+            <div className="action-title">Quản lý Người dùng</div>
+            <div className="action-desc">View and manage platform users</div>
+          </a>
+
+          <a href="/admin/list-nft" className="action-card">
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+              </svg>
+            </div>
+            <div className="action-title">Quản lý NFT</div>
+            <div className="action-desc">Browse the complete NFT ledger</div>
+          </a>
+
+          <a
+            href="#"
+            className="action-card"
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            <div className="action-icon">
+              <svg
+                style={{ width: "48px", height: "48px", color: "#3b82f6" }}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="action-title">Transaction History</div>
+            <div className="action-desc">View all platform transactions</div>
           </a>
         </div>
       </div>
