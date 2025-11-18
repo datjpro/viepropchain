@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
+import { API_ENDPOINTS } from "../../../config/api";
 import "./Nft.css";
 
 const Nft = () => {
@@ -419,16 +420,13 @@ const Nft = () => {
       };
 
       // Gọi endpoint create-and-mint - TẤT CẢ TRONG 1 LẦN
-      const response = await fetch(
-        "http://localhost:4003/api/properties/create-and-mint",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestData),
-        }
-      );
+      const response = await fetch(API_ENDPOINTS.ADMIN.CREATE_AND_MINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
 
       const data = await response.json();
 

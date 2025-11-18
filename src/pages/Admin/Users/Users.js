@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
+import { API_GATEWAY_URL } from "../../../config/api";
 import "./Users.css";
 
 const Users = () => {
@@ -24,7 +25,7 @@ const Users = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:4010/api/auth/users?page=${pagination.page}&limit=${pagination.limit}`
+        `${API_GATEWAY_URL}/api/auth/users?page=${pagination.page}&limit=${pagination.limit}`
       );
       const data = await response.json();
 
@@ -136,7 +137,7 @@ const Users = () => {
   const updateUserRole = async (userId, newRole) => {
     try {
       const response = await fetch(
-        `http://localhost:4010/api/auth/users/${userId}/role`,
+        `${API_GATEWAY_URL}/api/auth/users/${userId}/role`,
         {
           method: "PUT",
           headers: {

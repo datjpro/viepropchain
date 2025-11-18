@@ -81,7 +81,17 @@
   font-weight: 600;
 }
 
-.error-content button {
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.error-content button,
+.btn-primary,
+.btn-secondary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -94,7 +104,17 @@
   margin-top: 1rem;
 }
 
-.error-content button:hover {
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.error-content button:hover,
+.btn-primary:hover,
+.btn-secondary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
 }

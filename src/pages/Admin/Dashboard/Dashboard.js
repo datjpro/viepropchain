@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
 import AdminStatusChecker from "../../../components/AdminStatusChecker/AdminStatusChecker";
+import { API_ENDPOINTS } from "../../../config/api";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -23,20 +24,18 @@ const Dashboard = () => {
     try {
       setStats((prev) => ({ ...prev, loading: true }));
 
-      // Fetch properties stats từ admin service
+      // Fetch properties stats từ admin service via API Gateway
       const propertiesResponse = await fetch(
-        "http://localhost:4003/api/properties/stats"
+        API_ENDPOINTS.ADMIN.PROPERTIES_STATS
       );
       const propertiesData = await propertiesResponse.json();
 
-      // Fetch users stats từ auth service
-      const usersResponse = await fetch("http://localhost:4010/api/auth/stats");
+      // Fetch users stats từ auth service via API Gateway
+      const usersResponse = await fetch(API_ENDPOINTS.AUTH.STATS);
       const usersData = await usersResponse.json();
 
-      // Fetch NFTs stats từ blockchain service
-      const nftsResponse = await fetch(
-        "http://localhost:4004/api/blockchain/total-supply"
-      );
+      // Fetch NFTs stats từ blockchain service via API Gateway
+      const nftsResponse = await fetch(API_ENDPOINTS.BLOCKCHAIN.TOTAL_SUPPLY);
       const nftsData = await nftsResponse.json();
 
       // Check system health
@@ -75,11 +74,11 @@ const Dashboard = () => {
 
   const checkSystemHealth = async () => {
     const services = [
-      { name: "Admin Service", url: "http://localhost:4003/api/health" },
-      { name: "Auth Service", url: "http://localhost:4010/api/health" },
-      { name: "Blockchain Service", url: "http://localhost:4004/api/health" },
-      { name: "Marketplace Service", url: "http://localhost:4008/api/health" },
-      { name: "IPFS Service", url: "http://localhost:4002/api/health" },
+      { name: "Admin Service", url: API_ENDPOINTS.ADMIN.HEALTH },
+      { name: "Auth Service", url: API_ENDPOINTS.AUTH.HEALTH },
+      { name: "Blockchain Service", url: API_ENDPOINTS.BLOCKCHAIN.HEALTH },
+      { name: "Marketplace Service", url: API_ENDPOINTS.MARKETPLACE.HEALTH },
+      { name: "IPFS Service", url: API_ENDPOINTS.IPFS.HEALTH },
     ];
 
     const healthChecks = await Promise.allSettled(
@@ -122,15 +121,15 @@ const Dashboard = () => {
 
   const fetchRecentActivities = async () => {
     try {
-      // Fetch recent properties
+      // Fetch recent properties via API Gateway
       const propertiesResponse = await fetch(
-        "http://localhost:4003/api/properties?limit=5&sort=createdAt:-1"
+        `${API_ENDPOINTS.ADMIN.PROPERTIES}?limit=5&sort=createdAt:-1`
       );
       const propertiesData = await propertiesResponse.json();
 
-      // Fetch recent users
+      // Fetch recent users via API Gateway
       const usersResponse = await fetch(
-        "http://localhost:4010/api/auth/users/recent?limit=5"
+        `${API_ENDPOINTS.AUTH.USERS_RECENT}?limit=5`
       );
       const usersData = await usersResponse.json();
 

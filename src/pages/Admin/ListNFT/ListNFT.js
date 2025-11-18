@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
+import { API_ENDPOINTS } from "../../../config/api";
 import "./ListNFT.css";
 
 const ListNFT = () => {
@@ -17,8 +18,8 @@ const ListNFT = () => {
   const fetchNFTs = async () => {
     try {
       setLoading(true);
-      // Gọi Admin Service để lấy properties
-      const response = await fetch("http://localhost:4003/api/properties");
+      // Gọi Admin Service để lấy properties via API Gateway
+      const response = await fetch(API_ENDPOINTS.ADMIN.PROPERTIES);
       const data = await response.json();
 
       if (data.success) {

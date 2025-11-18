@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
+import { API_ENDPOINTS } from "../../../config/api";
 import "./Properties.css";
 
 const Properties = () => {
@@ -24,7 +25,7 @@ const Properties = () => {
     try {
       setLoading(true);
 
-      let url = `http://localhost:4003/api/properties?page=${pagination.page}&limit=${pagination.limit}`;
+      let url = `${API_ENDPOINTS.ADMIN.PROPERTIES}?page=${pagination.page}&limit=${pagination.limit}`;
 
       // Add filter to URL if not ALL
       if (filter !== "ALL") {
@@ -167,7 +168,7 @@ const Properties = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:4003/api/properties/${propertyId}`,
+        API_ENDPOINTS.ADMIN.PROPERTY_BY_ID(propertyId),
         {
           method: "DELETE",
         }
