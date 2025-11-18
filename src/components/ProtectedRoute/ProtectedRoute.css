@@ -54,7 +54,31 @@
 .error-subtext {
   font-size: 0.95rem !important;
   color: #999 !important;
-  margin-bottom: 2rem !important;
+  margin-bottom: 1rem !important;
+  padding: 0.8rem;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+}
+
+.error-subtext strong {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.error-account {
+  font-size: 0.9rem !important;
+  color: #555 !important;
+  margin-bottom: 1.5rem !important;
+  padding: 0.8rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  word-break: break-all;
+}
+
+.error-account strong {
+  color: #667eea;
+  font-weight: 600;
 }
 
 .error-content button {

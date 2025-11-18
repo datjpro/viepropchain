@@ -16,13 +16,10 @@ export const AdminProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
 
-  // Địa chỉ email admin (thay bằng email admin thực tế)
-  // Move outside component to prevent recreating on every render
+  // 🔒 ADMIN EMAIL - CHỈ TÀI KHOẢN NÀY MỚI CÓ QUYỀN ADMIN
   const ADMIN_EMAILS = React.useMemo(
     () => [
-      "todat2207@gmail.com",
-      "datto2207@gmail.com",
-      // Thêm các email admin khác vào đây
+      "todat2207@gmail.com", // Super Admin - Full Access
     ],
     []
   );

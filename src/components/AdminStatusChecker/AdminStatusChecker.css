@@ -1,0 +1,141 @@
+.admin-status-checker {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+  max-width: 800px;
+}
+
+.admin-status-checker h3 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.4rem;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-item {
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #ddd;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-item.success {
+  border-left-color: #28a745;
+  background: #d4edda;
+}
+
+.status-item.error {
+  border-left-color: #dc3545;
+  background: #f8d7da;
+}
+
+.status-item.info {
+  border-left-color: #17a2b8;
+  background: #d1ecf1;
+}
+
+.status-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.status-value {
+  color: #333;
+  font-size: 1rem;
+  word-break: break-all;
+}
+
+.access-summary {
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.access-summary.granted {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: 2px solid #28a745;
+}
+
+.access-summary.denied {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  border: 2px solid #dc3545;
+}
+
+.access-summary h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+}
+
+.access-summary p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.required-email {
+  margin-top: 1rem !important;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.required-email strong {
+  color: #dc3545;
+  font-weight: 700;
+}
+
+.debug-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.debug-info summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #667eea;
+  user-select: none;
+}
+
+.debug-info summary:hover {
+  color: #5568d3;
+}
+
+.debug-info pre {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #2d2d2d;
+  color: #f8f8f2;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-status-checker {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}

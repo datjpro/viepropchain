@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminHeader from "../../../components/AdminHeader/AdminHeader";
+import AdminStatusChecker from "../../../components/AdminStatusChecker/AdminStatusChecker";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -211,6 +212,9 @@ const Dashboard = () => {
             🔄 Làm mới
           </button>
         </div>
+
+        {/* Admin Status Checker - Debug Tool */}
+        <AdminStatusChecker />
 
         {/* Stats Cards */}
         <div className="stats-grid">

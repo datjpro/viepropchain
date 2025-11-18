@@ -39,12 +39,16 @@ const ProtectedRoute = ({ children }) => {
       <div className="protected-route-error">
         <div className="error-content">
           <h2>⛔ Access Denied</h2>
-          <p>You don't have permission to access this page.</p>
+          <p>Bạn không có quyền truy cập trang này.</p>
           <p className="error-subtext">
-            Only administrators can access this area.
+            🔒 Chỉ tài khoản admin <strong>todat2207@gmail.com</strong> mới có
+            quyền truy cập.
+          </p>
+          <p className="error-account">
+            Tài khoản hiện tại: <strong>{account}</strong>
           </p>
           <button onClick={() => (window.location.href = "/")}>
-            Go to Home
+            Quay về Trang chủ
           </button>
         </div>
       </div>

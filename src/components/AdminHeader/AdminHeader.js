@@ -7,15 +7,11 @@ const AdminHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuItems = [
+    { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/admin/nft", label: "Mint NFT", icon: "🎨" },
     { path: "/admin/list-nft", label: "Quản lý NFT", icon: "📋" },
-    {
-      path: "/admin/marketplace",
-      label: "Marketplace",
-      icon: "🏪",
-      disabled: true,
-    },
-    { path: "/admin/analytics", label: "Thống kê", icon: "📊", disabled: true },
+    { path: "/admin/users", label: "Người dùng", icon: "👥" },
+    { path: "/admin/properties", label: "Bất động sản", icon: "🏠" },
   ];
 
   const isActive = (path) => location.pathname === path;
