@@ -6,6 +6,7 @@ import ListNFT from "./pages/Admin/ListNFT/ListNFT";
 import Dashboard from "./pages/Admin/Dashboard/Dashboard";
 import Users from "./pages/Admin/Users/Users";
 import Properties from "./pages/Admin/Properties/Properties";
+import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import { LanguageProvider } from "./contexts/LanguageContext";
@@ -26,6 +27,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/auth/callback" element={<OAuthCallback />} />
+                  <Route path="/profile" element={<Profile />} />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}
                   <Route

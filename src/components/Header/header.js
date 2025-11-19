@@ -6,12 +6,13 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useAdmin } from "../../contexts/AdminContext";
 import { translations } from "../../translations/translations";
 import Toast from "../Toast/Toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const { user, login, logout, isAuthenticated, loading, error } = useAuth();
   const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -93,7 +94,10 @@ const Header = () => {
                     onMouseEnter={() => setShowUserDropdown(true)}
                     onMouseLeave={() => setShowUserDropdown(false)}
                   >
-                    <button className="user-icon-btn">
+                    <button
+                      className="user-icon-btn"
+                      onClick={() => navigate("/profile")}
+                    >
                       <span className="user-icon">👤</span>
                       {isAdmin && <span className="admin-crown">👑</span>}
                     </button>
@@ -124,6 +128,16 @@ const Header = () => {
                             {user.email}
                           </span>
                         </div>
+                        <button
+                          className="dropdown-profile-btn"
+                          onClick={() => {
+                            navigate("/profile");
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          <span>👤</span>
+                          {language === "en" ? "Profile" : "Hồ sơ"}
+                        </button>
                         <button
                           className="dropdown-logout-btn"
                           onClick={logout}
