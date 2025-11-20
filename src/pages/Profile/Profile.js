@@ -24,101 +24,242 @@ const Profile = () => {
   const [myProperties, setMyProperties] = useState([]);
   const [myTransactions, setMyTransactions] = useState([]);
 
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("🔍 State updated - myProperties:", myProperties.length);
+  }, [myProperties]);
+
+  useEffect(() => {
+    console.log("🔍 State updated - myNFTs:", myNFTs.length);
+  }, [myNFTs]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
+  // Auto-sync wallet if user connected MetaMask but not linked yet
+  useEffect(() => {
+    const syncWalletIfNeeded = async () => {
+      // Kiểm tra: user đã login, có MetaMask account, nhưng user object chưa có walletAddress
+      if (user && account && !user.walletAddress) {
+        console.log("🔄 Auto-linking wallet address:", account);
+
+        try {
+          // Gọi API link wallet
+          const message = `Link wallet ${account.toLowerCase()} to ViePropChain account ${
+            user.email
+          }`;
+
+          // Request signature from MetaMask
+          const signature = await window.ethereum.request({
+            method: "personal_sign",
+            params: [message, account],
+          });
+
+          // Call link wallet API
+          const response = await fetch(
+            "http://localhost:4000/api/auth/link-wallet",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem(
+                  "viepropchain_token"
+                )}`,
+              },
+              body: JSON.stringify({
+                walletAddress: account,
+                signature: signature,
+              }),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            console.log("✅ Wallet linked successfully");
+            // Update token with new one that includes wallet
+            if (data.token) {
+              localStorage.setItem("viepropchain_token", data.token);
+            }
+            // Reload to get new user data
+            window.location.reload();
+          } else {
+            console.error("❌ Failed to link wallet:", data.error);
+          }
+        } catch (error) {
+          console.error("❌ Error linking wallet:", error);
+        }
+      }
+    };
+
+    syncWalletIfNeeded();
+  }, [user, account]);
+
   // Fetch user data khi có wallet hoặc user thay đổi
   useEffect(() => {
+    let isMounted = true; // Prevent state updates after unmount
+
     const fetchUserData = async () => {
-      if (!account && !user?.walletAddress) {
-        setLoading(false);
+      console.log("🔄 useEffect triggered - fetchUserData starting...");
+
+      // Debug: Log toàn bộ user object
+      console.log("👤 Full user object:", JSON.stringify(user, null, 2));
+
+      const userId = user?.id || user?.userId || user?._id;
+      if (!userId) {
+        console.log("⚠️ No user ID found:", user);
+        console.log("   Available keys:", user ? Object.keys(user) : "no user");
+        if (isMounted) setLoading(false);
         return;
       }
 
-      setLoading(true);
+      console.log("✅ Found userId:", userId);
+      if (isMounted) setLoading(true);
       try {
-        const walletAddress = account || user?.walletAddress;
-        console.log("🔍 Fetching data for wallet:", walletAddress);
+        console.log("🔍 Fetching data for user:", userId);
+        console.log("   Wallet:", user?.walletAddress);
+        console.log("   Email:", user?.email);
 
-        // 1. Lấy danh sách NFTs của user
-        const nftsResponse = await fetch(
-          `http://localhost:4000/api/marketplace/my-nfts/${walletAddress}`
+        // 1️⃣ Fetch Properties from Database (by userId)
+        const propertiesResponse = await fetch(
+          `http://localhost:4000/api/user/users/${userId}/properties`
         );
-        const nftsData = await nftsResponse.json();
-        console.log("📦 NFTs Response:", nftsData);
+        const propertiesData = await propertiesResponse.json();
+        console.log("📦 Properties Response:", propertiesData);
 
-        if (nftsData.success && nftsData.data) {
-          // API trả về data.nfts, không phải data trực tiếp
-          const nftsList = nftsData.data.nfts || [];
-          console.log("✅ NFTs List:", nftsList);
-          console.log("📊 Total NFTs:", nftsList.length);
-          setMyNFTs(nftsList);
-
-          // Tính tổng giá trị từ NFTs
-          const totalValue = nftsList.reduce((sum, nft) => {
-            return sum + (parseFloat(nft.price) || 0);
-          }, 0);
-
-          setUserStats((prev) => ({
-            ...prev,
-            ownedNFTs: nftsList.length,
-            totalValue: totalValue / 1e18, // Convert từ Wei sang ETH
-          }));
-
-          console.log("📈 Updated stats:", {
-            ownedNFTs: nftsList.length,
-            totalValue: totalValue / 1e18,
-          });
-        }
-
-        // 2. Lấy danh sách properties
-        // API này có thể cần authentication token
-        const token = localStorage.getItem("jwt_token");
-        if (token) {
-          const propertiesResponse = await fetch(
-            `http://localhost:4000/api/properties/my-properties`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const propertiesData = await propertiesResponse.json();
-
+        if (isMounted) {
           if (propertiesData.success) {
+            console.log(
+              "✅ Setting properties:",
+              propertiesData.data?.length,
+              "items"
+            );
             setMyProperties(propertiesData.data || []);
-            setUserStats((prev) => ({
-              ...prev,
-              totalProperties: propertiesData.data.length,
-            }));
+          } else {
+            console.warn(
+              "⚠️ Failed to fetch properties:",
+              propertiesData.error
+            );
+            setMyProperties([]);
           }
         }
 
-        // 3. Lấy lịch sử giao dịch (có thể từ blockchain hoặc database)
-        const transactionsResponse = await fetch(
-          `http://localhost:4008/api/marketplace/transactions/${walletAddress}`
-        );
-        const transactionsData = await transactionsResponse.json();
+        // 2️⃣ Fetch NFTs from Blockchain (by walletAddress)
+        let nftsData = { success: false, data: { nfts: [], balance: 0 } };
+        if (user?.walletAddress) {
+          const nftsResponse = await fetch(
+            `http://localhost:4000/api/marketplace/my-nfts/${user.walletAddress.toLowerCase()}`
+          );
+          nftsData = await nftsResponse.json();
+          console.log("🎨 NFTs Response:", nftsData);
 
-        if (transactionsData.success) {
-          setMyTransactions(transactionsData.data || []);
-          setUserStats((prev) => ({
-            ...prev,
-            transactions: transactionsData.data.length,
-          }));
+          if (isMounted) {
+            if (nftsData.success && nftsData.data) {
+              console.log(
+                "✅ Setting NFTs:",
+                nftsData.data.nfts?.length,
+                "items"
+              );
+              setMyNFTs(nftsData.data.nfts || []);
+            } else {
+              console.warn("⚠️ Failed to fetch NFTs:", nftsData.error);
+              setMyNFTs([]);
+            }
+          }
+        } else {
+          console.log("ℹ️ No wallet address linked, skipping NFTs fetch");
+          if (isMounted) setMyNFTs([]);
         }
+
+        // 3️⃣ Fetch Transactions (by walletAddress) - wrapped in try-catch
+        let txData = { success: false, data: [] };
+        if (user?.walletAddress) {
+          try {
+            const txResponse = await fetch(
+              `http://localhost:4000/api/marketplace/transactions/${user.walletAddress.toLowerCase()}`
+            );
+
+            if (txResponse.ok) {
+              txData = await txResponse.json();
+              console.log("📊 Transactions Response:", txData);
+
+              if (isMounted) {
+                if (txData.success) {
+                  setMyTransactions(txData.data || []);
+                } else {
+                  console.warn(
+                    "⚠️ Failed to fetch transactions:",
+                    txData.error
+                  );
+                  setMyTransactions([]);
+                }
+              }
+            } else {
+              console.warn(
+                "⚠️ Transactions endpoint not found (404) - skipping"
+              );
+              if (isMounted) setMyTransactions([]);
+            }
+          } catch (txError) {
+            console.warn(
+              "⚠️ Transactions error (non-critical):",
+              txError.message
+            );
+            if (isMounted) setMyTransactions([]);
+          }
+        } else {
+          console.log(
+            "ℹ️ No wallet address linked, skipping transactions fetch"
+          );
+          if (isMounted) setMyTransactions([]);
+        }
+
+        // Calculate total value from NFTs
+        const totalValue = (nftsData?.data?.nfts || []).reduce((sum, nft) => {
+          const price = parseFloat(nft.price) || 0;
+          return sum + price;
+        }, 0);
+
+        // Update stats
+        if (isMounted) {
+          setUserStats({
+            totalProperties: propertiesData.data?.length || 0,
+            ownedNFTs: nftsData?.data?.nfts?.length || 0,
+            transactions: txData?.data?.length || 0,
+            totalValue: totalValue / 1e18, // Convert wei to ETH
+          });
+        }
+
+        console.log("✅ All data loaded successfully");
+        console.log("📊 Stats:", {
+          properties: propertiesData.data?.length || 0,
+          nfts: nftsData?.data?.nfts?.length || 0,
+          transactions: txData?.data?.length || 0,
+          totalValue: (totalValue / 1e18).toFixed(4) + " ETH",
+        });
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu user:", error);
+        console.error("❌ Error fetching data:", error);
+        if (isMounted) {
+          setMyProperties([]);
+          setMyNFTs([]);
+          setMyTransactions([]);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [account, user?.walletAddress]);
+
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+      console.log("🧹 Cleanup - preventing state updates");
+    };
+  }, [user]); // Re-run when user object changes
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -129,6 +270,17 @@ const Profile = () => {
     return `${address.substring(0, 6)}...${address.substring(
       address.length - 4
     )}`;
+  };
+
+  const convertIpfsUrl = (ipfsUrl) => {
+    if (!ipfsUrl) return "";
+    if (ipfsUrl.startsWith("ipfs://")) {
+      return `https://ipfs.io/ipfs/${ipfsUrl.replace("ipfs://", "")}`;
+    }
+    if (ipfsUrl.startsWith("http")) {
+      return ipfsUrl;
+    }
+    return `https://ipfs.io/ipfs/${ipfsUrl}`;
   };
 
   const getUserInitial = () => {
@@ -165,6 +317,7 @@ const Profile = () => {
               <div className="profile-info-section">
                 <h1 className="profile-username">{getUsername()}</h1>
                 <p className="profile-email-text">{user?.email}</p>
+
                 {account && (
                   <div className="wallet-badge">
                     <span className="wallet-icon">💼</span>
@@ -313,6 +466,33 @@ const Profile = () => {
                     ? "Account Overview"
                     : "Tổng quan tài khoản"}
                 </h2>
+
+                {/* DEBUG INFO */}
+                <div
+                  style={{
+                    background: "#f0f0f0",
+                    padding: "1rem",
+                    marginBottom: "1rem",
+                    borderRadius: "0.5rem",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <h4>🔍 Debug Info:</h4>
+                  <pre style={{ overflow: "auto", maxHeight: "200px" }}>
+                    {JSON.stringify(
+                      {
+                        userId:
+                          user?.id || user?.userId || user?._id || "NOT FOUND",
+                        availableKeys: user ? Object.keys(user) : [],
+                        walletAddress: user?.walletAddress,
+                        email: user?.email,
+                      },
+                      null,
+                      2
+                    )}
+                  </pre>
+                </div>
+
                 <div className="overview-grid-new">
                   <div className="overview-card-new">
                     <h3 className="overview-card-title">
@@ -388,6 +568,20 @@ const Profile = () => {
                 <h2 className="tab-title-new">
                   {language === "en" ? "My Properties" : "Bất động sản của tôi"}
                 </h2>
+
+                {/* Debug info */}
+                <div
+                  style={{
+                    padding: "1rem",
+                    background: "#f0f0f0",
+                    marginBottom: "1rem",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <strong>Debug:</strong> Loading: {loading ? "true" : "false"},
+                  Properties count: {myProperties.length}
+                </div>
+
                 {loading ? (
                   <div className="loading-state-new">
                     <p>{language === "en" ? "Loading..." : "Đang tải..."}</p>
@@ -399,26 +593,69 @@ const Profile = () => {
                         <div className="property-image-new">
                           {property.images && property.images.length > 0 ? (
                             <img
-                              src={`https://ipfs.io/ipfs/${property.images[0]}`}
-                              alt={property.name}
+                              src={convertIpfsUrl(property.images[0])}
+                              alt={property.title || property.name}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.parentElement.innerHTML =
+                                  '<div class="no-image-new">🏠</div>';
+                              }}
                             />
                           ) : (
                             <div className="no-image-new">🏠</div>
                           )}
+                          {property.status && (
+                            <div className="property-status-badge">
+                              {property.status === "draft"
+                                ? "📝 " + (language === "en" ? "Draft" : "Nháp")
+                                : property.status === "published"
+                                ? "✅ " +
+                                  (language === "en" ? "Published" : "Đã đăng")
+                                : "📌 " + property.status}
+                            </div>
+                          )}
+                          {property.nft?.isMinted && (
+                            <div className="property-nft-badge">
+                              🎨 NFT #{property.nft.tokenId}
+                            </div>
+                          )}
                         </div>
                         <div className="property-info-new">
-                          <h3>{property.name}</h3>
-                          <p className="property-location-new">
-                            📍 {property.address?.city || "N/A"}
+                          <h3>
+                            {property.title ||
+                              property.name ||
+                              "Unnamed Property"}
+                          </h3>
+                          <p className="property-description-new">
+                            {property.description ||
+                              (language === "en"
+                                ? "No description"
+                                : "Không có mô tả")}
                           </p>
                           <p className="property-type-new">
-                            {property.propertyType}
+                            🏘️ {property.propertyType || "N/A"}
                           </p>
+                          {property.address && (
+                            <p className="property-location-new">
+                              📍 {property.address.district},{" "}
+                              {property.address.city}
+                            </p>
+                          )}
                           <div className="property-meta-new">
-                            <span>📏 {property.area} m²</span>
-                            <span>🛌 {property.bedrooms} PN</span>
-                            <span>🚿 {property.bathrooms} WC</span>
+                            <span>📏 {property.area || 0} m²</span>
+                            {property.bedrooms > 0 && (
+                              <span>🛌 {property.bedrooms} PN</span>
+                            )}
+                            {property.bathrooms > 0 && (
+                              <span>🚿 {property.bathrooms} WC</span>
+                            )}
                           </div>
+                          {property.price > 0 && (
+                            <div className="property-price-new">
+                              💰 {property.price.toLocaleString()}{" "}
+                              {property.currency || "VND"}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -449,7 +686,34 @@ const Profile = () => {
                 <h2 className="tab-title-new">
                   {language === "en" ? "My NFTs" : "NFT của tôi"}
                 </h2>
-                {loading ? (
+
+                {/* Debug info */}
+                <div
+                  style={{
+                    padding: "1rem",
+                    background: "#f0f0f0",
+                    marginBottom: "1rem",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <strong>Debug:</strong> Loading: {loading ? "true" : "false"},
+                  NFTs count: {myNFTs.length}, Wallet:{" "}
+                  {user?.walletAddress || "none"}
+                </div>
+
+                {!user?.walletAddress && !account ? (
+                  <div className="empty-state-new">
+                    <span className="empty-icon-new">🔗</span>
+                    <p className="empty-text-new">
+                      {language === "en"
+                        ? "Please connect your wallet to view NFTs"
+                        : "Vui lòng kết nối ví để xem NFT"}
+                    </p>
+                    <button className="cta-btn-new" onClick={connectWallet}>
+                      {language === "en" ? "Connect Wallet" : "Kết nối ví"}
+                    </button>
+                  </div>
+                ) : loading ? (
                   <div className="loading-state-new">
                     <p>{language === "en" ? "Loading..." : "Đang tải..."}</p>
                   </div>
@@ -460,26 +724,65 @@ const Profile = () => {
                         <div className="nft-image-new">
                           {nft.metadata?.image ? (
                             <img
-                              src={
-                                nft.metadata.image.startsWith("ipfs://")
-                                  ? `https://ipfs.io/ipfs/${nft.metadata.image.replace(
-                                      "ipfs://",
-                                      ""
-                                    )}`
-                                  : nft.metadata.image
-                              }
+                              src={convertIpfsUrl(nft.metadata.image)}
                               alt={nft.metadata?.name || `NFT #${nft.tokenId}`}
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.parentElement.innerHTML =
+                                  '<div class="no-image-new">🎨</div>';
+                              }}
                             />
                           ) : (
                             <div className="no-image-new">🎨</div>
                           )}
                           <div className="nft-badge-new">#{nft.tokenId}</div>
+                          {nft.hasMetadata && (
+                            <div className="nft-metadata-badge">
+                              ✅ Metadata
+                            </div>
+                          )}
                         </div>
                         <div className="nft-info-new">
                           <h3>{nft.metadata?.name || `NFT #${nft.tokenId}`}</h3>
                           <p className="nft-description-new">
-                            {nft.metadata?.description || "No description"}
+                            {nft.metadata?.description ||
+                              (language === "en"
+                                ? "No description"
+                                : "Không có mô tả")}
                           </p>
+
+                          {/* Display attributes from metadata */}
+                          {nft.metadata?.attributes &&
+                            nft.metadata.attributes.length > 0 && (
+                              <div className="nft-attributes-new">
+                                {nft.metadata.attributes
+                                  .slice(0, 4)
+                                  .map((attr, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="nft-attribute-new"
+                                    >
+                                      <span className="attr-label">
+                                        {attr.trait_type}:
+                                      </span>
+                                      <span className="attr-value">
+                                        {attr.value}
+                                      </span>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+
+                          {/* Token URI for debugging */}
+                          {nft.tokenURI && (
+                            <div className="nft-uri-new" title={nft.tokenURI}>
+                              📄{" "}
+                              {language === "en"
+                                ? "Token URI available"
+                                : "Có Token URI"}
+                            </div>
+                          )}
+
                           {nft.price && (
                             <div className="nft-price-new">
                               💰 {(parseFloat(nft.price) / 1e18).toFixed(4)} ETH
@@ -488,11 +791,21 @@ const Profile = () => {
                           <div className="nft-status-new">
                             {nft.isListed ? (
                               <span className="status-listed">
-                                📊 {language === "en" ? "Listed" : "Đang bán"}
+                                📊{" "}
+                                {language === "en"
+                                  ? "Listed for Sale"
+                                  : "Đang bán"}
+                              </span>
+                            ) : nft.readyToList ? (
+                              <span className="status-ready">
+                                ⚡{" "}
+                                {language === "en"
+                                  ? "Ready to List"
+                                  : "Sẵn sàng bán"}
                               </span>
                             ) : (
                               <span className="status-owned">
-                                ✓ {language === "en" ? "Owned" : "Sở hữu"}
+                                ✓ {language === "en" ? "Owned" : "Đang sở hữu"}
                               </span>
                             )}
                           </div>
