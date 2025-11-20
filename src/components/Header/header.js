@@ -55,7 +55,11 @@ const Header = () => {
       <header className="header">
         <div className="container">
           <div className="header-content">
-            <div className="logo-section">
+            <div
+              className="logo-section"
+              onClick={() => navigate("/")}
+              style={{ cursor: "pointer" }}
+            >
               <img src={logo} alt="ViePropChain" className="logo" />
               <h1 className="brand-name">ViePropChain</h1>
             </div>
