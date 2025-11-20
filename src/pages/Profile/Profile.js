@@ -5,6 +5,8 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
+import KYCModal from "../../components/KYCModal/KYCModal";
+import kycService from "../../services/kycService";
 import "./Profile.css";
 
 const Profile = () => {
@@ -24,6 +26,16 @@ const Profile = () => {
   const [myProperties, setMyProperties] = useState([]);
   const [myTransactions, setMyTransactions] = useState([]);
 
+  // KYC State
+  const [kycStatus, setKycStatus] = useState(null);
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycLoading, setKycLoading] = useState(true);
+
+  // Wallet Selection State
+  const [availableWallets, setAvailableWallets] = useState([]);
+  const [selectedWallet, setSelectedWallet] = useState(null);
+  const [showWalletSelector, setShowWalletSelector] = useState(false);
+
   // Debug: Log state changes
   useEffect(() => {
     console.log("🔍 State updated - myProperties:", myProperties.length);
@@ -39,64 +51,175 @@ const Profile = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Auto-sync wallet if user connected MetaMask but not linked yet
+  // Check KYC status when user logs in
   useEffect(() => {
-    const syncWalletIfNeeded = async () => {
-      // Kiểm tra: user đã login, có MetaMask account, nhưng user object chưa có walletAddress
-      if (user && account && !user.walletAddress) {
-        console.log("🔄 Auto-linking wallet address:", account);
+    const checkKYCStatus = async () => {
+      if (!user?.id) {
+        setKycLoading(false);
+        return;
+      }
 
-        try {
-          // Gọi API link wallet
-          const message = `Link wallet ${account.toLowerCase()} to ViePropChain account ${
-            user.email
-          }`;
+      try {
+        console.log("🔍 Checking KYC status for user:", user.id);
+        const response = await kycService.getKYCStatus();
 
-          // Request signature from MetaMask
-          const signature = await window.ethereum.request({
-            method: "personal_sign",
-            params: [message, account],
-          });
+        if (response.success) {
+          setKycStatus(response.data);
+          console.log("✅ KYC Status:", response.data);
 
-          // Call link wallet API
-          const response = await fetch(
-            "http://localhost:4000/api/auth/link-wallet",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem(
-                  "viepropchain_token"
-                )}`,
-              },
-              body: JSON.stringify({
-                walletAddress: account,
-                signature: signature,
-              }),
-            }
-          );
-
-          const data = await response.json();
-
-          if (data.success) {
-            console.log("✅ Wallet linked successfully");
-            // Update token with new one that includes wallet
-            if (data.token) {
-              localStorage.setItem("viepropchain_token", data.token);
-            }
-            // Reload to get new user data
-            window.location.reload();
-          } else {
-            console.error("❌ Failed to link wallet:", data.error);
+          // Show modal if not verified (check isVerified field from API)
+          if (!response.data.isVerified) {
+            setShowKYCModal(true);
           }
-        } catch (error) {
-          console.error("❌ Error linking wallet:", error);
         }
+      } catch (error) {
+        console.error("❌ Error checking KYC:", error);
+        // If KYC not found (404), show modal to submit KYC
+        if (error.message && error.message.includes("404")) {
+          setKycStatus({ isVerified: false, status: "not_submitted" });
+          setShowKYCModal(true);
+        } else {
+          // Other errors - allow access (service might be down)
+          console.warn("⚠️ KYC service error, allowing access");
+          setKycStatus({ isVerified: true });
+        }
+      } finally {
+        setKycLoading(false);
       }
     };
 
-    syncWalletIfNeeded();
-  }, [user, account]);
+    checkKYCStatus();
+  }, [user?.id]);
+
+  // Fetch available wallets from MetaMask
+  const fetchWallets = async () => {
+    if (window.ethereum && user && !user.walletAddress) {
+      try {
+        // Get current account
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        console.log("👛 Current account:", accounts);
+        setAvailableWallets(accounts);
+        if (accounts.length > 0) {
+          setSelectedWallet(accounts[0]);
+        }
+      } catch (error) {
+        console.error("❌ Error fetching wallets:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchWallets();
+  }, [user]);
+
+  // Listen for account changes in MetaMask
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        console.log("🔄 MetaMask account changed:", accounts);
+        if (accounts.length > 0) {
+          setAvailableWallets(accounts);
+          setSelectedWallet(accounts[0]);
+        }
+      };
+
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
+      };
+    }
+  }, []);
+
+  // Function to link selected wallet
+  const linkWallet = async (walletAddress) => {
+    // Check KYC first
+    const isVerified =
+      kycStatus?.status === "verified" || kycStatus?.isVerified === true;
+
+    if (!isVerified) {
+      console.log("⚠️ Cannot link wallet - KYC not verified");
+      setShowKYCModal(true);
+      return;
+    }
+
+    console.log("✅ KYC verified, proceeding to link wallet:", walletAddress);
+
+    try {
+      // Gọi API link wallet
+      const message = `Link wallet ${walletAddress.toLowerCase()} to ViePropChain account ${
+        user.email
+      }`;
+
+      console.log("📝 Requesting signature for message:", message);
+
+      // Request signature from MetaMask
+      const signature = await window.ethereum.request({
+        method: "personal_sign",
+        params: [message, walletAddress],
+      });
+
+      console.log("✍️ Signature obtained:", signature.substring(0, 20) + "...");
+
+      // Call link wallet API
+      console.log("📡 Calling link wallet API...");
+      const response = await fetch(
+        "http://localhost:4000/api/auth/link-wallet",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem(
+              "viepropchain_token"
+            )}`,
+          },
+          body: JSON.stringify({
+            walletAddress: walletAddress,
+            signature: signature,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("📥 API Response:", data);
+
+      if (data.success) {
+        console.log("✅ Wallet linked successfully");
+        // Update token with new one that includes wallet
+        if (data.token) {
+          localStorage.setItem("viepropchain_token", data.token);
+          console.log("🔑 Token updated");
+        }
+        // Reload to get new user data
+        console.log("🔄 Reloading page...");
+        window.location.reload();
+      } else {
+        console.error("❌ Failed to link wallet:", data.error);
+        alert(`Failed to link wallet: ${data.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("❌ Error linking wallet:", error);
+      alert(`Error linking wallet: ${error.message}`);
+    }
+  };
+
+  // Show wallet selector when KYC is verified and no wallet linked
+  useEffect(() => {
+    if (
+      !kycLoading &&
+      (kycStatus?.status === "verified" || kycStatus?.isVerified === true) &&
+      user &&
+      !user.walletAddress &&
+      availableWallets.length > 0
+    ) {
+      setShowWalletSelector(true);
+    }
+  }, [kycLoading, kycStatus, user, availableWallets]);
 
   // Fetch user data khi có wallet hoặc user thay đổi
   useEffect(() => {
@@ -261,6 +384,29 @@ const Profile = () => {
     };
   }, [user]); // Re-run when user object changes
 
+  // Handle KYC submission
+  const handleKYCSubmit = async (formData) => {
+    try {
+      console.log("📤 Submitting KYC data...");
+      const response = await kycService.submitKYC(formData);
+
+      if (response.success) {
+        console.log("✅ KYC submitted successfully");
+        setKycStatus(response.data);
+        setShowKYCModal(false);
+
+        // Reload user data after KYC submission
+        window.location.reload();
+      } else {
+        console.error("❌ KYC submission failed:", response.error);
+        throw new Error(response.error || "Failed to submit KYC");
+      }
+    } catch (error) {
+      console.error("❌ Error submitting KYC:", error);
+      throw error;
+    }
+  };
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
   };
@@ -318,7 +464,7 @@ const Profile = () => {
                 <h1 className="profile-username">{getUsername()}</h1>
                 <p className="profile-email-text">{user?.email}</p>
 
-                {account && (
+                {user?.walletAddress && (
                   <div className="wallet-badge">
                     <span className="wallet-icon">💼</span>
                     <span className="wallet-label-new">
@@ -326,16 +472,16 @@ const Profile = () => {
                     </span>
                     <span
                       className="wallet-address-new"
-                      onClick={() => copyToClipboard(account)}
+                      onClick={() => copyToClipboard(user.walletAddress)}
                       title={
                         language === "en" ? "Click to copy" : "Nhấn để sao chép"
                       }
                     >
-                      {formatAddress(account)}
+                      {formatAddress(user.walletAddress)}
                     </span>
                     <button
                       className="copy-btn-new"
-                      onClick={() => copyToClipboard(account)}
+                      onClick={() => copyToClipboard(user.walletAddress)}
                     >
                       📋
                     </button>
@@ -343,7 +489,7 @@ const Profile = () => {
                 )}
               </div>
               <div className="profile-actions">
-                {!account ? (
+                {!user?.walletAddress ? (
                   <button className="connect-btn-new" onClick={connectWallet}>
                     <span>🔗</span>
                     <span>
@@ -530,7 +676,7 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {account && (
+                  {user?.walletAddress && (
                     <div className="overview-card-new">
                       <h3 className="overview-card-title">
                         {language === "en"
@@ -544,9 +690,9 @@ const Profile = () => {
                           </span>
                           <span
                             className="wallet-address-clickable"
-                            onClick={() => copyToClipboard(account)}
+                            onClick={() => copyToClipboard(user.walletAddress)}
                           >
-                            {account}
+                            {user.walletAddress}
                           </span>
                         </div>
                         <div className="info-divider"></div>
@@ -569,114 +715,164 @@ const Profile = () => {
                   {language === "en" ? "My Properties" : "Bất động sản của tôi"}
                 </h2>
 
-                {/* Debug info */}
-                <div
-                  style={{
-                    padding: "1rem",
-                    background: "#f0f0f0",
-                    marginBottom: "1rem",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  <strong>Debug:</strong> Loading: {loading ? "true" : "false"},
-                  Properties count: {myProperties.length}
-                </div>
-
-                {loading ? (
-                  <div className="loading-state-new">
-                    <p>{language === "en" ? "Loading..." : "Đang tải..."}</p>
-                  </div>
-                ) : myProperties.length > 0 ? (
-                  <div className="properties-grid-new">
-                    {myProperties.map((property) => (
-                      <div key={property._id} className="property-card-new">
-                        <div className="property-image-new">
-                          {property.images && property.images.length > 0 ? (
-                            <img
-                              src={convertIpfsUrl(property.images[0])}
-                              alt={property.title || property.name}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.parentElement.innerHTML =
-                                  '<div class="no-image-new">🏠</div>';
-                              }}
-                            />
-                          ) : (
-                            <div className="no-image-new">🏠</div>
-                          )}
-                          {property.status && (
-                            <div className="property-status-badge">
-                              {property.status === "draft"
-                                ? "📝 " + (language === "en" ? "Draft" : "Nháp")
-                                : property.status === "published"
-                                ? "✅ " +
-                                  (language === "en" ? "Published" : "Đã đăng")
-                                : "📌 " + property.status}
-                            </div>
-                          )}
-                          {property.nft?.isMinted && (
-                            <div className="property-nft-badge">
-                              🎨 NFT #{property.nft.tokenId}
-                            </div>
-                          )}
-                        </div>
-                        <div className="property-info-new">
-                          <h3>
-                            {property.title ||
-                              property.name ||
-                              "Unnamed Property"}
-                          </h3>
-                          <p className="property-description-new">
-                            {property.description ||
-                              (language === "en"
-                                ? "No description"
-                                : "Không có mô tả")}
-                          </p>
-                          <p className="property-type-new">
-                            🏘️ {property.propertyType || "N/A"}
-                          </p>
-                          {property.address && (
-                            <p className="property-location-new">
-                              📍 {property.address.district},{" "}
-                              {property.address.city}
-                            </p>
-                          )}
-                          <div className="property-meta-new">
-                            <span>📏 {property.area || 0} m²</span>
-                            {property.bedrooms > 0 && (
-                              <span>🛌 {property.bedrooms} PN</span>
-                            )}
-                            {property.bathrooms > 0 && (
-                              <span>🚿 {property.bathrooms} WC</span>
-                            )}
-                          </div>
-                          {property.price > 0 && (
-                            <div className="property-price-new">
-                              💰 {property.price.toLocaleString()}{" "}
-                              {property.currency || "VND"}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="empty-state-new">
-                    <span className="empty-icon-new">🏠</span>
-                    <p className="empty-text-new">
+                {/* Check KYC verification */}
+                {!kycLoading &&
+                kycStatus?.status !== "verified" &&
+                kycStatus?.isVerified !== true ? (
+                  <div
+                    style={{
+                      padding: "3rem",
+                      textAlign: "center",
+                      background: "#fff3cd",
+                      borderRadius: "12px",
+                      border: "2px dashed #ffc107",
+                    }}
+                  >
+                    <h3 style={{ color: "#856404", marginBottom: "1rem" }}>
+                      🔒{" "}
                       {language === "en"
-                        ? "No properties yet"
-                        : "Chưa có bất động sản"}
+                        ? "KYC Verification Required"
+                        : "Yêu cầu xác thực KYC"}
+                    </h3>
+                    <p style={{ color: "#856404", marginBottom: "1.5rem" }}>
+                      {language === "en"
+                        ? "You need to complete KYC verification to view your properties."
+                        : "Bạn cần hoàn thành xác thực KYC để xem bất động sản của mình."}
                     </p>
                     <button
-                      className="cta-btn-new"
-                      onClick={() => navigate("/marketplace")}
+                      onClick={() => setShowKYCModal(true)}
+                      style={{
+                        padding: "0.75rem 2rem",
+                        background: "#ffc107",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "1rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
                     >
-                      {language === "en"
-                        ? "Browse Marketplace"
-                        : "Xem sàn giao dịch"}
+                      {language === "en" ? "Verify Now" : "Xác thực ngay"}
                     </button>
                   </div>
+                ) : (
+                  <>
+                    {/* Debug info */}
+                    <div
+                      style={{
+                        padding: "1rem",
+                        background: "#f0f0f0",
+                        marginBottom: "1rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <strong>Debug:</strong> Loading:{" "}
+                      {loading ? "true" : "false"}, Properties count:{" "}
+                      {myProperties.length}
+                    </div>
+
+                    {loading ? (
+                      <div className="loading-state-new">
+                        <p>
+                          {language === "en" ? "Loading..." : "Đang tải..."}
+                        </p>
+                      </div>
+                    ) : myProperties.length > 0 ? (
+                      <div className="properties-grid-new">
+                        {myProperties.map((property) => (
+                          <div key={property._id} className="property-card-new">
+                            <div className="property-image-new">
+                              {property.images && property.images.length > 0 ? (
+                                <img
+                                  src={convertIpfsUrl(property.images[0])}
+                                  alt={property.title || property.name}
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.parentElement.innerHTML =
+                                      '<div class="no-image-new">🏠</div>';
+                                  }}
+                                />
+                              ) : (
+                                <div className="no-image-new">🏠</div>
+                              )}
+                              {property.status && (
+                                <div className="property-status-badge">
+                                  {property.status === "draft"
+                                    ? "📝 " +
+                                      (language === "en" ? "Draft" : "Nháp")
+                                    : property.status === "published"
+                                    ? "✅ " +
+                                      (language === "en"
+                                        ? "Published"
+                                        : "Đã đăng")
+                                    : "📌 " + property.status}
+                                </div>
+                              )}
+                              {property.nft?.isMinted && (
+                                <div className="property-nft-badge">
+                                  🎨 NFT #{property.nft.tokenId}
+                                </div>
+                              )}
+                            </div>
+                            <div className="property-info-new">
+                              <h3>
+                                {property.title ||
+                                  property.name ||
+                                  "Unnamed Property"}
+                              </h3>
+                              <p className="property-description-new">
+                                {property.description ||
+                                  (language === "en"
+                                    ? "No description"
+                                    : "Không có mô tả")}
+                              </p>
+                              <p className="property-type-new">
+                                🏘️ {property.propertyType || "N/A"}
+                              </p>
+                              {property.address && (
+                                <p className="property-location-new">
+                                  📍 {property.address.district},{" "}
+                                  {property.address.city}
+                                </p>
+                              )}
+                              <div className="property-meta-new">
+                                <span>📏 {property.area || 0} m²</span>
+                                {property.bedrooms > 0 && (
+                                  <span>🛌 {property.bedrooms} PN</span>
+                                )}
+                                {property.bathrooms > 0 && (
+                                  <span>🚿 {property.bathrooms} WC</span>
+                                )}
+                              </div>
+                              {property.price > 0 && (
+                                <div className="property-price-new">
+                                  💰 {property.price.toLocaleString()}{" "}
+                                  {property.currency || "VND"}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="empty-state-new">
+                        <span className="empty-icon-new">🏠</span>
+                        <p className="empty-text-new">
+                          {language === "en"
+                            ? "No properties yet"
+                            : "Chưa có bất động sản"}
+                        </p>
+                        <button
+                          className="cta-btn-new"
+                          onClick={() => navigate("/marketplace")}
+                        >
+                          {language === "en"
+                            ? "Browse Marketplace"
+                            : "Xem sàn giao dịch"}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -687,145 +883,204 @@ const Profile = () => {
                   {language === "en" ? "My NFTs" : "NFT của tôi"}
                 </h2>
 
-                {/* Debug info */}
-                <div
-                  style={{
-                    padding: "1rem",
-                    background: "#f0f0f0",
-                    marginBottom: "1rem",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  <strong>Debug:</strong> Loading: {loading ? "true" : "false"},
-                  NFTs count: {myNFTs.length}, Wallet:{" "}
-                  {user?.walletAddress || "none"}
-                </div>
-
-                {!user?.walletAddress && !account ? (
-                  <div className="empty-state-new">
-                    <span className="empty-icon-new">🔗</span>
-                    <p className="empty-text-new">
+                {/* Check KYC verification */}
+                {!kycLoading &&
+                kycStatus?.status !== "verified" &&
+                kycStatus?.isVerified !== true ? (
+                  <div
+                    style={{
+                      padding: "3rem",
+                      textAlign: "center",
+                      background: "#fff3cd",
+                      borderRadius: "12px",
+                      border: "2px dashed #ffc107",
+                    }}
+                  >
+                    <h3 style={{ color: "#856404", marginBottom: "1rem" }}>
+                      🔒{" "}
                       {language === "en"
-                        ? "Please connect your wallet to view NFTs"
-                        : "Vui lòng kết nối ví để xem NFT"}
-                    </p>
-                    <button className="cta-btn-new" onClick={connectWallet}>
-                      {language === "en" ? "Connect Wallet" : "Kết nối ví"}
-                    </button>
-                  </div>
-                ) : loading ? (
-                  <div className="loading-state-new">
-                    <p>{language === "en" ? "Loading..." : "Đang tải..."}</p>
-                  </div>
-                ) : myNFTs.length > 0 ? (
-                  <div className="nfts-grid-new">
-                    {myNFTs.map((nft) => (
-                      <div key={nft.tokenId} className="nft-card-new">
-                        <div className="nft-image-new">
-                          {nft.metadata?.image ? (
-                            <img
-                              src={convertIpfsUrl(nft.metadata.image)}
-                              alt={nft.metadata?.name || `NFT #${nft.tokenId}`}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.parentElement.innerHTML =
-                                  '<div class="no-image-new">🎨</div>';
-                              }}
-                            />
-                          ) : (
-                            <div className="no-image-new">🎨</div>
-                          )}
-                          <div className="nft-badge-new">#{nft.tokenId}</div>
-                          {nft.hasMetadata && (
-                            <div className="nft-metadata-badge">
-                              ✅ Metadata
-                            </div>
-                          )}
-                        </div>
-                        <div className="nft-info-new">
-                          <h3>{nft.metadata?.name || `NFT #${nft.tokenId}`}</h3>
-                          <p className="nft-description-new">
-                            {nft.metadata?.description ||
-                              (language === "en"
-                                ? "No description"
-                                : "Không có mô tả")}
-                          </p>
-
-                          {/* Display attributes from metadata */}
-                          {nft.metadata?.attributes &&
-                            nft.metadata.attributes.length > 0 && (
-                              <div className="nft-attributes-new">
-                                {nft.metadata.attributes
-                                  .slice(0, 4)
-                                  .map((attr, idx) => (
-                                    <div
-                                      key={idx}
-                                      className="nft-attribute-new"
-                                    >
-                                      <span className="attr-label">
-                                        {attr.trait_type}:
-                                      </span>
-                                      <span className="attr-value">
-                                        {attr.value}
-                                      </span>
-                                    </div>
-                                  ))}
-                              </div>
-                            )}
-
-                          {/* Token URI for debugging */}
-                          {nft.tokenURI && (
-                            <div className="nft-uri-new" title={nft.tokenURI}>
-                              📄{" "}
-                              {language === "en"
-                                ? "Token URI available"
-                                : "Có Token URI"}
-                            </div>
-                          )}
-
-                          {nft.price && (
-                            <div className="nft-price-new">
-                              💰 {(parseFloat(nft.price) / 1e18).toFixed(4)} ETH
-                            </div>
-                          )}
-                          <div className="nft-status-new">
-                            {nft.isListed ? (
-                              <span className="status-listed">
-                                📊{" "}
-                                {language === "en"
-                                  ? "Listed for Sale"
-                                  : "Đang bán"}
-                              </span>
-                            ) : nft.readyToList ? (
-                              <span className="status-ready">
-                                ⚡{" "}
-                                {language === "en"
-                                  ? "Ready to List"
-                                  : "Sẵn sàng bán"}
-                              </span>
-                            ) : (
-                              <span className="status-owned">
-                                ✓ {language === "en" ? "Owned" : "Đang sở hữu"}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="empty-state-new">
-                    <span className="empty-icon-new">🎨</span>
-                    <p className="empty-text-new">
-                      {language === "en" ? "No NFTs yet" : "Chưa có NFT"}
+                        ? "KYC Verification Required"
+                        : "Yêu cầu xác thực KYC"}
+                    </h3>
+                    <p style={{ color: "#856404", marginBottom: "1.5rem" }}>
+                      {language === "en"
+                        ? "You need to complete KYC verification to view your NFTs."
+                        : "Bạn cần hoàn thành xác thực KYC để xem NFT của mình."}
                     </p>
                     <button
-                      className="cta-btn-new"
-                      onClick={() => navigate("/marketplace")}
+                      onClick={() => setShowKYCModal(true)}
+                      style={{
+                        padding: "0.75rem 2rem",
+                        background: "#ffc107",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontSize: "1rem",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
                     >
-                      {language === "en" ? "Explore NFTs" : "Khám phá NFT"}
+                      {language === "en" ? "Verify Now" : "Xác thực ngay"}
                     </button>
                   </div>
+                ) : (
+                  <>
+                    {/* Debug info */}
+                    <div
+                      style={{
+                        padding: "1rem",
+                        background: "#f0f0f0",
+                        marginBottom: "1rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <strong>Debug:</strong> Loading:{" "}
+                      {loading ? "true" : "false"}, NFTs count: {myNFTs.length},
+                      Wallet: {user?.walletAddress || "none"}
+                    </div>
+
+                    {!user?.walletAddress && !account ? (
+                      <div className="empty-state-new">
+                        <span className="empty-icon-new">🔗</span>
+                        <p className="empty-text-new">
+                          {language === "en"
+                            ? "Please connect your wallet to view NFTs"
+                            : "Vui lòng kết nối ví để xem NFT"}
+                        </p>
+                        <button className="cta-btn-new" onClick={connectWallet}>
+                          {language === "en" ? "Connect Wallet" : "Kết nối ví"}
+                        </button>
+                      </div>
+                    ) : loading ? (
+                      <div className="loading-state-new">
+                        <p>
+                          {language === "en" ? "Loading..." : "Đang tải..."}
+                        </p>
+                      </div>
+                    ) : myNFTs.length > 0 ? (
+                      <div className="nfts-grid-new">
+                        {myNFTs.map((nft) => (
+                          <div key={nft.tokenId} className="nft-card-new">
+                            <div className="nft-image-new">
+                              {nft.metadata?.image ? (
+                                <img
+                                  src={convertIpfsUrl(nft.metadata.image)}
+                                  alt={
+                                    nft.metadata?.name || `NFT #${nft.tokenId}`
+                                  }
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.parentElement.innerHTML =
+                                      '<div class="no-image-new">🎨</div>';
+                                  }}
+                                />
+                              ) : (
+                                <div className="no-image-new">🎨</div>
+                              )}
+                              <div className="nft-badge-new">
+                                #{nft.tokenId}
+                              </div>
+                              {nft.hasMetadata && (
+                                <div className="nft-metadata-badge">
+                                  ✅ Metadata
+                                </div>
+                              )}
+                            </div>
+                            <div className="nft-info-new">
+                              <h3>
+                                {nft.metadata?.name || `NFT #${nft.tokenId}`}
+                              </h3>
+                              <p className="nft-description-new">
+                                {nft.metadata?.description ||
+                                  (language === "en"
+                                    ? "No description"
+                                    : "Không có mô tả")}
+                              </p>
+
+                              {/* Display attributes from metadata */}
+                              {nft.metadata?.attributes &&
+                                nft.metadata.attributes.length > 0 && (
+                                  <div className="nft-attributes-new">
+                                    {nft.metadata.attributes
+                                      .slice(0, 4)
+                                      .map((attr, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="nft-attribute-new"
+                                        >
+                                          <span className="attr-label">
+                                            {attr.trait_type}:
+                                          </span>
+                                          <span className="attr-value">
+                                            {attr.value}
+                                          </span>
+                                        </div>
+                                      ))}
+                                  </div>
+                                )}
+
+                              {/* Token URI for debugging */}
+                              {nft.tokenURI && (
+                                <div
+                                  className="nft-uri-new"
+                                  title={nft.tokenURI}
+                                >
+                                  📄{" "}
+                                  {language === "en"
+                                    ? "Token URI available"
+                                    : "Có Token URI"}
+                                </div>
+                              )}
+
+                              {nft.price && (
+                                <div className="nft-price-new">
+                                  💰 {(parseFloat(nft.price) / 1e18).toFixed(4)}{" "}
+                                  ETH
+                                </div>
+                              )}
+                              <div className="nft-status-new">
+                                {nft.isListed ? (
+                                  <span className="status-listed">
+                                    📊{" "}
+                                    {language === "en"
+                                      ? "Listed for Sale"
+                                      : "Đang bán"}
+                                  </span>
+                                ) : nft.readyToList ? (
+                                  <span className="status-ready">
+                                    ⚡{" "}
+                                    {language === "en"
+                                      ? "Ready to List"
+                                      : "Sẵn sàng bán"}
+                                  </span>
+                                ) : (
+                                  <span className="status-owned">
+                                    ✓{" "}
+                                    {language === "en"
+                                      ? "Owned"
+                                      : "Đang sở hữu"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="empty-state-new">
+                        <span className="empty-icon-new">🎨</span>
+                        <p className="empty-text-new">
+                          {language === "en" ? "No NFTs yet" : "Chưa có NFT"}
+                        </p>
+                        <button
+                          className="cta-btn-new"
+                          onClick={() => navigate("/marketplace")}
+                        >
+                          {language === "en" ? "Explore NFTs" : "Khám phá NFT"}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -1003,6 +1258,145 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* KYC Modal */}
+      {showKYCModal && (
+        <KYCModal
+          isOpen={showKYCModal}
+          onClose={() => setShowKYCModal(false)}
+          onSubmit={handleKYCSubmit}
+          language={language}
+        />
+      )}
+
+      {/* Wallet Selector Modal */}
+      {showWalletSelector && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowWalletSelector(false)}
+        >
+          <div
+            className="modal-content wallet-selector-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2>
+                {language === "en"
+                  ? "🔗 Link Your Wallet"
+                  : "🔗 Liên kết ví của bạn"}
+              </h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowWalletSelector(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ marginBottom: "1rem", color: "#666" }}>
+                {language === "en"
+                  ? "Currently selected account in MetaMask:"
+                  : "Tài khoản hiện tại được chọn trong MetaMask:"}
+              </p>
+
+              <div
+                style={{
+                  padding: "1rem",
+                  background: "#f0f9ff",
+                  borderRadius: "8px",
+                  marginBottom: "1rem",
+                  border: "1px solid #bfdbfe",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "0.875rem",
+                    color: "#1e40af",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  💡{" "}
+                  {language === "en"
+                    ? "To select a different wallet:"
+                    : "Để chọn ví khác:"}
+                </div>
+                <ol
+                  style={{
+                    margin: "0.5rem 0 0 1.5rem",
+                    fontSize: "0.875rem",
+                    color: "#1e3a8a",
+                  }}
+                >
+                  <li>
+                    {language === "en"
+                      ? "Open MetaMask extension"
+                      : "Mở tiện ích MetaMask"}
+                  </li>
+                  <li>
+                    {language === "en"
+                      ? "Click on your account icon (top right)"
+                      : "Click vào biểu tượng tài khoản (góc trên bên phải)"}
+                  </li>
+                  <li>
+                    {language === "en"
+                      ? "Select the wallet you want to link"
+                      : "Chọn ví bạn muốn liên kết"}
+                  </li>
+                  <li>
+                    {language === "en"
+                      ? "This page will update automatically"
+                      : "Trang này sẽ cập nhật tự động"}
+                  </li>
+                </ol>
+              </div>
+
+              <div className="wallet-list">
+                {availableWallets.map((wallet, index) => (
+                  <div
+                    key={wallet}
+                    className={`wallet-item ${
+                      selectedWallet === wallet ? "selected" : ""
+                    }`}
+                    onClick={() => setSelectedWallet(wallet)}
+                  >
+                    <div className="wallet-icon">👛</div>
+                    <div className="wallet-info">
+                      <div className="wallet-label">
+                        {language === "en" ? "Wallet" : "Ví"} #{index + 1}
+                      </div>
+                      <div className="wallet-address">{wallet}</div>
+                    </div>
+                    <div className="wallet-radio">
+                      {selectedWallet === wallet ? "●" : "○"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowWalletSelector(false)}
+              >
+                {language === "en" ? "Cancel" : "Hủy"}
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  if (selectedWallet) {
+                    linkWallet(selectedWallet);
+                    setShowWalletSelector(false);
+                  }
+                }}
+                disabled={!selectedWallet}
+              >
+                {language === "en" ? "Link Wallet" : "Liên kết ví"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

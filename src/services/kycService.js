@@ -16,10 +16,37 @@ const kycService = {
    */
   submitKYC: async (kycData) => {
     try {
+      console.log("📤 Submitting KYC:", kycData);
       const response = await apiClient.post("/api/kyc", kycData);
+      console.log("✅ KYC submitted:", response.data);
       return response.data;
     } catch (error) {
+      console.error("❌ Submit KYC error:", error);
       throw handleApiError(error, "Failed to submit KYC");
+    }
+  },
+
+  /**
+   * Get KYC status for current user
+   * Returns: { success: true, data: { userId, email, isVerified } }
+   */
+  getKYCStatus: async () => {
+    try {
+      console.log("🔍 Checking KYC status...");
+      const response = await apiClient.get("/api/kyc/me/verified");
+      console.log("✅ KYC status:", response.data);
+      return response.data;
+    } catch (error) {
+      // If 404, user hasn't submitted KYC yet
+      if (error.response?.status === 404) {
+        console.log("ℹ️ No KYC record found");
+        return {
+          success: true,
+          data: { isVerified: false, status: "not_submitted" },
+        };
+      }
+      console.error("❌ Get KYC status error:", error);
+      throw handleApiError(error, "Failed to check KYC status");
     }
   },
 
@@ -36,7 +63,7 @@ const kycService = {
   },
 
   /**
-   * Check if current user is verified
+   * Check if current user is verified (legacy)
    */
   checkVerified: async () => {
     try {
