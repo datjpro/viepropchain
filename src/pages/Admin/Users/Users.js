@@ -23,21 +23,28 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("viepropchain_token");
+
       const response = await fetch(
-        `${API_GATEWAY_URL}/api/auth/users?page=${pagination.page}&limit=${pagination.limit}`
+        `${API_GATEWAY_URL}/api/user-management/users?page=${pagination.page}&limit=${pagination.limit}&search=${searchTerm}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const data = await response.json();
 
       if (data.success) {
-        setUsers(data.data.users);
+        setUsers(data.data);
         setPagination((prev) => ({
           ...prev,
-          total: data.data.total,
-          totalPages: data.data.totalPages,
+          total: data.pagination.total,
+          totalPages: data.pagination.totalPages,
         }));
         setError("");
       } else {
-        setError("Không thể tải danh sách người dùng");
+        setError(data.error || "Không thể tải danh sách người dùng");
       }
     } catch (err) {
       setError("Lỗi kết nối: " + err.message);
@@ -134,13 +141,25 @@ const Users = () => {
   };
 
   const updateUserRole = async (userId, newRole) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn thay đổi quyền thành "${
+          newRole === "admin" ? "Quản trị" : "Người dùng"
+        }"?`
+      )
+    ) {
+      return;
+    }
+
     try {
+      const token = localStorage.getItem("viepropchain_token");
       const response = await fetch(
-        `${API_GATEWAY_URL}/api/auth/users/${userId}/role`,
+        `${API_GATEWAY_URL}/api/user-management/users/${userId}/role`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ role: newRole }),
         }
@@ -160,12 +179,16 @@ const Users = () => {
           setSelectedUser({ ...selectedUser, role: newRole });
         }
 
-        alert("Cập nhật role thành công!");
+        alert(
+          `✅ Đã cập nhật quyền thành công! User hiện là ${
+            newRole === "admin" ? "Quản trị viên" : "Người dùng"
+          }.`
+        );
       } else {
-        alert("Lỗi: " + data.message);
+        alert("❌ Lỗi: " + (data.error || data.message));
       }
     } catch (error) {
-      alert("Lỗi kết nối: " + error.message);
+      alert("❌ Lỗi kết nối: " + error.message);
     }
   };
 
@@ -361,9 +384,27 @@ const Users = () => {
                     <button
                       onClick={() => openUserDetail(user)}
                       className="btn-action view"
+                      title="Xem chi tiết"
                     >
                       👁️
                     </button>
+                    {user.role !== "admin" ? (
+                      <button
+                        onClick={() => updateUserRole(user._id, "admin")}
+                        className="btn-action promote"
+                        title="Cấp quyền Admin"
+                      >
+                        ⭐ Admin
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => updateUserRole(user._id, "user")}
+                        className="btn-action demote"
+                        title="Gỡ quyền Admin"
+                      >
+                        👤 User
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
