@@ -1,0 +1,55 @@
+.vision-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 10% auto;
+  padding: 4rem 0;
+  background-color: #111111;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.vision-title {
+  font-size: 2.25rem; /* text-4xl */
+  text-align: center;
+  font-weight: bold;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.vision-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.vision-section, .mission-section {
+  padding: 0 2rem;
+}
+.mission-list li strong {
+  color: #facc15; /* vàng nổi bật, có thể đổi thành #1d4ed8, #ef4444,... */
+}
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #facc15; /* vàng nổi bật */
+  margin-bottom: 1rem;
+}
+
+.section-text {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: white;
+  text-align: justify;
+}
+
+.mission-list {
+  list-style: disc inside;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: white;
+}
+
+.mission-list li {
+  margin-bottom: 0.75rem;
+}

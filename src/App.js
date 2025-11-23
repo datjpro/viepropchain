@@ -1,6 +1,5 @@
 import React from "react";
 import "./App.css";
-import Home from "./pages/Home/Home";
 import Nft from "./pages/Admin/NFT/Nft";
 import ListNFT from "./pages/Admin/ListNFT/ListNFT";
 import Dashboard from "./pages/Admin/Dashboard/Dashboard";
@@ -15,6 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AppRoutes } from "./routes/AppRoutes"; 
 
 function App() {
   return (
@@ -25,7 +25,10 @@ function App() {
             <Router>
               <div className="App">
                 <Routes>
-                  <Route path="/" element={<Home />} />
+    
+                  <Route path="/*" element={<AppRoutes />} />
+
+
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="/profile" element={<Profile />} />
 
