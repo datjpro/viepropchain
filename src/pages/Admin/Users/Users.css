@@ -476,60 +476,135 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  padding: 4px 0;
 }
 
 .btn-action {
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   white-space: nowrap;
-  line-height: 1;
-  padding: 8px 14px;
+  line-height: 1.2;
+  padding: 10px 16px;
+  position: relative;
+  overflow: hidden;
 }
 
-/* View Button (Purple) */
+/* Ripple effect */
+.btn-action::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-action:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* View Button (Slate Gray - Modern & Professional) */
 .btn-action.view {
-  background: var(--accent-purple);
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
   color: var(--surface-white);
+  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.2);
 }
 
 .btn-action.view:hover {
-  background: #7c3aed;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-action.view:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.3);
 }
 
 /* Promote/Admin Button (Blue) */
 .btn-action.promote {
-  background: var(--primary-blue);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, #2563eb 100%);
   color: var(--surface-white);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .btn-action.promote:hover {
-  background: #2563eb;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-action.promote:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 /* Demote Button (Gray) */
 .btn-action.demote {
   background: var(--surface-gray);
   color: var(--text-gray);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-action.demote:hover {
   background: #e5e7eb;
   color: #374151;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
+.btn-action.demote:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Disabled state */
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-actions {
+    gap: 6px;
+  }
+
+  .btn-action {
+    font-size: 12px;
+    padding: 8px 12px;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-action {
+    width: 100%;
+  }
+}
 /* ============================================================================
    PAGINATION
    ============================================================================ */

@@ -203,7 +203,6 @@ const Users = () => {
       <div className="users-container">
         <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
         </div>
       </div>
     );
