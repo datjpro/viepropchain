@@ -12,10 +12,12 @@ const Header = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const { user, login, logout, isAuthenticated, loading, error } = useAuth();
   const { isAdmin } = useAdmin();
-  const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-
+  const navigate = useNavigate()
+  const handleNavigate=()=>{
+    navigate('/')
+  }
   const copyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
@@ -79,7 +81,7 @@ const Header = () => {
                   <a href="/analytics">{t(translations.nav.analytics)}</a>
                 </li>
                 <li>
-                  <a href="/about">{t(translations.nav.about)}</a>
+                  <a href="/about-us">{t(translations.nav.about)}</a>
                 </li>
               </ul>
             </nav>
@@ -168,8 +170,8 @@ const Header = () => {
                         ? "Loading..."
                         : "Đang tải..."
                       : language === "en"
-                      ? "Start Trading"
-                      : "Bắt đầu giao dịch"}
+                        ? "Start Trading"
+                        : "Bắt đầu giao dịch"}
                   </button>
                   <LanguageSwitcher />
                 </>

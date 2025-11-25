@@ -86,19 +86,19 @@ const Footer = () => {
               </h3>
               <ul className="footer-links">
                 <li>
-                  <a href="#">{t(translations.footer.links.about)}</a>
+                  <a href="about-us">{t(translations.footer.links.about)}</a>
                 </li>
                 <li>
-                  <a href="#">{t(translations.footer.links.vision)}</a>
+                  <a href="vision">{t(translations.footer.links.vision)}</a>
                 </li>
                 <li>
-                  <a href="#">{t(translations.footer.links.technology)}</a>
+                  <a href="technology">{t(translations.footer.links.technology)}</a>
                 </li>
                 <li>
-                  <a href="#">{t(translations.footer.links.products)}</a>
+                  <a href="product-solution">{t(translations.footer.links.products)}</a>
                 </li>
                 <li>
-                  <a href="#">{t(translations.footer.links.partnerships)}</a>
+                  <a href="partner">{t(translations.footer.links.partnerships)}</a>
                 </li>
               </ul>
             </div>
@@ -109,10 +109,10 @@ const Footer = () => {
               </h3>
               <ul className="footer-links">
                 <li>
-                  <a href="#">{t(translations.footer.links.terms)}</a>
+                  <a href="terms">{t(translations.footer.links.terms)}</a>
                 </li>
                 <li>
-                  <a href="#">{t(translations.footer.links.privacy)}</a>
+                  <a href="security">{t(translations.footer.links.privacy)}</a>
                 </li>
               </ul>
             </div>

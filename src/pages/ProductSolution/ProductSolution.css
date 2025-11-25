@@ -1,0 +1,55 @@
+.solution-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 2rem 0;
+}
+
+.solution-title {
+  font-size: 2.25rem;
+  text-align: center;
+  font-weight: bold;
+  font-family: 'Playfair Display', serif;
+  color: white;
+  margin-bottom: 3rem; 
+  
+}
+
+.solution-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.solution-card {
+  background-color: #111111;
+  padding: 2rem;
+  width: 250px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.solution-card:hover {
+  transform: translateY(-5px);
+}
+
+.solution-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.solution-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #facc15;
+  margin-bottom: 0.5rem;
+}
+
+.solution-desc {
+  font-size: 1rem;
+  color: white;
+  line-height: 1.6;
+}

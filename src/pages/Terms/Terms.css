@@ -1,0 +1,45 @@
+.terms-container {
+  width: 85%;
+  max-width: 1100px;
+  margin: 6rem auto;
+  background-color: #111111;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  line-height: 1.8;
+}
+
+.terms-title {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: bold;
+  font-family: 'Playfair Display', serif;
+  color: white;
+  margin-bottom: 2.5rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+}
+
+.terms-content h3 {
+  color: #facc15;
+  font-size: 1.4rem;
+  margin-top: 1.5rem;
+}
+
+.terms-content p,
+.terms-content ul {
+  color: white;
+  margin-top: 0.5rem;
+  text-align: justify;
+}
+
+.terms-content ul {
+  list-style: disc inside;
+  padding-left: 1rem;
+}
+
+.terms-footer {
+  margin-top: 2rem;
+  font-weight: 600;
+  color: #111;
+  text-align: center;
+}
