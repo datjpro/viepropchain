@@ -212,8 +212,11 @@ const Users = () => {
   return (
     <div className="users-container">
       <div className="users-header">
-        <h1>👥 Quản lý Người dùng</h1>
-        <p>Quản lý tất cả người dùng trong hệ thống</p>
+        <div className="header-icon">👥</div>
+        <div className="header-content">
+          <h1>Quản lý Người dùng</h1>
+          <p>Quản lý tất cả người dùng trong hệ thống</p>
+        </div>
       </div>
 
       {error && (
@@ -386,7 +389,7 @@ const Users = () => {
                       className="btn-action view"
                       title="Xem chi tiết"
                     >
-                      👁️
+                      Xem chi tiết
                     </button>
                     {user.role !== "admin" ? (
                       <button
@@ -394,7 +397,7 @@ const Users = () => {
                         className="btn-action promote"
                         title="Cấp quyền Admin"
                       >
-                        ⭐ Admin
+                        Cấp quyền Admin
                       </button>
                     ) : (
                       <button
@@ -402,7 +405,7 @@ const Users = () => {
                         className="btn-action demote"
                         title="Gỡ quyền Admin"
                       >
-                        👤 User
+                        Gỡ quyền Admin
                       </button>
                     )}
                   </td>
