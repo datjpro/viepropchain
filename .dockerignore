@@ -1,0 +1,70 @@
+# ============================================================================
+# .dockerignore for React Frontend
+# ============================================================================
+
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Production build (will be built inside Docker)
+build/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+
+# Truffle (blockchain development files - not needed in frontend container)
+contracts/
+migrations/
+test/
+truffle-config.js
+ganache-data-dev/
+
+# Build info
+artifacts/
+build/contracts/
+
+# Backend
+backend/
+
+# Temporary
+tmp/
+temp/
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
