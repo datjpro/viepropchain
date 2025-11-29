@@ -446,161 +446,288 @@ const Users = () => {
         <div className="modal-overlay" onClick={closeUserDetail}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={closeUserDetail}>
-              ×
+              ✕
             </button>
 
             <div className="modal-body">
-              <div className="user-detail-header">
-                <img
-                  src={
-                    selectedUser.profile?.picture ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      selectedUser.profile?.displayName || selectedUser.email
-                    )}&background=4299e1&color=fff&size=100`
-                  }
-                  alt="Avatar"
-                  className="user-detail-avatar"
-                />
-                <div className="user-detail-info">
-                  <h2>
-                    {selectedUser.profile?.displayName ||
-                      selectedUser.profile?.name ||
-                      "Chưa có tên"}
-                  </h2>
-                  <p className="user-detail-email">{selectedUser.email}</p>
-                  {getRoleBadge(selectedUser.role)}
+              {/* Hero Header with Avatar */}
+              <div className="user-detail-hero">
+                <div className="hero-background"></div>
+                <div className="hero-content">
+                  <div className="avatar-wrapper">
+                    <img
+                      src={
+                        selectedUser.profile?.picture ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          selectedUser.profile?.displayName ||
+                            selectedUser.email
+                        )}&background=gradient&color=fff&size=200&bold=true`
+                      }
+                      alt="Avatar"
+                      className="user-detail-avatar"
+                    />
+                    <div className="avatar-status-badge"></div>
+                  </div>
+                  <div className="user-detail-info">
+                    <h2 className="user-detail-name">
+                      {selectedUser.profile?.displayName ||
+                        selectedUser.profile?.name ||
+                        "Chưa có tên"}
+                    </h2>
+                    <p className="user-detail-email">
+                      <span className="email-icon">✉️</span>
+                      {selectedUser.email}
+                      {selectedUser.emailVerified && (
+                        <span className="verified-badge-inline">
+                          ✓ Verified
+                        </span>
+                      )}
+                    </p>
+                    <div className="user-meta">
+                      {getRoleBadge(selectedUser.role)}
+                      <span className="user-id-badge">
+                        ID: {selectedUser._id.substring(0, 8)}...
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="user-detail-sections">
-                <div className="detail-section">
-                  <h3>📧 Thông tin tài khoản</h3>
-                  <div className="detail-item">
-                    <strong>User ID:</strong>
-                    <code>{selectedUser._id}</code>
+              {/* Info Cards Grid */}
+              <div className="detail-cards-grid">
+                {/* Account Information Card */}
+                <div className="detail-card">
+                  <div className="card-header">
+                    <div
+                      className="card-icon"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      }}
+                    >
+                      👤
+                    </div>
+                    <h3>Thông tin tài khoản</h3>
                   </div>
-                  <div className="detail-item">
-                    <strong>Email:</strong>
-                    <span>{selectedUser.email}</span>
-                    {selectedUser.emailVerified && (
-                      <span className="verified-badge">✅ Verified</span>
+                  <div className="card-body">
+                    <div className="info-row">
+                      <span className="info-label">🆔 User ID</span>
+                      <code className="info-value mono">
+                        {selectedUser._id}
+                      </code>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">📅 Ngày tạo</span>
+                      <span className="info-value">
+                        {formatDate(selectedUser.createdAt)}
+                      </span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">⏰ Đăng nhập cuối</span>
+                      <span className="info-value">
+                        {selectedUser.lastLoginAt
+                          ? formatDate(selectedUser.lastLoginAt)
+                          : "Chưa có"}
+                      </span>
+                    </div>
+                    {selectedUser.googleId && (
+                      <div className="info-row">
+                        <span className="info-label">🔗 Google ID</span>
+                        <code className="info-value mono">
+                          {selectedUser.googleId}
+                        </code>
+                      </div>
                     )}
-                  </div>
-                  <div className="detail-item">
-                    <strong>Google ID:</strong>
-                    <code>{selectedUser.googleId || "Chưa liên kết"}</code>
-                  </div>
-                  <div className="detail-item">
-                    <strong>Ngày tạo:</strong>
-                    <span>{formatDate(selectedUser.createdAt)}</span>
-                  </div>
-                  <div className="detail-item">
-                    <strong>Đăng nhập lần cuối:</strong>
-                    <span>
-                      {selectedUser.lastLoginAt
-                        ? formatDate(selectedUser.lastLoginAt)
-                        : "Chưa có"}
-                    </span>
                   </div>
                 </div>
 
-                {selectedUser.walletAddress && (
-                  <div className="detail-section">
-                    <h3>🔗 Thông tin Wallet</h3>
-                    <div className="detail-item">
-                      <strong>Wallet Address:</strong>
-                      <code className="wallet-full">
-                        {selectedUser.walletAddress}
-                      </code>
-                      <button
-                        className="btn-copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            selectedUser.walletAddress
-                          );
-                          alert("Đã copy wallet address!");
+                {/* Wallet Card */}
+                {selectedUser.walletAddress ? (
+                  <div className="detail-card">
+                    <div className="card-header">
+                      <div
+                        className="card-icon"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
                         }}
                       >
-                        📋
-                      </button>
+                        💳
+                      </div>
+                      <h3>Blockchain Wallet</h3>
                     </div>
-                    <div className="detail-item">
-                      <strong>Liên kết lúc:</strong>
-                      <span>{formatDate(selectedUser.walletLinkedAt)}</span>
+                    <div className="card-body">
+                      <div className="wallet-address-display">
+                        <div className="wallet-label">Địa chỉ Wallet</div>
+                        <div className="wallet-value-group">
+                          <code className="wallet-address-full">
+                            {selectedUser.walletAddress}
+                          </code>
+                          <button
+                            className="btn-copy-modern"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                selectedUser.walletAddress
+                              );
+                              alert("✅ Đã copy địa chỉ wallet!");
+                            }}
+                            title="Copy địa chỉ"
+                          >
+                            📋 Copy
+                          </button>
+                        </div>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">📆 Liên kết lúc</span>
+                        <span className="info-value">
+                          {formatDate(selectedUser.walletLinkedAt)}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">🔢 Nonce</span>
+                        <code className="info-value mono">
+                          {selectedUser.nonce}
+                        </code>
+                      </div>
                     </div>
-                    <div className="detail-item">
-                      <strong>Nonce:</strong>
-                      <code>{selectedUser.nonce}</code>
+                  </div>
+                ) : (
+                  <div className="detail-card empty-card">
+                    <div className="card-header">
+                      <div
+                        className="card-icon"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+                        }}
+                      >
+                        💳
+                      </div>
+                      <h3>Blockchain Wallet</h3>
+                    </div>
+                    <div className="card-body empty-state-card">
+                      <div className="empty-icon">🔗</div>
+                      <p className="empty-text">Chưa liên kết ví blockchain</p>
                     </div>
                   </div>
                 )}
 
-                <div className="detail-section">
-                  <h3>🔐 Phương thức xác thực</h3>
-                  {selectedUser.authMethods &&
-                  selectedUser.authMethods.length > 0 ? (
-                    selectedUser.authMethods.map((method, idx) => (
-                      <div key={idx} className="auth-method-detail">
-                        <strong>
-                          {method.type === "google"
-                            ? "🔗 Google OAuth"
-                            : "🔗 Wallet"}
-                        </strong>
-                        <span>Liên kết: {formatDate(method.linkedAt)}</span>
+                {/* Authentication Methods Card */}
+                <div className="detail-card">
+                  <div className="card-header">
+                    <div
+                      className="card-icon"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                      }}
+                    >
+                      🔐
+                    </div>
+                    <h3>Phương thức xác thực</h3>
+                  </div>
+                  <div className="card-body">
+                    {selectedUser.authMethods &&
+                    selectedUser.authMethods.length > 0 ? (
+                      <div className="auth-methods-list">
+                        {selectedUser.authMethods.map((method, idx) => (
+                          <div key={idx} className="auth-method-card">
+                            <div className="auth-icon">
+                              {method.type === "google" ? "🔗" : "💼"}
+                            </div>
+                            <div className="auth-info">
+                              <div className="auth-type">
+                                {method.type === "google"
+                                  ? "Google OAuth"
+                                  : "Wallet Sign"}
+                              </div>
+                              <div className="auth-date">
+                                Liên kết: {formatDate(method.linkedAt)}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))
-                  ) : (
-                    <p>Chưa có phương thức xác thực</p>
-                  )}
+                    ) : (
+                      <div className="empty-state-card">
+                        <div className="empty-icon">🔐</div>
+                        <p className="empty-text">
+                          Chưa có phương thức xác thực
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {selectedUser.favorites &&
-                  selectedUser.favorites.length > 0 && (
-                    <div className="detail-section">
-                      <h3>❤️ Yêu thích</h3>
-                      <p>
-                        {selectedUser.favorites.length} bất động sản yêu thích
-                      </p>
+                {/* Profile Card */}
+                {(selectedUser.profile?.phone ||
+                  selectedUser.profile?.bio ||
+                  selectedUser.favorites?.length > 0) && (
+                  <div className="detail-card">
+                    <div className="card-header">
+                      <div
+                        className="card-icon"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                        }}
+                      >
+                        ℹ️
+                      </div>
+                      <h3>Thông tin bổ sung</h3>
                     </div>
-                  )}
-
-                {selectedUser.profile && (
-                  <div className="detail-section">
-                    <h3>👤 Profile</h3>
-                    {selectedUser.profile.phone && (
-                      <div className="detail-item">
-                        <strong>Điện thoại:</strong>
-                        <span>{selectedUser.profile.phone}</span>
-                      </div>
-                    )}
-                    {selectedUser.profile.bio && (
-                      <div className="detail-item">
-                        <strong>Bio:</strong>
-                        <span>{selectedUser.profile.bio}</span>
-                      </div>
-                    )}
+                    <div className="card-body">
+                      {selectedUser.profile?.phone && (
+                        <div className="info-row">
+                          <span className="info-label">📱 Điện thoại</span>
+                          <span className="info-value">
+                            {selectedUser.profile.phone}
+                          </span>
+                        </div>
+                      )}
+                      {selectedUser.favorites &&
+                        selectedUser.favorites.length > 0 && (
+                          <div className="info-row">
+                            <span className="info-label">❤️ Yêu thích</span>
+                            <span className="info-value highlight">
+                              {selectedUser.favorites.length} bất động sản
+                            </span>
+                          </div>
+                        )}
+                      {selectedUser.profile?.bio && (
+                        <div className="info-row vertical">
+                          <span className="info-label">📝 Bio</span>
+                          <p className="info-value bio-text">
+                            {selectedUser.profile.bio}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="user-detail-actions">
-                <div className="role-update">
-                  <label htmlFor="roleSelect">Cập nhật Role:</label>
+              {/* Action Footer */}
+              <div className="modal-footer">
+                <div className="role-update-section">
+                  <label className="role-label" htmlFor="roleSelect">
+                    <span className="label-icon">👑</span>
+                    Cập nhật quyền:
+                  </label>
                   <select
                     id="roleSelect"
                     value={selectedUser.role}
                     onChange={(e) =>
                       updateUserRole(selectedUser._id, e.target.value)
                     }
-                    className="role-select"
+                    className="role-select-modern"
                   >
-                    <option value="user">Người dùng</option>
-                    <option value="agent">Đại lý</option>
-                    <option value="admin">Quản trị</option>
+                    <option value="user">👤 Người dùng</option>
+                    <option value="agent">🏢 Đại lý</option>
+                    <option value="admin">👑 Quản trị viên</option>
                   </select>
                 </div>
-
-                <button onClick={closeUserDetail} className="btn-close">
+                <button onClick={closeUserDetail} className="btn-close-modern">
                   Đóng
                 </button>
               </div>
