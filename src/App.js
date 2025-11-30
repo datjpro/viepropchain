@@ -11,6 +11,7 @@ import RevenueReport from "./pages/Admin/Finance/RevenueReport";
 import Transactions from "./pages/Admin/Finance/Transactions";
 import Payouts from "./pages/Admin/Finance/Payouts";
 import SalesAnalytics from "./pages/Admin/Analytics/SalesAnalytics";
+import AdminChat from "./pages/Admin/Chat/AdminChat";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -158,6 +159,18 @@ function App() {
                       <ProtectedRoute>
                         <AdminLayout>
                           <SalesAnalytics />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Chat Routes */}
+                  <Route
+                    path="/admin/chat"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <AdminChat />
                         </AdminLayout>
                       </ProtectedRoute>
                     }
