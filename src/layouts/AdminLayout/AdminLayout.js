@@ -149,13 +149,16 @@ const AdminLayout = ({ children }) => {
       ),
     },
     {
-      path: "/admin/chat",
-      label: "💬 Quản lý Chat",
-      icon: "💬",
+      path: "/admin/support",
+      label: "🎫 Hỗ trợ Khách hàng",
+      icon: "🎫",
       iconSvg: (
         <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-          <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+            clipRule="evenodd"
+          />
         </svg>
       ),
     },
