@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 import "./ChatWidget.css";
 
 const ChatWidget = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Ẩn widget khi ở trang admin hoặc AI chat
+  if (
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/ai-chat"
+  ) {
+    return null;
+  }
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {

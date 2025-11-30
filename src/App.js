@@ -12,6 +12,7 @@ import Transactions from "./pages/Admin/Finance/Transactions";
 import Payouts from "./pages/Admin/Finance/Payouts";
 import SalesAnalytics from "./pages/Admin/Analytics/SalesAnalytics";
 import AdminSupport from "./pages/Admin/Support/AdminSupport";
+import AIChat from "./pages/AIChat/AIChat";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -37,6 +38,7 @@ function App() {
                   <Route path="/*" element={<AppRoutes />} />
 
                   <Route path="/auth/callback" element={<OAuthCallback />} />
+                  <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/profile" element={<Profile />} />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}
