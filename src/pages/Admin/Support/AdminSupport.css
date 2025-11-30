@@ -45,7 +45,7 @@
 }
 
 .stat-card.total {
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(6, 182, 212, 0.3);
 }
 
 .stat-icon {
@@ -73,7 +73,7 @@
 }
 
 .stat-card.total .stat-icon {
-  background: rgba(139, 92, 246, 0.15);
+  background: rgba(6, 182, 212, 0.15);
 }
 
 .stat-info {
