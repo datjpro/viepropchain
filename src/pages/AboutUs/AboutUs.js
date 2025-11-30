@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import aboutUs from "../../data/aboutUs";
 import "./AboutUs.css";
 import blogUs from "../../data/blog";
+import { useLanguage } from "../../contexts/LanguageContext";
+
 export const AboutUs = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const { language } = useLanguage();
 
   return (
     <div>
@@ -15,8 +18,8 @@ export const AboutUs = () => {
         />
 
         <div className="about-us-overlay">
-          <h3>{aboutUs[activeIndex].title}</h3>
-          <p>{aboutUs[activeIndex].content}</p>
+          <h3>{aboutUs[activeIndex].title[language]}</h3>
+          <p>{aboutUs[activeIndex].content[language]}</p>
         </div>
 
         <div className="about-us-sidebar">
@@ -31,11 +34,15 @@ export const AboutUs = () => {
               </span>
               <div className="relative w-[160px]">
                 <div
-                  className={`about-us-item-bar ${index === activeIndex ? "active" : "inactive"}`}
+                  className={`about-us-item-bar ${
+                    index === activeIndex ? "active" : "inactive"
+                  }`}
                 ></div>
               </div>
               <div
-                className={`about-us-item-dot ${index === activeIndex ? "active" : "inactive"}`}
+                className={`about-us-item-dot ${
+                  index === activeIndex ? "active" : "inactive"
+                }`}
               ></div>
             </div>
           ))}
@@ -51,10 +58,12 @@ export const AboutUs = () => {
           <div className="blogus-left">
             {blogUs.map((item, index) => (
               <div key={index} className="blogus-item">
-                <p className="blogus-item-title">{item.title}</p>
+                <p className="blogus-item-title">{item.title[language]}</p>
                 <div className="blogus-item-content-wrapper">
                   <div className="blogus-item-bar"></div>
-                  <p className="blogus-item-content">{item.content}</p>
+                  <p className="blogus-item-content">
+                    {item.content[language]}
+                  </p>
                 </div>
               </div>
             ))}
@@ -62,12 +71,11 @@ export const AboutUs = () => {
 
           <div className="blogus-right">
             {blogUs.map((item, index) => (
-              <img key={index} src={item.img} alt={item.title} />
+              <img key={index} src={item.img} alt={item.title[language]} />
             ))}
           </div>
         </div>
       </div>
-
     </div>
   );
-}
+};
