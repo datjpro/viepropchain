@@ -7,6 +7,10 @@ import Users from "./pages/Admin/Users/Users";
 import Properties from "./pages/Admin/Properties/Properties";
 import PendingProperties from "./pages/Admin/PendingProperties/PendingProperties";
 import Marketplace from "./pages/Admin/Marketplace/Marketplace";
+import RevenueReport from "./pages/Admin/Finance/RevenueReport";
+import Transactions from "./pages/Admin/Finance/Transactions";
+import Payouts from "./pages/Admin/Finance/Payouts";
+import SalesAnalytics from "./pages/Admin/Analytics/SalesAnalytics";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -109,6 +113,50 @@ function App() {
                       <ProtectedRoute>
                         <AdminLayout>
                           <Marketplace />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Finance Routes */}
+                  <Route
+                    path="/admin/finance/revenue"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <RevenueReport />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/finance/transactions"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <Transactions />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/finance/payouts"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <Payouts />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* Analytics Routes */}
+                  <Route
+                    path="/admin/analytics/sales"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <SalesAnalytics />
                         </AdminLayout>
                       </ProtectedRoute>
                     }
