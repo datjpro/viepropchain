@@ -5,6 +5,8 @@ import ListNFT from "./pages/Admin/ListNFT/ListNFT";
 import Dashboard from "./pages/Admin/Dashboard/Dashboard";
 import Users from "./pages/Admin/Users/Users";
 import Properties from "./pages/Admin/Properties/Properties";
+import PendingProperties from "./pages/Admin/PendingProperties/PendingProperties";
+import Marketplace from "./pages/Admin/Marketplace/Marketplace";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
@@ -14,7 +16,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AppRoutes } from "./routes/AppRoutes"; 
+import { AppRoutes } from "./routes/AppRoutes";
 
 function App() {
   return (
@@ -25,9 +27,7 @@ function App() {
             <Router>
               <div className="App">
                 <Routes>
-    
                   <Route path="/*" element={<AppRoutes />} />
-
 
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="/profile" element={<Profile />} />
@@ -89,6 +89,26 @@ function App() {
                       <ProtectedRoute>
                         <AdminLayout>
                           <Properties />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pending"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <PendingProperties />
+                        </AdminLayout>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/marketplace"
+                    element={
+                      <ProtectedRoute>
+                        <AdminLayout>
+                          <Marketplace />
                         </AdminLayout>
                       </ProtectedRoute>
                     }

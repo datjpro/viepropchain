@@ -9,6 +9,8 @@ const Properties = () => {
   const [filter, setFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [nftDetails, setNftDetails] = useState(null);
+  const [loadingNft, setLoadingNft] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -152,12 +154,37 @@ const Properties = () => {
     return typeMap[type] || "🏠";
   };
 
-  const openPropertyDetail = (property) => {
+  const openPropertyDetail = async (property) => {
     setSelectedProperty(property);
+    setNftDetails(null);
+
+    // If property has NFT, fetch full NFT details
+    if (property.nft?.isMinted && property.nft?.tokenId !== undefined) {
+      await fetchNftDetails(property.nft.tokenId);
+    }
+  };
+
+  const fetchNftDetails = async (tokenId) => {
+    try {
+      setLoadingNft(true);
+      const response = await fetch(
+        `${API_ENDPOINTS.ADMIN.PROPERTIES}?limit=1000`
+      );
+      const data = await response.json();
+
+      // Search through all properties to find NFT collection data
+      // This is temporary - ideally backend should have NFT endpoint
+      // For now, we'll use what we have in property.nft
+      setLoadingNft(false);
+    } catch (error) {
+      console.error("Error fetching NFT details:", error);
+      setLoadingNft(false);
+    }
   };
 
   const closePropertyDetail = () => {
     setSelectedProperty(null);
+    setNftDetails(null);
   };
 
   const deleteProperty = async (propertyId) => {
@@ -213,8 +240,7 @@ const Properties = () => {
   return (
     <div className="properties-container">
       <div className="properties-header">
-        <h1>🏠 Quản lý Bất động sản</h1>
-        <p>Quản lý tất cả bất động sản trong database</p>
+        <h1>Quản lý Bất động sản</h1>
       </div>
 
       {error && (
@@ -228,84 +254,99 @@ const Properties = () => {
 
       {/* Statistics */}
       <div className="properties-stats">
-        <div className="stat-card">
-          <div className="stat-number">{pagination.total}</div>
-          <div className="stat-label">Tổng BĐS</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {properties.filter((p) => p.nft?.isMinted).length}
+        <div className="stat-card stat-total">
+          <div className="stat-icon">📋</div>
+          <div className="stat-content">
+            <div className="stat-number">{pagination.total}</div>
+            <div className="stat-label">TỔNG BĐS</div>
           </div>
-          <div className="stat-label">Đã mint NFT</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {properties.filter((p) => p.status === "for_sale").length}
+        <div className="stat-card stat-minted">
+          <div className="stat-icon">🎨</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {properties.filter((p) => p.nft?.isMinted).length}
+            </div>
+            <div className="stat-label">ĐÃ MINT NFT</div>
           </div>
-          <div className="stat-label">Đang bán</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {properties.filter((p) => p.status === "sold").length}
+        <div className="stat-card stat-for-sale">
+          <div className="stat-icon">🏠</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {properties.filter((p) => p.status === "for_sale").length}
+            </div>
+            <div className="stat-label">ĐANG BÁN</div>
           </div>
-          <div className="stat-label">Đã bán</div>
+        </div>
+        <div className="stat-card stat-sold">
+          <div className="stat-icon">🔵</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {properties.filter((p) => p.status === "sold").length}
+            </div>
+            <div className="stat-label">ĐÃ BÁN</div>
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="properties-filters">
-        <div className="search-box">
+      {/* Filter Section */}
+      <div className="filter-section">
+        <div className="search-wrapper">
+          <span className="search-icon">🔍</span>
           <input
             type="text"
-            placeholder="🔍 Tìm kiếm theo tên, địa chỉ, loại BĐS..."
+            placeholder="Tìm kiếm theo tên, địa chỉ, loại BĐS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
         </div>
 
-        <div className="filter-buttons">
+        <div className="filter-tabs">
           <button
-            className={filter === "ALL" ? "active" : ""}
+            className={filter === "ALL" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("ALL")}
           >
             Tất cả
           </button>
           <button
-            className={filter === "DRAFT" ? "active" : ""}
+            className={filter === "DRAFT" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("DRAFT")}
           >
             Nháp
           </button>
           <button
-            className={filter === "PUBLISHED" ? "active" : ""}
+            className={filter === "PUBLISHED" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("PUBLISHED")}
           >
             Đã xuất bản
           </button>
           <button
-            className={filter === "MINTED" ? "active" : ""}
+            className={filter === "MINTED" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("MINTED")}
           >
             Đã mint
           </button>
           <button
-            className={filter === "FOR_SALE" ? "active" : ""}
+            className={filter === "FOR_SALE" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("FOR_SALE")}
           >
             Đang bán
           </button>
           <button
-            className={filter === "SOLD" ? "active" : ""}
+            className={filter === "SOLD" ? "tab-btn active" : "tab-btn"}
             onClick={() => setFilter("SOLD")}
           >
             Đã bán
           </button>
+          <button
+            className="btn-add-property"
+            onClick={() => (window.location.href = "/admin/nft")}
+          >
+            Thêm Bất động sản
+          </button>
         </div>
-
-        <button onClick={fetchProperties} className="btn-refresh">
-          🔄 Làm mới
-        </button>
       </div>
 
       {/* Properties Grid */}
@@ -335,53 +376,44 @@ const Properties = () => {
                       "https://via.placeholder.com/300?text=No+Image";
                   }}
                 />
-                {getStatusBadge(property.status, property.nft)}
+                <div className="property-badges">
+                  {getStatusBadge(property.status, property.nft)}
+                </div>
                 <div className="property-type-badge">
-                  {getPropertyTypeIcon(property.propertyType)}{" "}
-                  {property.propertyType}
+                  <span>{getPropertyTypeIcon(property.propertyType)}</span>
+                  <span>{property.propertyType || "house"}</span>
                 </div>
               </div>
 
               <div className="property-card-body">
-                <h3 className="property-name">
+                <h3 className="property-title">
                   {property.name || property.title || "Unnamed Property"}
                 </h3>
 
                 <div className="property-location">
-                  📍{" "}
-                  {property.location?.address ||
-                    property.address?.street ||
-                    "Chưa có địa chỉ"}
-                  {property.location?.district &&
-                    `, ${property.location.district}`}
-                  {property.location?.city && `, ${property.location.city}`}
+                  <span>📍</span>
+                  <span>
+                    {property.location?.address ||
+                      property.address?.street ||
+                      "N/A"}
+                    ,{" "}
+                    {property.location?.district ||
+                      property.address?.district ||
+                      ""}
+                  </span>
                 </div>
 
                 <div className="property-price">
                   💰 {formatPrice(property.price)}
                 </div>
 
-                {property.nft?.isMinted && (
-                  <div className="nft-info">
-                    <div className="nft-badge">
-                      🎨 NFT #{property.nft.tokenId}
-                    </div>
-                    {property.nft.owner && (
-                      <div className="nft-owner">
-                        👤 {property.nft.owner.substring(0, 6)}...
-                        {property.nft.owner.substring(-4)}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="property-footer">
-                  <div className="property-views">
-                    👁️ {property.views || 0} lượt xem
-                  </div>
-                  <div className="property-date">
-                    {formatDate(property.createdAt)}
-                  </div>
+                <div className="property-meta">
+                  {property.nft?.tokenId && (
+                    <span>🎨 #{property.nft.tokenId}</span>
+                  )}
+                  <span>
+                    {new Date(property.createdAt).toLocaleDateString("vi-VN")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -538,6 +570,8 @@ const Properties = () => {
                 {selectedProperty.nft?.isMinted && (
                   <div className="detail-section nft-section">
                     <h3>🎨 Thông tin NFT</h3>
+
+                    {/* Token ID & Contract */}
                     <div className="detail-item highlight">
                       <strong>Token ID:</strong>
                       <span className="token-id-badge">
@@ -561,54 +595,83 @@ const Properties = () => {
                         📋
                       </button>
                     </div>
-                    <div className="detail-item">
-                      <strong>Owner:</strong>
-                      <code className="owner-code">
-                        {selectedProperty.nft.owner}
-                      </code>
-                      <button
-                        className="btn-copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            selectedProperty.nft.owner
-                          );
-                          alert("Đã copy owner address!");
-                        }}
-                      >
-                        📋
-                      </button>
-                    </div>
-                    <div className="detail-item">
-                      <strong>Transaction Hash:</strong>
-                      <code className="tx-code">
-                        {selectedProperty.nft.transactionHash}
-                      </code>
-                      <button
-                        className="btn-copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            selectedProperty.nft.transactionHash
-                          );
-                          alert("Đã copy transaction hash!");
-                        }}
-                      >
-                        📋
-                      </button>
-                    </div>
-                    {selectedProperty.nft.mintedAt && (
+
+                    {/* Ownership Info */}
+                    {(selectedProperty.nft.currentOwner ||
+                      selectedProperty.nft.owner) && (
                       <div className="detail-item">
-                        <strong>Minted At:</strong>
-                        <span>{formatDate(selectedProperty.nft.mintedAt)}</span>
+                        <strong>Current Owner:</strong>
+                        <code className="owner-code">
+                          {selectedProperty.nft.currentOwner ||
+                            selectedProperty.nft.owner}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.currentOwner ||
+                                selectedProperty.nft.owner
+                            );
+                            alert("Đã copy current owner address!");
+                          }}
+                        >
+                          📋
+                        </button>
                       </div>
                     )}
-                    {selectedProperty.ipfsMetadataCid && (
+
+                    {selectedProperty.nft.originalOwner && (
+                      <div className="detail-item">
+                        <strong>Original Owner:</strong>
+                        <code className="owner-code">
+                          {selectedProperty.nft.originalOwner}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.originalOwner
+                            );
+                            alert("Đã copy original owner address!");
+                          }}
+                        >
+                          📋
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedProperty.nft.mintedBy && (
+                      <div className="detail-item">
+                        <strong>Minted By:</strong>
+                        <code className="owner-code">
+                          {selectedProperty.nft.mintedBy}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedProperty.nft.mintedBy
+                            );
+                            alert("Đã copy minted by address!");
+                          }}
+                        >
+                          📋
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Metadata URIs */}
+                    {selectedProperty.nft.metadataUri && (
                       <div className="detail-item highlight-ipfs">
-                        <strong>IPFS Metadata CID:</strong>
+                        <strong>Metadata URI:</strong>
                         <code className="ipfs-code">
-                          {selectedProperty.ipfsMetadataCid}
+                          {selectedProperty.nft.metadataUri}
                         </code>
                         <a
-                          href={`https://gateway.pinata.cloud/ipfs/${selectedProperty.ipfsMetadataCid}`}
+                          href={selectedProperty.nft.metadataUri.replace(
+                            "ipfs://",
+                            "https://gateway.pinata.cloud/ipfs/"
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn-view-link"
@@ -617,6 +680,179 @@ const Properties = () => {
                         </a>
                       </div>
                     )}
+
+                    {(selectedProperty.nft.metadataCID ||
+                      selectedProperty.ipfsMetadataCid) && (
+                      <div className="detail-item highlight-ipfs">
+                        <strong>Metadata CID:</strong>
+                        <code className="ipfs-code">
+                          {selectedProperty.nft.metadataCID ||
+                            selectedProperty.ipfsMetadataCid}
+                        </code>
+                        <a
+                          href={`https://gateway.pinata.cloud/ipfs/${
+                            selectedProperty.nft.metadataCID ||
+                            selectedProperty.ipfsMetadataCid
+                          }`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-view-link"
+                        >
+                          🔗
+                        </a>
+                      </div>
+                    )}
+
+                    {/* Mint Transaction Details */}
+                    <div className="detail-item">
+                      <strong>Mint Transaction Hash:</strong>
+                      <code className="tx-code">
+                        {selectedProperty.nft.mintTransactionHash ||
+                          selectedProperty.nft.transactionHash}
+                      </code>
+                      <button
+                        className="btn-copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            selectedProperty.nft.mintTransactionHash ||
+                              selectedProperty.nft.transactionHash
+                          );
+                          alert("Đã copy mint transaction hash!");
+                        }}
+                      >
+                        📋
+                      </button>
+                    </div>
+
+                    {selectedProperty.nft.mintBlockNumber && (
+                      <div className="detail-item">
+                        <strong>Mint Block Number:</strong>
+                        <span className="block-badge">
+                          #{selectedProperty.nft.mintBlockNumber}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedProperty.nft.mintedAt && (
+                      <div className="detail-item">
+                        <strong>Minted At:</strong>
+                        <span>{formatDate(selectedProperty.nft.mintedAt)}</span>
+                      </div>
+                    )}
+
+                    {/* Transfer & Sale Stats */}
+                    <div className="detail-item">
+                      <strong>Total Transfers:</strong>
+                      <span className="stat-badge">
+                        {selectedProperty.nft.totalTransfers || 0}
+                      </span>
+                    </div>
+
+                    <div className="detail-item">
+                      <strong>Total Sales:</strong>
+                      <span className="stat-badge">
+                        {selectedProperty.nft.totalSales || 0}
+                      </span>
+                    </div>
+
+                    {selectedProperty.nft.lastTransferAt && (
+                      <div className="detail-item">
+                        <strong>Last Transfer At:</strong>
+                        <span>
+                          {formatDate(selectedProperty.nft.lastTransferAt)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Views & Favorites */}
+                    <div className="detail-item">
+                      <strong>Views:</strong>
+                      <span className="stat-badge">
+                        {selectedProperty.nft.views || 0} 👁️
+                      </span>
+                    </div>
+
+                    <div className="detail-item">
+                      <strong>Favorites:</strong>
+                      <span className="stat-badge">
+                        {selectedProperty.nft.favorites || 0} ❤️
+                      </span>
+                    </div>
+
+                    {/* NFT Status */}
+                    {selectedProperty.nft.status && (
+                      <div className="detail-item">
+                        <strong>NFT Status:</strong>
+                        <span className="nft-status-badge">
+                          {selectedProperty.nft.status}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Listing Info */}
+                    {selectedProperty.nft.listing && (
+                      <div className="detail-item">
+                        <strong>Listing:</strong>
+                        <span className="listing-info">
+                          {selectedProperty.nft.listing.listingType || "N/A"} -
+                          {selectedProperty.nft.listing.status || "N/A"}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Transfer History */}
+                    {selectedProperty.nft.transferHistory &&
+                      selectedProperty.nft.transferHistory.length > 0 && (
+                        <div className="detail-item full-width">
+                          <strong>Transfer History:</strong>
+                          <div className="transfer-history">
+                            {selectedProperty.nft.transferHistory.map(
+                              (transfer, idx) => (
+                                <div key={idx} className="transfer-item">
+                                  <span>#{idx + 1}</span>
+                                  <span>
+                                    From: {transfer.from?.slice(0, 10)}...
+                                  </span>
+                                  <span>
+                                    To: {transfer.to?.slice(0, 10)}...
+                                  </span>
+                                  <span>
+                                    {transfer.timestamp
+                                      ? formatDate(transfer.timestamp)
+                                      : "N/A"}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Sale History */}
+                    {selectedProperty.nft.saleHistory &&
+                      selectedProperty.nft.saleHistory.length > 0 && (
+                        <div className="detail-item full-width">
+                          <strong>Sale History:</strong>
+                          <div className="sale-history">
+                            {selectedProperty.nft.saleHistory.map(
+                              (sale, idx) => (
+                                <div key={idx} className="sale-item">
+                                  <span>#{idx + 1}</span>
+                                  <span>Price: {formatPrice(sale.price)}</span>
+                                  <span>
+                                    Buyer: {sale.buyer?.slice(0, 10)}...
+                                  </span>
+                                  <span>
+                                    {sale.timestamp
+                                      ? formatDate(sale.timestamp)
+                                      : "N/A"}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
                   </div>
                 )}
 
