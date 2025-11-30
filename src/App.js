@@ -14,6 +14,7 @@ import SalesAnalytics from "./pages/Admin/Analytics/SalesAnalytics";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
+import ChatWidget from "./components/ChatWidget/ChatWidget";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { Web3Provider } from "./contexts/Web3Context";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -162,6 +163,7 @@ function App() {
                     }
                   />
                 </Routes>
+                <ChatWidget />
               </div>
             </Router>
           </AdminProvider>
