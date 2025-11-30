@@ -6,14 +6,6 @@ import "./ChatWidget.css";
 const ChatWidget = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-
-  // Ẩn widget khi ở trang admin hoặc AI chat
-  if (
-    location.pathname.startsWith("/admin") ||
-    location.pathname === "/ai-chat"
-  ) {
-    return null;
-  }
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {
@@ -26,6 +18,14 @@ const ChatWidget = () => {
       }),
     },
   ]);
+
+  // Ẩn widget khi ở trang admin hoặc AI chat
+  if (
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/ai-chat"
+  ) {
+    return null;
+  }
 
   const handleSendMessage = (e) => {
     e.preventDefault();

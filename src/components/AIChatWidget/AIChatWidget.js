@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./AIChatWidget.css";
 
 const AIChatWidget = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -20,7 +22,6 @@ const AIChatWidget = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -29,6 +30,14 @@ const AIChatWidget = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Ẩn widget khi ở trang admin hoặc AI chat
+  if (
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/ai-chat"
+  ) {
+    return null;
+  }
 
   const quickQuestions = [
     "🏠 Tìm căn hộ cao cấp",

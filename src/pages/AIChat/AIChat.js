@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_GATEWAY_URL } from "../../config/api";
 import "./AIChat.css";
 
 const AIChat = () => {
@@ -8,7 +9,7 @@ const AIChat = () => {
       id: 1,
       type: "ai",
       content:
-        "Xin chào! Tôi là trợ lý AI của ViePropChain. Tôi có thể giúp bạn:\n\n🏠 Tìm kiếm bất động sản phù hợp\n💰 Tư vấn đầu tư và phân tích thị trường\n🔗 Hiểu về công nghệ Blockchain trong BĐS\n📊 So sánh giá và xu hướng\n📞 Kết nối với chuyên gia\n\nBạn muốn tôi giúp gì hôm nay?",
+        "Xin chào! Tôi là VieProp AI - trợ lý bất động sản của ViePropChain.\n\n🏠 Tìm kiếm BĐS (căn hộ, nhà phố, đất nền)\n💰 Tư vấn đầu tư & phân tích thị trường\n🔗 Giải thích Blockchain/NFT trong BĐS\n📊 So sánh giá & xu hướng khu vực\n\nBạn cần tôi hỗ trợ gì về bất động sản?",
       timestamp: new Date().toLocaleTimeString("vi-VN", {
         hour: "2-digit",
         minute: "2-digit",
@@ -17,6 +18,7 @@ const AIChat = () => {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [propertyContext, setPropertyContext] = useState([]);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
@@ -27,6 +29,43 @@ const AIChat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load properties từ database khi component mount
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      const response = await fetch(
+        `${API_GATEWAY_URL}/api/query/properties?limit=100`
+      );
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        // Format properties để dùng làm context cho AI
+        const formattedProperties = data.data.map((prop) => ({
+          id: prop._id,
+          title: prop.title,
+          type: prop.propertyType,
+          price: prop.price,
+          area: prop.area,
+          location: `${prop.location?.district}, ${prop.location?.city}`,
+          address: prop.location?.address,
+          bedrooms: prop.bedrooms,
+          bathrooms: prop.bathrooms,
+          description: prop.description,
+          status: prop.status,
+          verificationStatus: prop.verificationStatus,
+        }));
+
+        setPropertyContext(formattedProperties);
+        console.log(`✅ Đã tải ${formattedProperties.length} BĐS từ database`);
+      }
+    } catch (error) {
+      console.error("❌ Lỗi khi tải properties:", error);
+    }
+  };
 
   const suggestedQuestions = [
     {
@@ -82,11 +121,126 @@ const AIChat = () => {
     };
 
     setMessages([...messages, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(inputMessage);
+    // Scroll xuống ngay sau khi gửi
+    setTimeout(() => scrollToBottom(), 100);
+
+    try {
+      // Tạo context từ database properties (rút gọn)
+      let propertyContextText = "";
+      if (propertyContext.length > 0) {
+        const contextSummary = propertyContext
+          .map(
+            (p) =>
+              `[${p.id}] ${p.title} - ${
+                p.type
+              } - ${p.price?.toLocaleString()}đ - ${p.area}m² - ${
+                p.location
+              } - ${p.bedrooms}PN/${p.bathrooms}WC`
+          )
+          .join("\n");
+
+        propertyContextText = `\n\nDỮ LIỆU ${propertyContext.length} BẤT ĐỘNG SẢN THỰC TẾ:\n${contextSummary}\n\nQUAN TRỌNG: CHỈ đề xuất BĐS từ danh sách trên. KHÔNG bịa dự án không tồn tại.`;
+      }
+
+      // Gọi API Claude
+      const response = await fetch(
+        `${process.env.REACT_APP_AI_BASE_URL}/chat/completions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.REACT_APP_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: process.env.REACT_APP_AI_MODEL,
+            messages: [
+              {
+                role: "system",
+                content: `BẠN LÀ "VieProp AI" - TRỢ LÝ BẤT ĐỘNG SẢN của ViePropChain.
+
+⚠️ QUAN TRỌNG - ĐỌC KỸ:
+❌ BẠN KHÔNG PHẢI: AWS, Kiro, OpenAI, ChatGPT, Claude
+✅ BẠN LÀ: VieProp AI - Trợ lý BĐS của ViePropChain Việt Nam
+
+📋 DANH TÍNH CỐ ĐỊNH:
+- Tên: VieProp AI
+- Công ty: ViePropChain (nền tảng blockchain BĐS)
+- Ngôn ngữ: TIẾNG VIỆT (100%)
+- Chức năng: Tư vấn BĐS, đầu tư, blockchain
+
+🚫 NGHIÊM CẤM:
+- KHÔNG NÓI "I'm Kiro" hoặc "AWS assistant"
+- KHÔNG NÓI "I can't pretend" hoặc từ chối vai trò
+- KHÔNG TRẢ LỜI TIẾNG ANH (chỉ Tiếng Việt)
+- KHÔNG NÓI về AWS, cloud, infrastructure
+
+✅ BẮT BUỘC:
+- Luôn nói: "Tôi là VieProp AI"
+- Luôn trả lời TIẾNG VIỆT
+- Chỉ tư vấn về BĐS, đầu tư, blockchain
+
+📊 DỮ LIỆU BĐS:
+${propertyContextText}
+
+💼 NHIỆM VỤ:
+1. Tìm kiếm BĐS từ database
+2. Tư vấn đầu tư BĐS Việt Nam
+3. Giải thích NFT/blockchain trong BĐS
+4. So sánh giá & phân tích thị trường
+
+📝 FORMAT TRẢ LỜI:
+- Ngắn gọn, thân thiện
+- Hiển thị: [ID] Tên - Giá - m² - Vị trí
+- Không có BĐS → "Hệ thống chưa có BĐS phù hợp"`,
+              },
+              {
+                role: "user",
+                content: currentMessage,
+              },
+            ],
+            temperature: 0.8,
+            max_tokens: 2000,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error(
+          "❌ API Response Error:",
+          response.status,
+          response.statusText
+        );
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+      console.log("✅ API Response:", data);
+      console.log("📝 AI Model Used:", process.env.REACT_APP_AI_MODEL);
+      console.log(
+        "🔑 API Key (first 10):",
+        process.env.REACT_APP_API_KEY?.substring(0, 10)
+      );
+
+      const aiContent = data.choices[0].message.content;
+
+      const aiMessage = {
+        id: messages.length + 2,
+        type: "ai",
+        content: aiContent,
+        timestamp: new Date().toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("AI API Error:", error);
+      // Fallback to local response nếu API lỗi
+      const aiResponse = generateAIResponse(currentMessage);
       const aiMessage = {
         id: messages.length + 2,
         type: "ai",
@@ -97,8 +251,9 @@ const AIChat = () => {
         }),
       };
       setMessages((prev) => [...prev, aiMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const generateAIResponse = (userInput) => {
