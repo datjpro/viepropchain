@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../config/api";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 import "./ListNFT.css";
 
 const ListNFT = () => {
@@ -17,15 +18,29 @@ const ListNFT = () => {
   const fetchNFTs = async () => {
     try {
       setLoading(true);
-      // Gọi Admin Service để lấy properties via API Gateway
-      const response = await fetch(API_ENDPOINTS.ADMIN.PROPERTIES);
+      const token = localStorage.getItem("viepropchain_token");
+
+      // Lấy tất cả properties, server sẽ trả về đầy đủ nft info
+      const response = await fetch(
+        `${API_ENDPOINTS.ADMIN.PROPERTIES}?limit=500`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+
       const data = await response.json();
 
       if (data.success) {
-        setNfts(data.data);
+        const allProperties = data.data.properties || data.data || [];
+        // Chỉ lấy những BĐS đã mint NFT
+        const mintedNFTs = allProperties.filter((p) => p.nft?.isMinted);
+        setNfts(mintedNFTs);
         setError("");
       } else {
-        setError("Không thể tải danh sách bất động sản");
+        setError("Không thể tải danh sách NFT");
       }
     } catch (err) {
       setError("Lỗi kết nối: " + err.message);
@@ -37,25 +52,29 @@ const ListNFT = () => {
   const getFilteredNFTs = () => {
     let filtered = nfts;
 
-    // Filter by status - cập nhật để phù hợp với Property Service
+    // Filter by status
     if (filter !== "ALL") {
-      const statusMap = {
-        NOT_FOR_SALE: ["draft", "published", "pending_mint"],
-        FOR_SALE: ["for_sale", "in_transaction"],
-        MINTED: ["minted"],
-        SOLD: ["sold"],
-      };
-      const statuses = statusMap[filter] || [];
-      filtered = filtered.filter((nft) => statuses.includes(nft.status));
+      if (filter === "FOR_SALE") {
+        filtered = filtered.filter((nft) => nft.status === "for_sale");
+      } else if (filter === "SOLD") {
+        filtered = filtered.filter((nft) => nft.status === "sold");
+      } else if (filter === "MINTED") {
+        // Tất cả NFT đã mint (không phân biệt trạng thái bán)
+        filtered = filtered.filter((nft) => nft.nft?.isMinted);
+      }
     }
 
-    // Search by name or owner
+    // Search by name, owner, token ID
     if (searchTerm) {
       filtered = filtered.filter(
         (nft) =>
           nft.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          nft.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           nft.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           nft.nft?.owner?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          nft.nft?.currentOwner
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           (nft.nft?.tokenId && nft.nft.tokenId.toString().includes(searchTerm))
       );
     }
@@ -115,10 +134,7 @@ const ListNFT = () => {
   if (loading) {
     return (
       <div className="list-nft-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
-        </div>
+        <LoadingSpinner message="Đang tải danh sách NFT..." />
       </div>
     );
   }
@@ -182,19 +198,7 @@ const ListNFT = () => {
             className={filter === "ALL" ? "active" : ""}
             onClick={() => setFilter("ALL")}
           >
-            Tất cả
-          </button>
-          <button
-            className={filter === "NOT_FOR_SALE" ? "active" : ""}
-            onClick={() => setFilter("NOT_FOR_SALE")}
-          >
-            Chưa mint
-          </button>
-          <button
-            className={filter === "MINTED" ? "active" : ""}
-            onClick={() => setFilter("MINTED")}
-          >
-            Đã mint
+            Tất cả NFT
           </button>
           <button
             className={filter === "FOR_SALE" ? "active" : ""}
@@ -245,40 +249,57 @@ const ListNFT = () => {
               </div>
 
               <div className="nft-card-body">
-                <h3 className="nft-name">{nft.name || "Unnamed Property"}</h3>
+                <h3 className="nft-name">
+                  {nft.name || nft.title || "Unnamed Property"}
+                </h3>
 
                 <div className="nft-info-row">
-                  <span className="info-label">Loại:</span>
+                  <span className="info-label">🎨 Token ID:</span>
+                  <span className="info-value">#{nft.nft.tokenId}</span>
+                </div>
+
+                <div className="nft-info-row">
+                  <span className="info-label">🏠 Loại:</span>
                   <span className="info-value">{nft.propertyType}</span>
                 </div>
 
-                {nft.nft?.isMinted && (
+                {(nft.nft?.currentOwner || nft.nft?.owner) && (
                   <div className="nft-info-row">
-                    <span className="info-label">Token ID:</span>
-                    <span className="info-value">#{nft.nft.tokenId}</span>
+                    <span className="info-label">👤 Owner:</span>
+                    <span className="info-value">
+                      {formatAddress(nft.nft.currentOwner || nft.nft.owner)}
+                    </span>
                   </div>
                 )}
 
-                {nft.nft?.owner && (
+                {nft.nft?.contractAddress && (
                   <div className="nft-info-row">
-                    <span className="info-label">Owner:</span>
-                    <span className="info-value">
-                      {formatAddress(nft.nft.owner)}
+                    <span className="info-label">📜 Contract:</span>
+                    <span className="info-value" style={{ fontSize: "11px" }}>
+                      {formatAddress(nft.nft.contractAddress)}
                     </span>
                   </div>
                 )}
 
                 {nft.price && (
                   <div className="nft-price">
-                    💰 {(nft.price.amount / 1000000000).toFixed(2)} tỷ VND
+                    💰{" "}
+                    {typeof nft.price === "object"
+                      ? (nft.price.amount / 1000000000).toFixed(2)
+                      : (nft.price / 1000000000).toFixed(2)}{" "}
+                    tỷ VND
                   </div>
                 )}
 
                 <div className="nft-footer">
                   <div className="nft-views">
-                    👁️ {nft.analytics?.views || 0} lượt xem
+                    👁️ {nft.nft?.views || nft.analytics?.views || 0} views
                   </div>
-                  <div className="nft-date">{formatDate(nft.createdAt)}</div>
+                  <div className="nft-date">
+                    {nft.nft?.mintedAt
+                      ? formatDate(nft.nft.mintedAt)
+                      : formatDate(nft.createdAt)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -380,12 +401,15 @@ const ListNFT = () => {
                     <div className="detail-item">
                       <strong>Owner (Wallet):</strong>
                       <code className="owner-code">
-                        {selectedNFT.nft.owner}
+                        {selectedNFT.nft.currentOwner || selectedNFT.nft.owner}
                       </code>
                       <button
                         className="btn-copy"
                         onClick={() => {
-                          navigator.clipboard.writeText(selectedNFT.nft.owner);
+                          navigator.clipboard.writeText(
+                            selectedNFT.nft.currentOwner ||
+                              selectedNFT.nft.owner
+                          );
                           alert("Đã copy owner address!");
                         }}
                         title="Copy owner address"
@@ -394,24 +418,71 @@ const ListNFT = () => {
                       </button>
                     </div>
 
-                    <div className="detail-item">
-                      <strong>Transaction Hash:</strong>
-                      <code className="tx-code">
-                        {selectedNFT.nft.transactionHash}
-                      </code>
-                      <button
-                        className="btn-copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            selectedNFT.nft.transactionHash
-                          );
-                          alert("Đã copy transaction hash!");
-                        }}
-                        title="Copy transaction hash"
-                      >
-                        📋
-                      </button>
-                    </div>
+                    {selectedNFT.nft.originalOwner &&
+                      selectedNFT.nft.originalOwner !==
+                        (selectedNFT.nft.currentOwner ||
+                          selectedNFT.nft.owner) && (
+                        <div className="detail-item">
+                          <strong>Original Owner:</strong>
+                          <code className="owner-code">
+                            {selectedNFT.nft.originalOwner}
+                          </code>
+                          <button
+                            className="btn-copy"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                selectedNFT.nft.originalOwner
+                              );
+                              alert("Đã copy original owner!");
+                            }}
+                            title="Copy original owner"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      )}
+
+                    {selectedNFT.nft.mintTransactionHash && (
+                      <div className="detail-item">
+                        <strong>Mint Transaction:</strong>
+                        <code className="tx-code">
+                          {selectedNFT.nft.mintTransactionHash}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedNFT.nft.mintTransactionHash
+                            );
+                            alert("Đã copy mint tx hash!");
+                          }}
+                          title="Copy mint transaction hash"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedNFT.nft.transactionHash && (
+                      <div className="detail-item">
+                        <strong>Transaction Hash:</strong>
+                        <code className="tx-code">
+                          {selectedNFT.nft.transactionHash}
+                        </code>
+                        <button
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              selectedNFT.nft.transactionHash
+                            );
+                            alert("Đã copy transaction hash!");
+                          }}
+                          title="Copy transaction hash"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    )}
 
                     {selectedNFT.nft.tokenURI && (
                       <div className="detail-item">
@@ -431,17 +502,43 @@ const ListNFT = () => {
                       </div>
                     )}
 
-                    {selectedNFT.ipfsMetadataCid && (
+                    {selectedNFT.nft.metadataUri &&
+                      selectedNFT.nft.metadataUri !==
+                        selectedNFT.nft.tokenURI && (
+                        <div className="detail-item">
+                          <strong>Metadata URI:</strong>
+                          <code className="uri-code">
+                            {selectedNFT.nft.metadataUri}
+                          </code>
+                          <a
+                            href={selectedNFT.nft.metadataUri.replace(
+                              "ipfs://",
+                              "https://gateway.pinata.cloud/ipfs/"
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-view-link"
+                            title="Xem metadata"
+                          >
+                            🔗
+                          </a>
+                        </div>
+                      )}
+
+                    {(selectedNFT.ipfsMetadataCid ||
+                      selectedNFT.nft.metadataCID) && (
                       <div className="detail-item highlight-ipfs">
                         <strong>IPFS Metadata CID:</strong>
                         <code className="ipfs-code">
-                          {selectedNFT.ipfsMetadataCid}
+                          {selectedNFT.ipfsMetadataCid ||
+                            selectedNFT.nft.metadataCID}
                         </code>
                         <button
                           className="btn-copy"
                           onClick={() => {
                             navigator.clipboard.writeText(
-                              selectedNFT.ipfsMetadataCid
+                              selectedNFT.ipfsMetadataCid ||
+                                selectedNFT.nft.metadataCID
                             );
                             alert("Đã copy IPFS CID!");
                           }}
@@ -449,6 +546,18 @@ const ListNFT = () => {
                         >
                           📋
                         </button>
+                        <a
+                          href={`https://gateway.pinata.cloud/ipfs/${
+                            selectedNFT.ipfsMetadataCid ||
+                            selectedNFT.nft.metadataCID
+                          }`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-view-link"
+                          title="Xem trên IPFS"
+                        >
+                          🔗
+                        </a>
                       </div>
                     )}
 

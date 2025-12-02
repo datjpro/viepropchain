@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../config/api";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 import "./Properties.css";
 
 const Properties = () => {
@@ -229,10 +230,7 @@ const Properties = () => {
   if (loading) {
     return (
       <div className="properties-container">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
-        </div>
+        <LoadingSpinner message="Đang tải danh sách bất động sản..." />
       </div>
     );
   }

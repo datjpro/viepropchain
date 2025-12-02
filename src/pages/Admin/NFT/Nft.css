@@ -248,7 +248,117 @@
   font-size: 16px;
 }
 
-/* Properties Grid */
+/* Properties Grid - Pending Style */
+.pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+}
+
+.pending-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pending-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.pending-image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.pending-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pending-body {
+  padding: 20px;
+}
+
+.pending-body h3 {
+  font-size: 18px;
+  color: #1a202c;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.property-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.info-item strong {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.info-item span {
+  color: #1e293b;
+}
+
+/* Actions */
+.pending-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pending-actions .btn-mint {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  width: 100%;
+}
+
+.pending-actions .btn-mint:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.pending-actions .btn-mint:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nft-info-inline {
+  padding: 12px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* OLD GRID STYLES - Keep for backward compatibility */
 .properties-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -261,6 +371,9 @@
   overflow: hidden;
   transition: all 0.3s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  max-height: 650px; /* Giới hạn chiều cao card */
 }
 
 .property-card:hover {
@@ -270,7 +383,8 @@
 
 .property-image {
   position: relative;
-  height: 220px;
+  height: 180px; /* Giảm từ 220px xuống 180px */
+  flex-shrink: 0; /* Không cho ảnh co lại */
   overflow: hidden;
   background: #f3f4f6;
 }
@@ -315,7 +429,11 @@
 }
 
 .property-body {
-  padding: 24px;
+  padding: 20px; /* Giảm từ 24px */
+  flex: 1; /* Cho phép body chiếm không gian còn lại */
+  overflow-y: auto; /* Scroll nếu nội dung quá dài */
+  display: flex;
+  flex-direction: column;
 }
 
 .property-title {

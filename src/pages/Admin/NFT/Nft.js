@@ -55,12 +55,19 @@ const Nft = () => {
       setMinting(property._id);
       setMessage({ type: "", text: "" });
 
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        setMessage({ type: "error", text: "⚠️ Vui lòng đăng nhập lại!" });
+        return;
+      }
+
       const response = await fetch(
         `${API_ENDPOINTS.ADMIN.PROPERTIES}/${property._id}/mint`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ metadataUri: null }),
         }
@@ -322,10 +329,10 @@ const Nft = () => {
           </p>
         </div>
       ) : (
-        <div className="properties-grid">
+        <div className="pending-grid">
           {filteredProperties.map((property) => (
-            <div key={property._id} className="property-card">
-              <div className="property-image">
+            <div key={property._id} className="pending-card">
+              <div className="pending-image">
                 <img
                   src={
                     property.media?.images?.[0]?.url ||
@@ -349,62 +356,89 @@ const Nft = () => {
                 )}
               </div>
 
-              <div className="property-body">
-                <h3 className="property-title">
-                  {property.name || property.title}
-                </h3>
+              <div className="pending-body">
+                <h3>{property.name || property.title}</h3>
 
-                <div className="property-location">
-                  📍 {property.location?.address || property.address?.street},{" "}
-                  {property.location?.district}
-                </div>
-
-                <div className="property-price">
-                  💰 {formatPrice(property.price)}
-                </div>
-
-                <div className="property-meta">
-                  <span className="meta-item">
-                    🏷️ {property.propertyType || "N/A"}
-                  </span>
-                  <span className="meta-item">
-                    📅{" "}
-                    {new Date(property.createdAt).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
-
-                {property.verificationStatus === "verified" &&
-                  !property.nft?.isMinted && (
-                    <button
-                      className="btn-mint"
-                      onClick={() => handleMintNFT(property)}
-                      disabled={minting === property._id}
-                    >
-                      {minting === property._id ? (
-                        <>
-                          <span className="spinner-small"></span>
-                          Đang mint...
-                        </>
-                      ) : (
-                        <>⛏️ Mint NFT</>
-                      )}
-                    </button>
-                  )}
-
-                {property.nft?.isMinted && (
-                  <div className="nft-info">
-                    <div className="nft-detail">
-                      <span>Token ID:</span>
-                      <strong>#{property.nft.tokenId}</strong>
-                    </div>
-                    <div className="nft-detail">
-                      <span>Contract:</span>
-                      <code className="code-small">
-                        {property.nft.contractAddress?.slice(0, 10)}...
-                      </code>
-                    </div>
+                <div className="property-info">
+                  <div className="info-item">
+                    <strong>📍 Địa chỉ:</strong>
+                    <span>
+                      {property.location?.address || property.address?.street},{" "}
+                      {property.location?.district}
+                    </span>
                   </div>
-                )}
+                  <div className="info-item">
+                    <strong>💰 Giá:</strong>
+                    <span>{formatPrice(property.price)}</span>
+                  </div>
+                  <div className="info-item">
+                    <strong>🏠 Loại:</strong>
+                    <span>{property.propertyType || "N/A"}</span>
+                  </div>
+                  <div className="info-item">
+                    <strong>📅 Ngày tạo:</strong>
+                    <span>
+                      {new Date(property.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <strong>🔖 Trạng thái:</strong>
+                    <span>
+                      {property.verificationStatus || property.status || "N/A"}
+                    </span>
+                  </div>
+                  {property.nft?.tokenId && (
+                    <div className="info-item">
+                      <strong>🎨 Token ID:</strong>
+                      <span>#{property.nft.tokenId}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pending-actions">
+                  {property.verificationStatus === "verified" &&
+                    !property.nft?.isMinted && (
+                      <button
+                        className="btn-mint"
+                        onClick={() => handleMintNFT(property)}
+                        disabled={minting === property._id}
+                      >
+                        {minting === property._id ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Đang mint...
+                          </>
+                        ) : (
+                          <>⛏️ Mint NFT</>
+                        )}
+                      </button>
+                    )}
+
+                  {!property.verificationStatus &&
+                    property.status === "active" &&
+                    !property.nft?.isMinted && (
+                      <button
+                        className="btn-mint"
+                        onClick={() => handleMintNFT(property)}
+                        disabled={minting === property._id}
+                      >
+                        {minting === property._id ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Đang mint...
+                          </>
+                        ) : (
+                          <>⛏️ Mint NFT</>
+                        )}
+                      </button>
+                    )}
+
+                  {property.nft?.isMinted && (
+                    <div className="nft-info-inline">
+                      <span>✅ Đã mint NFT #{property.nft.tokenId}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
