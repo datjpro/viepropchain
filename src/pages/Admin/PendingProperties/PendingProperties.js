@@ -69,12 +69,19 @@ const PendingProperties = () => {
     try {
       setActionLoading(true);
 
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        alert("⚠️ Vui lòng đăng nhập lại!");
+        return;
+      }
+
       const response = await fetch(
         `${API_ENDPOINTS.ADMIN.PROPERTIES}/${propertyId}/approve`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             note: "Giấy tờ hợp lệ, đã duyệt",
@@ -107,12 +114,19 @@ const PendingProperties = () => {
     try {
       setActionLoading(true);
 
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        alert("⚠️ Vui lòng đăng nhập lại!");
+        return;
+      }
+
       const response = await fetch(
         `${API_ENDPOINTS.ADMIN.PROPERTIES}/${propertyId}/mint`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             metadataUri: null, // Auto-generate
@@ -154,12 +168,19 @@ const PendingProperties = () => {
     try {
       setActionLoading(true);
 
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        alert("⚠️ Vui lòng đăng nhập lại!");
+        return;
+      }
+
       const response = await fetch(
         `${API_ENDPOINTS.ADMIN.PROPERTIES}/${propertyId}/reject`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reason }),
         }
@@ -188,12 +209,19 @@ const PendingProperties = () => {
     try {
       setActionLoading(true);
 
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        alert("⚠️ Vui lòng đăng nhập lại!");
+        return;
+      }
+
       const response = await fetch(
         `${API_ENDPOINTS.ADMIN.PROPERTIES}/${propertyId}/request-info`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ message }),
         }
