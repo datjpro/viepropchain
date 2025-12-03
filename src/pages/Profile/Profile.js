@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useWeb3 } from "../../contexts/Web3Context";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
+import { API_GATEWAY_URL } from "../../config/api";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import KYCModal from "../../components/KYCModal/KYCModal";
@@ -168,22 +169,17 @@ const Profile = () => {
 
       // Call link wallet API
       console.log("📡 Calling link wallet API...");
-      const response = await fetch(
-        "http://localhost:4000/api/auth/link-wallet",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem(
-              "viepropchain_token"
-            )}`,
-          },
-          body: JSON.stringify({
-            walletAddress: walletAddress,
-            signature: signature,
-          }),
-        }
-      );
+      const response = await fetch(`${API_GATEWAY_URL}/api/auth/link-wallet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("viepropchain_token")}`,
+        },
+        body: JSON.stringify({
+          walletAddress: walletAddress,
+          signature: signature,
+        }),
+      });
 
       const data = await response.json();
       console.log("📥 API Response:", data);
@@ -248,7 +244,7 @@ const Profile = () => {
 
         // 1️⃣ Fetch Properties from Database (by userId)
         const propertiesResponse = await fetch(
-          `http://localhost:4000/api/user/users/${userId}/properties`
+          `${API_GATEWAY_URL}/api/user/users/${userId}/properties`
         );
         const propertiesData = await propertiesResponse.json();
         console.log("📦 Properties Response:", propertiesData);
@@ -274,7 +270,7 @@ const Profile = () => {
         let nftsData = { success: false, data: { nfts: [], balance: 0 } };
         if (user?.walletAddress) {
           const nftsResponse = await fetch(
-            `http://localhost:4000/api/marketplace/my-nfts/${user.walletAddress.toLowerCase()}`
+            `${API_GATEWAY_URL}/api/marketplace/my-nfts/${user.walletAddress.toLowerCase()}`
           );
           nftsData = await nftsResponse.json();
           console.log("🎨 NFTs Response:", nftsData);
@@ -302,7 +298,7 @@ const Profile = () => {
         if (user?.walletAddress) {
           try {
             const txResponse = await fetch(
-              `http://localhost:4000/api/marketplace/transactions/${user.walletAddress.toLowerCase()}`
+              `${API_GATEWAY_URL}/api/marketplace/transactions/${user.walletAddress.toLowerCase()}`
             );
 
             if (txResponse.ok) {
