@@ -16,14 +16,14 @@ const Marketplace = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      // Lấy tất cả properties đang bán (for_sale)
+      // Lấy tất cả listings từ marketplace
       const response = await fetch(
-        `${API_ENDPOINTS.ADMIN.PROPERTIES}?limit=200&status=for_sale`
+        `${API_ENDPOINTS.MARKETPLACE.LISTINGS}?limit=200`
       );
       const data = await response.json();
 
       if (data.success) {
-        setListings(data.data.properties || data.data || []);
+        setListings(data.data?.listings || data.data || []);
         setError("");
       } else {
         setError("Không thể tải marketplace");
