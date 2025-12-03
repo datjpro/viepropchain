@@ -4,9 +4,9 @@ import Nft from "./pages/Admin/NFT/Nft";
 import ListNFT from "./pages/Admin/ListNFT/ListNFT";
 import Dashboard from "./pages/Admin/Dashboard/Dashboard";
 import Users from "./pages/Admin/Users/Users";
-import Properties from "./pages/Admin/Properties/Properties";
+import AdminProperties from "./pages/Admin/Properties/Properties";
 import PendingProperties from "./pages/Admin/PendingProperties/PendingProperties";
-import Marketplace from "./pages/Admin/Marketplace/Marketplace";
+import AdminMarketplace from "./pages/Admin/Marketplace/Marketplace";
 import RevenueReport from "./pages/Admin/Finance/RevenueReport";
 import Transactions from "./pages/Admin/Finance/Transactions";
 import Payouts from "./pages/Admin/Finance/Payouts";
@@ -15,6 +15,8 @@ import AdminSupport from "./pages/Admin/Support/AdminSupport";
 import AIChat from "./pages/AIChat/AIChat";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
+import Properties from "./pages/Properties/Properties";
+import Marketplace from "./pages/Marketplace/Marketplace";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
 import AIChatWidget from "./components/AIChatWidget/AIChatWidget";
@@ -40,6 +42,8 @@ function App() {
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/properties" element={<Properties />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}
                   <Route
@@ -97,7 +101,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <AdminLayout>
-                          <Properties />
+                          <AdminProperties />
                         </AdminLayout>
                       </ProtectedRoute>
                     }
@@ -117,7 +121,7 @@ function App() {
                     element={
                       <ProtectedRoute>
                         <AdminLayout>
-                          <Marketplace />
+                          <AdminMarketplace />
                         </AdminLayout>
                       </ProtectedRoute>
                     }
