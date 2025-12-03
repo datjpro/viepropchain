@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { formatPrice } from "../../utils/priceUtils";
+import BuyNFTModal from "../../components/BuyNFTModal";
+import RentNFTModal from "../../components/RentNFTModal";
 
 const Marketplace = () => {
   const [listings, setListings] = useState([]);
@@ -9,6 +11,9 @@ const Marketplace = () => {
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showRentModal, setShowRentModal] = useState(false);
 
   useEffect(() => {
     fetchListings();
@@ -401,28 +406,127 @@ const Marketplace = () => {
                   )}
                 </div>
 
-                <button
+                {/* Action Buttons */}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "14px",
-                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "10px",
-                    fontSize: "15px",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)";
+                    display: "flex",
+                    gap: "8px",
+                    marginTop: "4px",
                   }}
                 >
-                  🛒 Xem chi tiết
-                </button>
+                  {listing.listingType === "sale" || !listing.listingType ? (
+                    <button
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setShowBuyModal(true);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "14px",
+                        background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "10px",
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        transition: "transform 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "scale(1.05)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                      }}
+                    >
+                      🛒 Mua ngay
+                    </button>
+                  ) : listing.listingType === "rent" ? (
+                    <button
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setShowRentModal(true);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "14px",
+                        background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "10px",
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        transition: "transform 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "scale(1.05)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                      }}
+                    >
+                      🏠 Thuê ngay
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setSelectedListing(listing);
+                          setShowBuyModal(true);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: "12px",
+                          background:
+                            "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "10px",
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        🛒 Mua
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedListing(listing);
+                          setShowRentModal(true);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: "12px",
+                          background:
+                            "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "10px",
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        🏠 Thuê
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -444,6 +548,33 @@ const Marketplace = () => {
           listings
         </p>
       </div>
+
+      {/* Modals */}
+      {showBuyModal && selectedListing && (
+        <BuyNFTModal
+          listing={selectedListing}
+          onClose={() => {
+            setShowBuyModal(false);
+            setSelectedListing(null);
+          }}
+          onSuccess={() => {
+            fetchListings(); // Refresh listings
+          }}
+        />
+      )}
+
+      {showRentModal && selectedListing && (
+        <RentNFTModal
+          listing={selectedListing}
+          onClose={() => {
+            setShowRentModal(false);
+            setSelectedListing(null);
+          }}
+          onSuccess={() => {
+            fetchListings(); // Refresh listings
+          }}
+        />
+      )}
     </div>
   );
 };

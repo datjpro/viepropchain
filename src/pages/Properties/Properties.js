@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { formatPrice } from "../../utils/priceUtils";
 
 const Properties = () => {
   const [properties, setProperties] = useState([]);
@@ -55,7 +54,29 @@ const Properties = () => {
     );
   };
 
-  // formatPrice được import từ utils/priceUtils.js
+  // Format price in VND (Vietnamese Dong)
+  const formatPriceVND = (price) => {
+    if (!price || price === 0) return "Liên hệ";
+
+    // price is already in VND (e.g., 3100000000)
+    const priceNumber = typeof price === "number" ? price : parseFloat(price);
+
+    if (priceNumber >= 1000000000) {
+      // Display in billions (tỷ)
+      const billions = priceNumber / 1000000000;
+      return `${billions.toLocaleString("vi-VN", {
+        maximumFractionDigits: 2,
+      })} tỷ VND`;
+    } else if (priceNumber >= 1000000) {
+      // Display in millions (triệu)
+      const millions = priceNumber / 1000000;
+      return `${millions.toLocaleString("vi-VN", {
+        maximumFractionDigits: 0,
+      })} triệu VND`;
+    } else {
+      return `${priceNumber.toLocaleString("vi-VN")} VND`;
+    }
+  };
 
   const filteredProperties = getFilteredProperties();
 
@@ -314,7 +335,7 @@ const Properties = () => {
                     marginTop: "12px",
                   }}
                 >
-                  💰 {formatPrice(property.price)}
+                  💰 {formatPriceVND(property.price)}
                 </div>
 
                 {property.details && (
