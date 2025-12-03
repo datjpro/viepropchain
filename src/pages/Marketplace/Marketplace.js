@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { formatPrice } from "../../utils/priceUtils";
 
 const Marketplace = () => {
   const [listings, setListings] = useState([]);
@@ -53,33 +54,39 @@ const Marketplace = () => {
     if (sortBy === "price_low") {
       sorted.sort((a, b) => {
         const priceA =
-          typeof a.price === "object" ? a.price.amount : a.price || 0;
+          typeof a.price === "object"
+            ? BigInt(a.price.amount || 0) // eslint-disable-line no-undef
+            : BigInt(a.price || 0); // eslint-disable-line no-undef
         const priceB =
-          typeof b.price === "object" ? b.price.amount : b.price || 0;
-        return priceA - priceB;
+          typeof b.price === "object"
+            ? BigInt(b.price.amount || 0) // eslint-disable-line no-undef
+            : BigInt(b.price || 0); // eslint-disable-line no-undef
+        return priceA < priceB ? -1 : priceA > priceB ? 1 : 0;
       });
     } else if (sortBy === "price_high") {
       sorted.sort((a, b) => {
         const priceA =
-          typeof a.price === "object" ? a.price.amount : a.price || 0;
+          typeof a.price === "object"
+            ? BigInt(a.price.amount || 0) // eslint-disable-line no-undef
+            : BigInt(a.price || 0); // eslint-disable-line no-undef
         const priceB =
-          typeof b.price === "object" ? b.price.amount : b.price || 0;
-        return priceB - priceA;
+          typeof b.price === "object"
+            ? BigInt(b.price.amount || 0) // eslint-disable-line no-undef
+            : BigInt(b.price || 0); // eslint-disable-line no-undef
+        return priceB < priceA ? -1 : priceB > priceA ? 1 : 0;
       });
     } else if (sortBy === "newest") {
-      sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sorted.sort(
+        (a, b) =>
+          new Date(b.listedAt || b.createdAt) -
+          new Date(a.listedAt || a.createdAt)
+      );
     }
 
     return sorted;
   };
 
-  const formatPrice = (price) => {
-    if (!price) return "Liên hệ";
-    if (typeof price === "object" && price.amount) {
-      return `${(price.amount / 1000000000).toFixed(2)} tỷ`;
-    }
-    return `${(price / 1000000000).toFixed(2)} tỷ`;
-  };
+  // formatPrice được import từ utils/priceUtils.js
 
   const sortedListings = getSortedListings();
 

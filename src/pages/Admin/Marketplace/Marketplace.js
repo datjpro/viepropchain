@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../config/api";
+import { formatPrice } from "../../../utils/priceUtils";
 import "./Marketplace.css";
 
 const Marketplace = () => {
@@ -136,10 +137,7 @@ const Marketplace = () => {
     }
   };
 
-  const formatPrice = (price) => {
-    if (!price) return "Chưa có giá";
-    return `${(price / 1000000000).toFixed(2)} tỷ VND`;
-  };
+  // formatPrice được import từ utils/priceUtils.js
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";

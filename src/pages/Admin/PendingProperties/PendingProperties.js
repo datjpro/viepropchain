@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../config/api";
 import LoadingSpinner from "../../../components/LoadingSpinner";
+import { formatPrice } from "../../../utils/priceUtils";
 import "./PendingProperties.css";
 
 const PendingProperties = () => {

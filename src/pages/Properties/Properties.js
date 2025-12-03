@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { formatPrice } from "../../utils/priceUtils";
 
 const Properties = () => {
   const [properties, setProperties] = useState([]);
@@ -54,13 +55,7 @@ const Properties = () => {
     );
   };
 
-  const formatPrice = (price) => {
-    if (!price) return "Liên hệ";
-    if (typeof price === "object" && price.amount) {
-      return `${(price.amount / 1000000000).toFixed(2)} tỷ VND`;
-    }
-    return `${(price / 1000000000).toFixed(2)} tỷ VND`;
-  };
+  // formatPrice được import từ utils/priceUtils.js
 
   const filteredProperties = getFilteredProperties();
 

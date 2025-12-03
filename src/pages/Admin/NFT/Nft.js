@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../../config/api";
+import { formatPrice } from "../../../utils/priceUtils";
 import "./Nft.css";
 
 const Nft = () => {
@@ -114,13 +115,7 @@ const Nft = () => {
     );
   };
 
-  const formatPrice = (price) => {
-    if (!price) return "N/A";
-    if (typeof price === "object" && price.amount) {
-      return `${(price.amount / 1000000000).toFixed(2)} tỷ VND`;
-    }
-    return `${(price / 1000000000).toFixed(2)} tỷ VND`;
-  };
+  // formatPrice được import từ utils/priceUtils.js
 
   const getPropertyTypeIcon = (type) => {
     const icons = {
