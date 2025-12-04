@@ -16,6 +16,9 @@ import AIChat from "./pages/AIChat/AIChat";
 import Profile from "./pages/Profile/Profile";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import Properties from "./pages/Properties/Properties";
+import MyProperties from "./pages/MyProperties/MyProperties";
+import CreateProperty from "./pages/CreateProperty/CreateProperty";
+import EditProperty from "./pages/EditProperty/EditProperty";
 import Marketplace from "./pages/Marketplace/Marketplace";
 import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
@@ -43,6 +46,9 @@ function App() {
                   <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/properties" element={<Properties />} />
+                  <Route path="/my-properties" element={<MyProperties />} />
+                  <Route path="/create-property" element={<CreateProperty />} />
+                  <Route path="/edit-property/:id" element={<EditProperty />} />
                   <Route path="/marketplace" element={<Marketplace />} />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}

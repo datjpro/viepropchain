@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import PropertyDetailModal from "../../components/PropertyDetailModal";
 
 const Properties = () => {
   const [properties, setProperties] = useState([]);
@@ -8,6 +9,7 @@ const Properties = () => {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProperty, setSelectedProperty] = useState(null);
 
   useEffect(() => {
     fetchProperties();
@@ -30,7 +32,16 @@ const Properties = () => {
       const data = await response.json();
 
       if (data.success) {
-        setProperties(data.data.properties || data.data || []);
+        let allProperties = data.data.properties || data.data || [];
+
+        // CHỈ HIỆN bất động sản đã active (status !== 'draft') HOẶC đã minted NFT
+        const publicProperties = allProperties.filter((property) => {
+          const isActive = property.status && property.status !== "draft";
+          const isMinted = property.nft && property.nft.isMinted === true;
+          return isActive || isMinted;
+        });
+
+        setProperties(publicProperties);
         setError("");
       } else {
         setError("Không thể tải danh sách bất động sản");
@@ -353,6 +364,34 @@ const Properties = () => {
                       ` • 🚿 ${property.details.bathrooms}WC`}
                   </div>
                 )}
+
+                {/* View Details Button */}
+                <button
+                  onClick={() => setSelectedProperty(property)}
+                  style={{
+                    marginTop: "16px",
+                    width: "100%",
+                    padding: "12px",
+                    background: "#3b82f6",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.background = "#2563eb";
+                    e.target.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = "#3b82f6";
+                    e.target.style.transform = "translateY(0)";
+                  }}
+                >
+                  👁️ Xem chi tiết
+                </button>
               </div>
             </div>
           ))}
@@ -374,6 +413,14 @@ const Properties = () => {
           {properties.length} bất động sản
         </p>
       </div>
+
+      {/* Property Detail Modal */}
+      {selectedProperty && (
+        <PropertyDetailModal
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+        />
+      )}
     </div>
   );
 };

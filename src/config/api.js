@@ -39,7 +39,9 @@ export const API_ENDPOINTS = {
 
   // IPFS Service - via /api/ipfs/*
   IPFS: {
-    UPLOAD: `${API_GATEWAY_URL}/api/ipfs/upload`,
+    UPLOAD_IMAGE: `${API_GATEWAY_URL}/api/ipfs/upload/image`,
+    UPLOAD_DOCUMENT: `${API_GATEWAY_URL}/api/ipfs/upload/document`,
+    UPLOAD_METADATA: `${API_GATEWAY_URL}/api/ipfs/upload/metadata`,
     CONTENT: (hash) => `${API_GATEWAY_URL}/api/ipfs/content/${hash}`,
     HEALTH: `${API_GATEWAY_URL}/api/ipfs/health`,
   },

@@ -14,10 +14,10 @@ const Header = () => {
   const { isAdmin } = useAdmin();
   const [toast, setToast] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const navigate = useNavigate()
-  const handleNavigate=()=>{
-    navigate('/')
-  }
+  const navigate = useNavigate();
+  const handleNavigate = () => {
+    navigate("/");
+  };
   const copyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
@@ -145,6 +145,18 @@ const Header = () => {
                           {language === "en" ? "Profile" : "Hồ sơ"}
                         </button>
                         <button
+                          className="dropdown-profile-btn"
+                          onClick={() => {
+                            navigate("/my-properties");
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          <span>🏘️</span>
+                          {language === "en"
+                            ? "My Properties"
+                            : "Tin Đăng Của Tôi"}
+                        </button>
+                        <button
                           className="dropdown-logout-btn"
                           onClick={logout}
                         >
@@ -170,8 +182,8 @@ const Header = () => {
                         ? "Loading..."
                         : "Đang tải..."
                       : language === "en"
-                        ? "Start Trading"
-                        : "Bắt đầu giao dịch"}
+                      ? "Start Trading"
+                      : "Bắt đầu giao dịch"}
                   </button>
                   <LanguageSwitcher />
                 </>
