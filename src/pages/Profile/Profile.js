@@ -208,18 +208,19 @@ const Profile = () => {
     }
   };
 
-  // Show wallet selector when KYC is verified and no wallet linked
-  useEffect(() => {
-    if (
-      !kycLoading &&
-      (kycStatus?.status === "verified" || kycStatus?.isVerified === true) &&
-      user &&
-      !user.walletAddress &&
-      availableWallets.length > 0
-    ) {
-      setShowWalletSelector(true);
-    }
-  }, [kycLoading, kycStatus, user, availableWallets]);
+  // Don't auto-show wallet selector anymore
+  // User will manually click "Connect Wallet" button to show it
+  // useEffect(() => {
+  //   if (
+  //     !kycLoading &&
+  //     (kycStatus?.status === "verified" || kycStatus?.isVerified === true) &&
+  //     user &&
+  //     !user.walletAddress &&
+  //     availableWallets.length > 0
+  //   ) {
+  //     setShowWalletSelector(true);
+  //   }
+  // }, [kycLoading, kycStatus, user, availableWallets]);
 
   // Show wallet terms modal when user hasn't linked wallet and hasn't agreed to terms
   useEffect(() => {
@@ -244,6 +245,27 @@ const Profile = () => {
   const handleTermsLater = () => {
     setShowWalletTerms(false);
     // Don't save to localStorage so it shows again next time
+  };
+
+  // Handle connect wallet button click
+  const handleConnectWalletClick = async () => {
+    // Check KYC status first
+    if (
+      !kycStatus ||
+      (kycStatus.status !== "verified" && !kycStatus.isVerified)
+    ) {
+      alert(
+        language === "en"
+          ? "Please complete KYC verification before linking your wallet."
+          : "Vui lòng hoàn thành xác minh KYC trước khi liên kết ví."
+      );
+      setShowKYCModal(true);
+      return;
+    }
+
+    // Fetch available wallets and show selector
+    await fetchWallets();
+    setShowWalletSelector(true);
   };
 
   // Fetch user data khi có wallet hoặc user thay đổi
@@ -515,7 +537,10 @@ const Profile = () => {
               </div>
               <div className="profile-actions">
                 {!user?.walletAddress ? (
-                  <button className="connect-btn-new" onClick={connectWallet}>
+                  <button
+                    className="connect-btn-new"
+                    onClick={handleConnectWalletClick}
+                  >
                     <span>🔗</span>
                     <span>
                       {language === "en" ? "Connect Wallet" : "Kết nối ví"}
@@ -972,7 +997,10 @@ const Profile = () => {
                             ? "Please connect your wallet to view NFTs"
                             : "Vui lòng kết nối ví để xem NFT"}
                         </p>
-                        <button className="cta-btn-new" onClick={connectWallet}>
+                        <button
+                          className="cta-btn-new"
+                          onClick={handleConnectWalletClick}
+                        >
                           {language === "en" ? "Connect Wallet" : "Kết nối ví"}
                         </button>
                       </div>
