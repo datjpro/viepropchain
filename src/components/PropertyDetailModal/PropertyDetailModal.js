@@ -236,8 +236,12 @@ const PropertyDetailModal = ({ property, onClose }) => {
           nft={{
             tokenId: property.nft.tokenId,
             name: property.title || property.name,
-            pricePerDay: property.rentalPrice || property.price / 365,
+            // Tính giá thuê/ngày từ lợi suất 4.5%/năm, KHÔNG chia thẳng giá BĐS
+            pricePerDay: property.rentalPrice
+              ? property.rentalPrice / 30 // Nếu có rentalPrice (giá/tháng), chia 30
+              : (property.price * 0.045) / 365, // Ngược lại: (Giá × 4.5%) / 365 ngày
             image: images[0]?.url || images[0],
+            price: property.price, // Truyền thêm giá BĐS để tính toán
           }}
           onClose={() => setShowRentModal(false)}
         />
