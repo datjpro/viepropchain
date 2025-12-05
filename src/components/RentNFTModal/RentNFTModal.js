@@ -16,9 +16,14 @@ const RentNFTModal = ({ listing, onClose, onSuccess }) => {
   // Tính giá thuê dựa trên số ngày
   const calculateRentalPrice = () => {
     const pricePerDay =
-      typeof listing.pricePerDay === "object"
-        ? parseFloat(listing.pricePerDay.amount)
-        : parseFloat(listing.pricePerDay || 0);
+      typeof listing.rental?.pricePerDay === "object"
+        ? parseFloat(listing.rental.pricePerDay.amount || 0)
+        : parseFloat(
+            listing.rental?.pricePerDay ||
+              listing.pricePerDay?.amount ||
+              listing.pricePerDay ||
+              0
+          );
 
     return pricePerDay * rentalDays;
   };
@@ -29,8 +34,13 @@ const RentNFTModal = ({ listing, onClose, onSuccess }) => {
       return;
     }
 
-    if (!listing.blockchain?.auctionId && !listing.blockchain?.listingId) {
-      setError("Listing này chưa có trên blockchain");
+    const listingId =
+      listing.blockchain?.auctionId ||
+      listing.blockchain?.listingId ||
+      listing.tokenId;
+
+    if (!listingId && listingId !== 0) {
+      setError("Không tìm thấy listing ID");
       return;
     }
 
@@ -40,8 +50,9 @@ const RentNFTModal = ({ listing, onClose, onSuccess }) => {
       setStep(2);
 
       // Đối với rental, có thể dùng Auction contract hoặc custom logic
-      // Tạm thời giả sử sử dụng placeBid trên Auction contract
       console.log("🏠 Renting NFT...");
+      console.log("   Listing ID:", listingId);
+      console.log("   Rental Days:", rentalDays);
 
       const rentalPrice = calculateRentalPrice();
       const rentalPriceInEth = rentalPrice / 1e18;
@@ -99,19 +110,30 @@ const RentNFTModal = ({ listing, onClose, onSuccess }) => {
             <div className="rent-nft-preview">
               <img
                 src={
+                  listing.propertyImages?.[0] ||
                   listing.media?.images?.[0]?.url ||
                   listing.images?.[0] ||
                   "https://via.placeholder.com/400x300"
                 }
-                alt={listing.name || listing.title}
+                alt={listing.propertyName || listing.name || listing.title}
                 className="rent-nft-image"
               />
               <h3 className="rent-nft-title">
-                {listing.name || listing.title || "Property NFT"}
+                {listing.propertyName ||
+                  listing.name ||
+                  listing.title ||
+                  "Property NFT"}
               </h3>
               <p className="rent-nft-location">
-                📍 {listing.location?.district || listing.address?.district},{" "}
-                {listing.location?.city || listing.address?.city || "TP.HCM"}
+                📍{" "}
+                {listing.propertyAddress?.district ||
+                  listing.location?.district ||
+                  listing.address?.district}
+                ,{" "}
+                {listing.propertyAddress?.city ||
+                  listing.location?.city ||
+                  listing.address?.city ||
+                  "TP.HCM"}
               </p>
             </div>
 

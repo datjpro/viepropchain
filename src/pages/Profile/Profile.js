@@ -7,6 +7,7 @@ import { API_GATEWAY_URL } from "../../config/api";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import KYCModal from "../../components/KYCModal/KYCModal";
+import WalletTermsModal from "../../components/WalletTermsModal/WalletTermsModal";
 import kycService from "../../services/kycService";
 import "./Profile.css";
 
@@ -36,6 +37,9 @@ const Profile = () => {
   const [availableWallets, setAvailableWallets] = useState([]);
   const [selectedWallet, setSelectedWallet] = useState(null);
   const [showWalletSelector, setShowWalletSelector] = useState(false);
+
+  // Wallet Terms State
+  const [showWalletTerms, setShowWalletTerms] = useState(false);
 
   // Debug: Log state changes
   useEffect(() => {
@@ -216,6 +220,31 @@ const Profile = () => {
       setShowWalletSelector(true);
     }
   }, [kycLoading, kycStatus, user, availableWallets]);
+
+  // Show wallet terms modal when user hasn't linked wallet and hasn't agreed to terms
+  useEffect(() => {
+    const hasAgreedToTerms = localStorage.getItem("walletTermsAgreed");
+    if (user && !user.walletAddress && !hasAgreedToTerms) {
+      // Show terms after a short delay so user can see the page first
+      const timer = setTimeout(() => {
+        setShowWalletTerms(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  // Handle wallet terms agreement
+  const handleAgreeToTerms = () => {
+    localStorage.setItem("walletTermsAgreed", "true");
+    localStorage.setItem("walletTermsAgreedAt", new Date().toISOString());
+    setShowWalletTerms(false);
+  };
+
+  // Handle wallet terms later
+  const handleTermsLater = () => {
+    setShowWalletTerms(false);
+    // Don't save to localStorage so it shows again next time
+  };
 
   // Fetch user data khi có wallet hoặc user thay đổi
   useEffect(() => {
@@ -1262,6 +1291,14 @@ const Profile = () => {
           onClose={() => setShowKYCModal(false)}
           onSubmit={handleKYCSubmit}
           language={language}
+        />
+      )}
+
+      {/* Wallet Terms Modal */}
+      {showWalletTerms && (
+        <WalletTermsModal
+          onAgree={handleAgreeToTerms}
+          onLater={handleTermsLater}
         />
       )}
 

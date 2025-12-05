@@ -18,8 +18,12 @@ const BuyNFTModal = ({ listing, onClose, onSuccess }) => {
       return;
     }
 
-    if (!listing.blockchain?.listingId) {
-      setError("Listing này chưa có trên blockchain");
+    // Use tokenId as listing identifier (marketplace listings from MongoDB)
+    const listingId =
+      listing.blockchain?.listingId || listing.tokenId || listing._id;
+
+    if (!listingId && listingId !== 0) {
+      setError("Không tìm thấy listing ID");
       return;
     }
 
@@ -30,6 +34,9 @@ const BuyNFTModal = ({ listing, onClose, onSuccess }) => {
 
       // Step 1: Gọi smart contract để mua NFT
       console.log("🛒 Calling smart contract buyItem...");
+      console.log("   Listing ID:", listingId);
+      console.log("   Token ID:", listing.tokenId);
+
       const priceInEth =
         typeof listing.price === "object"
           ? parseFloat(listing.price.amount) / 1e18
@@ -38,7 +45,7 @@ const BuyNFTModal = ({ listing, onClose, onSuccess }) => {
       const txResult = await web3Service.buyNFT(
         web3Api.web3,
         account,
-        listing.blockchain.listingId,
+        listingId,
         priceInEth
       );
 
@@ -80,19 +87,30 @@ const BuyNFTModal = ({ listing, onClose, onSuccess }) => {
             <div className="buy-nft-preview">
               <img
                 src={
+                  listing.propertyImages?.[0] ||
                   listing.media?.images?.[0]?.url ||
                   listing.images?.[0] ||
                   "https://via.placeholder.com/400x300"
                 }
-                alt={listing.name || listing.title}
+                alt={listing.propertyName || listing.name || listing.title}
                 className="buy-nft-image"
               />
               <h3 className="buy-nft-title">
-                {listing.name || listing.title || "Property NFT"}
+                {listing.propertyName ||
+                  listing.name ||
+                  listing.title ||
+                  "Property NFT"}
               </h3>
               <p className="buy-nft-location">
-                📍 {listing.location?.district || listing.address?.district},{" "}
-                {listing.location?.city || listing.address?.city || "TP.HCM"}
+                📍{" "}
+                {listing.propertyAddress?.district ||
+                  listing.location?.district ||
+                  listing.address?.district}
+                ,{" "}
+                {listing.propertyAddress?.city ||
+                  listing.location?.city ||
+                  listing.address?.city ||
+                  "TP.HCM"}
               </p>
             </div>
 
