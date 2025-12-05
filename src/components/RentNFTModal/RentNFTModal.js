@@ -181,8 +181,12 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
 
   // Handle crypto payment
   const handleCryptoPayment = async () => {
+    // Kiểm tra user đã kết nối ví chưa
     if (!account) {
-      setError("Vui lòng kết nối MetaMask trước");
+      setError(
+        "⚠️ Vui lòng kết nối ví MetaMask trước khi thanh toán bằng ETH!"
+      );
+      setStep(2); // Ở lại step 2 để user kết nối ví
       return;
     }
 
@@ -442,7 +446,7 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                       Giá thuê: {(basePrice / 1000000).toFixed(2)}M VND
                     </p>
                     <p className="fee-item platform-fee-bank">
-                      Phí Platform (10%):{" "}
+                      Phí Platform (5%):{" "}
                       <span className="fee-amount">
                         +{(platformFee / 1000000).toFixed(2)}M VND
                       </span>
@@ -476,7 +480,7 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                 }}
                 style={{ cursor: "pointer" }}
               >
-                <div className="savings-badge">💰 TIẾT KIỆM 9%</div>
+                <div className="savings-badge">💰 TIẾT KIỆM 4%</div>
                 <div className="payment-icon">💎</div>
                 <div className="payment-info">
                   <h4>
@@ -511,13 +515,13 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                     <p className="fee-item platform-fee-crypto">
                       Phí Platform (1%):{" "}
                       <span className="fee-amount crypto">
-                        +{((basePrice * 0.01) / 1000000).toFixed(2)}M VND
+                        +{(platformFee / 1000000).toFixed(2)}M VND
                       </span>
                     </p>
                     <p className="fee-savings">
                       ✨ Tiết kiệm so với chuyển khoản:{" "}
                       <strong className="highlight">
-                        {((basePrice * 0.09) / 1000000).toFixed(2)}M VND
+                        {((basePrice * 0.04) / 1000000).toFixed(2)}M VND
                       </strong>
                     </p>
                     <p className="fee-total">
@@ -586,7 +590,7 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                 <div className="crypto-info-box success">
                   <h4>
                     🎉 Chúc mừng! Bạn tiết kiệm được{" "}
-                    {((basePrice * 0.09) / 1000000).toFixed(2)}M VND
+                    {((basePrice * 0.04) / 1000000).toFixed(2)}M VND
                   </h4>
                   <div className="crypto-breakdown">
                     <div className="breakdown-row">
@@ -595,9 +599,7 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                     </div>
                     <div className="breakdown-row platform-fee">
                       <span>Phí Platform (1%):</span>
-                      <span>
-                        +{((basePrice * 0.01) / 1000000).toFixed(2)}M VND
-                      </span>
+                      <span>+{(platformFee / 1000000).toFixed(2)}M VND</span>
                     </div>
                     <div className="breakdown-row total">
                       <span>
