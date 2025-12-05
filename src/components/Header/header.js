@@ -14,6 +14,7 @@ const Header = () => {
   const { isAdmin } = useAdmin();
   const [toast, setToast] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [dropdownTimer, setDropdownTimer] = useState(null);
   const navigate = useNavigate();
   const handleNavigate = () => {
     navigate("/");
@@ -33,6 +34,24 @@ const Header = () => {
           type: "error",
         })
       );
+  };
+
+  // Handle mouse enter - show dropdown immediately
+  const handleMouseEnter = () => {
+    // Clear any pending close timer
+    if (dropdownTimer) {
+      clearTimeout(dropdownTimer);
+      setDropdownTimer(null);
+    }
+    setShowUserDropdown(true);
+  };
+
+  // Handle mouse leave - delay 3 seconds before closing
+  const handleMouseLeave = () => {
+    const timer = setTimeout(() => {
+      setShowUserDropdown(false);
+    }, 1500);
+    setDropdownTimer(timer);
   };
 
   const LanguageSwitcher = () => (
@@ -97,8 +116,8 @@ const Header = () => {
 
                   <div
                     className="user-menu-container"
-                    onMouseEnter={() => setShowUserDropdown(true)}
-                    onMouseLeave={() => setShowUserDropdown(false)}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                   >
                     <button
                       className="user-icon-btn"
