@@ -201,7 +201,7 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
       });
 
       // Bước 1: Gửi ETH đến ví Admin (Admin sẽ nhận tiền và gọi setUser từ backend)
-      const adminWallet = "0x6c8C0796886C5e91f95eC04aF7d06E6a7DA0E7A8";
+      const adminWallet = "0x6c8c0796886c5e91f95ec04af7d06e6a7da0e7a8"; // Chữ thường để tránh lỗi checksum
 
       const txResult = await web3Api.web3.eth.sendTransaction({
         from: account,
@@ -427,7 +427,12 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                 className={`payment-option ${
                   paymentMethod === "bank_transfer" ? "selected" : ""
                 }`}
-                onClick={() => setPaymentMethod("bank_transfer")}
+                onClick={() => {
+                  console.log("🏦 Bank transfer clicked");
+                  setError(""); // Clear error để có thể chuyển từ crypto sang bank
+                  setPaymentMethod("bank_transfer");
+                }}
+                style={{ cursor: "pointer" }}
               >
                 <div className="payment-icon">🏦</div>
                 <div className="payment-info">
@@ -439,13 +444,13 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                     <p className="fee-item platform-fee-bank">
                       Phí Platform (10%):{" "}
                       <span className="fee-amount">
-                        +{((basePrice * 0.1) / 1000000).toFixed(2)}M VND
+                        +{(platformFee / 1000000).toFixed(2)}M VND
                       </span>
                     </p>
                     <p className="fee-total">
                       Tổng thanh toán:{" "}
                       <strong>
-                        {((basePrice * 1.1) / 1000000).toFixed(2)}M VND
+                        {(totalPriceVND / 1000000).toFixed(2)}M VND
                       </strong>
                     </p>
                   </div>
@@ -457,12 +462,48 @@ const RentNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                 className={`payment-option crypto-option ${
                   paymentMethod === "crypto" ? "selected" : ""
                 }`}
-                onClick={() => setPaymentMethod("crypto")}
+                onClick={() => {
+                  console.log("💎 Crypto clicked");
+                  // Kiểm tra user đã liên kết ví chưa
+                  if (!account) {
+                    setError(
+                      "⚠️ Vui lòng kết nối ví MetaMask trước khi chọn thanh toán bằng ETH!"
+                    );
+                    return;
+                  }
+                  setError(""); // Clear error nếu đã kết nối
+                  setPaymentMethod("crypto");
+                }}
+                style={{ cursor: "pointer" }}
               >
                 <div className="savings-badge">💰 TIẾT KIỆM 9%</div>
                 <div className="payment-icon">💎</div>
                 <div className="payment-info">
-                  <h4>Tiền điện tử (ETH)</h4>
+                  <h4>
+                    Tiền điện tử (ETH)
+                    {!account && (
+                      <span
+                        style={{
+                          color: "#ef4444",
+                          fontSize: "12px",
+                          marginLeft: "8px",
+                        }}
+                      >
+                        (Cần kết nối ví)
+                      </span>
+                    )}
+                    {account && (
+                      <span
+                        style={{
+                          color: "#10b981",
+                          fontSize: "12px",
+                          marginLeft: "8px",
+                        }}
+                      >
+                        ✓ Đã kết nối
+                      </span>
+                    )}
+                  </h4>
                   <div className="fee-breakdown">
                     <p className="fee-item">
                       Giá thuê: {(basePrice / 1000000).toFixed(2)}M VND

@@ -392,6 +392,132 @@
   border-left: 4px solid #f59e0b;
 }
 
+/* Payment Methods */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.payment-option {
+  position: relative;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.payment-option:hover {
+  border-color: #8b5cf6;
+  background: #faf5ff;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+.payment-option.selected {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.1),
+    rgba(236, 72, 153, 0.1)
+  );
+  border-color: #8b5cf6;
+  border-width: 3px;
+}
+
+.payment-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.payment-info {
+  flex: 1;
+}
+
+.payment-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #1f2937;
+}
+
+.fee-breakdown {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.fee-item {
+  margin: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fee-amount {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.fee-amount.crypto {
+  color: #10b981;
+}
+
+.fee-total {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.platform-fee-bank {
+  color: #dc2626;
+}
+
+.platform-fee-crypto {
+  color: #059669;
+}
+
+/* CRITICAL FIX: Savings badge must not block clicks */
+.savings-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #78350f;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  animation: pulseGlow 2s infinite;
+  pointer-events: none; /* CRITICAL: Allow clicks to pass through */
+  z-index: 10;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 640px) {
   .rent-nft-modal {
