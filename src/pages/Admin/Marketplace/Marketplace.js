@@ -10,10 +10,45 @@ const Marketplace = () => {
   const [filter, setFilter] = useState("ALL");
   const [selectedListing, setSelectedListing] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [stats, setStats] = useState({
+    totalListings: 0,
+    activeListings: 0,
+    soldListings: 0,
+    cancelledListings: 0,
+    totalValue: 0
+  });
 
   useEffect(() => {
     fetchListings();
+    fetchStats();
   }, [filter]);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.MARKETPLACE.LISTINGS);
+      const data = await response.json();
+      
+      if (data.success) {
+        const allListings = data.data.listings || data.data || [];
+        const active = allListings.filter(l => l.status === 'active').length;
+        const sold = allListings.filter(l => l.status === 'sold').length;
+        const cancelled = allListings.filter(l => l.status === 'cancelled').length;
+        const totalValue = allListings
+          .filter(l => l.status === 'active')
+          .reduce((sum, l) => sum + parseFloat(l.price?.amount || 0), 0);
+
+        setStats({
+          totalListings: allListings.length,
+          activeListings: active,
+          soldListings: sold,
+          cancelledListings: cancelled,
+          totalValue: totalValue
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
 
   const fetchListings = async () => {
     try {
@@ -209,83 +244,177 @@ const Marketplace = () => {
         </div>
       )}
 
-      {/* Statistics */}
+      {/* Enhanced Statistics Dashboard */}
       <div className="marketplace-stats">
-        <div className="stat-card">
-          <div className="stat-number">{listings.length}</div>
-          <div className="stat-label">Tổng Listings</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {listings.filter((l) => l.status === "active").length}
+        <div className="stat-card primary">
+          <div className="stat-icon">📊</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.totalListings}</div>
+            <div className="stat-label">Tổng Listings</div>
           </div>
-          <div className="stat-label">Đang hoạt động</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {listings.filter((l) => l.listingType === "sale").length}
+        <div className="stat-card active">
+          <div className="stat-icon">✅</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.activeListings}</div>
+            <div className="stat-label">Đang hoạt động</div>
           </div>
-          <div className="stat-label">Đang bán</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {listings.filter((l) => l.listingType === "rental").length}
+        <div className="stat-card sale">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {listings.filter((l) => l.listingType === "sale").length}
+            </div>
+            <div className="stat-label">Đang bán</div>
           </div>
-          <div className="stat-label">Cho thuê</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">
-            {
-              listings.filter(
-                (l) => l.status === "sold" || l.status === "rented"
-              ).length
-            }
+        <div className="stat-card rental">
+          <div className="stat-icon">🏠</div>
+          <div className="stat-content">
+            <div className="stat-number">
+              {listings.filter((l) => l.listingType === "rental").length}
+            </div>
+            <div className="stat-label">Cho thuê</div>
           </div>
-          <div className="stat-label">Đã giao dịch</div>
+        </div>
+        <div className="stat-card completed">
+          <div className="stat-icon">🎉</div>
+          <div className="stat-content">
+            <div className="stat-number">{stats.soldListings}</div>
+            <div className="stat-label">Đã giao dịch</div>
+          </div>
+        </div>
+        <div className="stat-card value">
+          <div className="stat-icon">💎</div>
+          <div className="stat-content">
+            <div className="stat-number">{formatPrice({ amount: stats.totalValue, currency: "ETH" })}</div>
+            <div className="stat-label">Tổng giá trị</div>
+          </div>
         </div>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Quick Actions */}
+      <div className="admin-actions">
+        <button 
+          className="btn-action refresh" 
+          onClick={() => {
+            fetchListings();
+            fetchStats();
+          }}
+        >
+          🔄 Làm mới tất cả
+        </button>
+        <button 
+          className="btn-action export"
+          onClick={() => {
+            const dataStr = JSON.stringify(listings, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `marketplace-listings-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+          }}
+        >
+          📥 Xuất dữ liệu
+        </button>
+        <div className="search-container">
+          <input 
+            type="text" 
+            placeholder="🔍 Tìm kiếm listings..."
+            className="search-input"
+            onChange={(e) => {
+              const searchTerm = e.target.value.toLowerCase();
+              if (searchTerm === '') {
+                fetchListings();
+              } else {
+                const filtered = listings.filter(listing => 
+                  listing.property?.title?.toLowerCase().includes(searchTerm) ||
+                  listing.property?.address?.district?.toLowerCase().includes(searchTerm) ||
+                  listing.property?.address?.city?.toLowerCase().includes(searchTerm) ||
+                  listing._id.toLowerCase().includes(searchTerm)
+                );
+                setListings(filtered);
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Enhanced Filter Tabs */}
       <div className="filter-tabs">
         <button
           className={filter === "ALL" ? "active" : ""}
           onClick={() => setFilter("ALL")}
         >
-          Tất cả
+          📋 Tất cả ({listings.length})
         </button>
         <button
           className={filter === "ACTIVE" ? "active" : ""}
           onClick={() => setFilter("ACTIVE")}
         >
-          Đang hoạt động
+          ✅ Đang hoạt động ({listings.filter(l => l.status === 'active').length})
         </button>
         <button
           className={filter === "FOR_SALE" ? "active" : ""}
           onClick={() => setFilter("FOR_SALE")}
         >
-          💰 Bán
+          💰 Bán ({listings.filter(l => l.listingType === 'sale').length})
         </button>
         <button
           className={filter === "FOR_RENT" ? "active" : ""}
           onClick={() => setFilter("FOR_RENT")}
         >
-          🏠 Cho thuê
+          🏠 Cho thuê ({listings.filter(l => l.listingType === 'rental').length})
         </button>
         <button
           className={filter === "SOLD" ? "active" : ""}
           onClick={() => setFilter("SOLD")}
         >
-          ✅ Đã giao dịch
+          🎉 Đã giao dịch ({listings.filter(l => l.status === 'sold' || l.status === 'rented').length})
         </button>
         <button
           className={filter === "CANCELLED" ? "active" : ""}
           onClick={() => setFilter("CANCELLED")}
         >
-          ❌ Đã hủy
+          ❌ Đã hủy ({listings.filter(l => l.status === 'cancelled').length})
         </button>
-        <button onClick={fetchListings} className="btn-refresh">
-          🔄 Làm mới
-        </button>
+      </div>
+
+      {/* Sorting Options */}
+      <div className="sort-controls">
+        <label>Sắp xếp theo:</label>
+        <select 
+          onChange={(e) => {
+            const sortBy = e.target.value;
+            const sorted = [...listings].sort((a, b) => {
+              switch(sortBy) {
+                case 'price-asc':
+                  return (parseFloat(a.price?.amount) || 0) - (parseFloat(b.price?.amount) || 0);
+                case 'price-desc':
+                  return (parseFloat(b.price?.amount) || 0) - (parseFloat(a.price?.amount) || 0);
+                case 'date-new':
+                  return new Date(b.createdAt) - new Date(a.createdAt);
+                case 'date-old':
+                  return new Date(a.createdAt) - new Date(b.createdAt);
+                case 'status':
+                  return a.status.localeCompare(b.status);
+                default:
+                  return 0;
+              }
+            });
+            setListings(sorted);
+          }}
+          className="sort-select"
+        >
+          <option value="">Chọn cách sắp xếp</option>
+          <option value="date-new">📅 Mới nhất</option>
+          <option value="date-old">📅 Cũ nhất</option>
+          <option value="price-asc">💰 Giá thấp → cao</option>
+          <option value="price-desc">💰 Giá cao → thấp</option>
+          <option value="status">🔄 Theo trạng thái</option>
+        </select>
       </div>
 
       {/* Listings Grid */}
@@ -298,7 +427,7 @@ const Marketplace = () => {
           {listings.map((listing) => (
             <div
               key={listing._id}
-              className="listing-card"
+              className={`listing-card ${listing.status}`}
               onClick={() => viewListingDetail(listing._id)}
             >
               <div className="listing-image">
@@ -318,13 +447,16 @@ const Marketplace = () => {
                   {getStatusBadge(listing.status)}
                   {getListingTypeBadge(listing.listingType)}
                 </div>
+                <div className="listing-id-badge">
+                  ID: {listing._id.slice(-6)}
+                </div>
               </div>
 
               <div className="listing-body">
                 <h3>{listing.property?.title || listing.title || "Unnamed"}</h3>
 
                 <div className="listing-info">
-                  <div className="info-row">
+                  <div className="info-row priority">
                     <strong>💰 Giá:</strong>
                     <span className="price-highlight">
                       {formatPrice(listing.price)}
@@ -349,7 +481,7 @@ const Marketplace = () => {
 
                   <div className="info-row">
                     <strong>👤 Seller:</strong>
-                    <span>
+                    <span className="seller-address">
                       {typeof listing.seller === "string"
                         ? `${listing.seller.slice(
                             0,
@@ -365,20 +497,72 @@ const Marketplace = () => {
                   </div>
 
                   <div className="info-row">
-                    <strong>📅 Ngày tạo:</strong>
-                    <span>{formatDate(listing.createdAt)}</span>
+                    <strong>📅 Tạo:</strong>
+                    <span className="date-small">{formatDate(listing.createdAt)}</span>
                   </div>
 
                   {listing.nftTokenId && (
                     <div className="info-row">
-                      <strong>🎨 NFT Token ID:</strong>
+                      <strong>🎨 NFT:</strong>
                       <span className="token-badge">#{listing.nftTokenId}</span>
                     </div>
                   )}
+
+                  {/* Admin specific info */}
+                  <div className="admin-info">
+                    <div className="info-row">
+                      <strong>🔗 Property ID:</strong>
+                      <span className="property-id">{listing.propertyId?.slice(-8) || 'N/A'}</span>
+                    </div>
+                    
+                    {listing.viewCount && (
+                      <div className="info-row">
+                        <strong>👁️ Lượt xem:</strong>
+                        <span>{listing.viewCount}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="listing-footer">
-                  <button className="btn-view">👁️ Xem chi tiết</button>
+                  <button 
+                    className="btn-view primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      viewListingDetail(listing._id);
+                    }}
+                  >
+                    👁️ Chi tiết
+                  </button>
+                  
+                  {/* Quick admin actions */}
+                  <div className="quick-actions">
+                    {listing.status === "pending" && (
+                      <button
+                        className="btn-quick approve"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApproveListing(listing._id);
+                        }}
+                        disabled={actionLoading}
+                      >
+                        ✅
+                      </button>
+                    )}
+                    
+                    {(listing.status === "active" || listing.status === "pending") && (
+                      <button
+                        className="btn-quick cancel"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelListing(listing._id);
+                        }}
+                        disabled={actionLoading}
+                      >
+                        ❌
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

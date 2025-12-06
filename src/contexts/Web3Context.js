@@ -51,15 +51,14 @@ export const Web3Provider = ({ children }) => {
   useEffect(() => {
     const loadProvider = async () => {
       try {
-        // Try multiple ways to detect provider
-        let provider = await detectEthereumProvider();
-        
-        // Fallback to window.ethereum if detectEthereumProvider fails
-        if (!provider && window.ethereum) {
-          provider = window.ethereum;
-        }
+        console.log("🔍 Checking for MetaMask...");
 
-        if (provider) {
+        // Simple check for window.ethereum first
+        if (typeof window !== "undefined" && window.ethereum) {
+          console.log("✅ MetaMask detected via window.ethereum");
+
+          const provider = window.ethereum;
+
           // Tăng max listeners để tránh warning
           if (provider.setMaxListeners) {
             provider.setMaxListeners(20);
@@ -71,47 +70,43 @@ export const Web3Provider = ({ children }) => {
             web3: web3Instance,
           });
 
-          // Nếu có account trong localStorage, verify với MetaMask
+          // Nếu có account trong localStorage, chỉ set thôi, KHÔNG auto-connect
           const savedAccount = localStorage.getItem("walletAccount");
           if (savedAccount) {
             console.log("🔍 Found saved account:", savedAccount);
-            console.log("🔄 Verifying with MetaMask...");
-
-            try {
-              const accounts = await provider.request({
-                method: "eth_accounts",
-              });
-
-              if (accounts && accounts.length > 0) {
-                // Kiểm tra xem saved account có trong danh sách không
-                if (accounts.includes(savedAccount)) {
-                  console.log("✅ Account verified, auto-connecting...");
-                  setAccount(savedAccount);
-                } else {
-                  console.log(
-                    "⚠️ Saved account not found in MetaMask, using first account"
-                  );
-                  setAccount(accounts[0]);
-                }
-              } else {
-                console.log(
-                  "ℹ️ No accounts in MetaMask, clearing localStorage"
-                );
-                localStorage.removeItem("walletAccount");
-              }
-            } catch (err) {
-              console.error("❌ Error verifying account:", err);
-            }
+            console.log("📝 Setting saved account without auto-connect");
+            setAccount(savedAccount);
           }
         } else {
-          setError(
-            "MetaMask is not installed. Please install MetaMask extension."
-          );
-          console.error("MetaMask not detected");
+          // Try detectEthereumProvider as fallback
+          console.log("🔄 Trying detectEthereumProvider...");
+          const provider = await detectEthereumProvider({ timeout: 3000 });
+
+          if (provider) {
+            console.log("✅ MetaMask detected via detectEthereumProvider");
+
+            if (provider.setMaxListeners) {
+              provider.setMaxListeners(20);
+            }
+
+            const web3Instance = new Web3(provider);
+            setWeb3Api({
+              provider,
+              web3: web3Instance,
+            });
+
+            const savedAccount = localStorage.getItem("walletAccount");
+            if (savedAccount) {
+              console.log("📝 Setting saved account without auto-connect");
+              setAccount(savedAccount);
+            }
+          } else {
+            console.warn("⚠️ MetaMask not detected");
+          }
         }
       } catch (err) {
         console.error("Error detecting provider:", err);
-        setError("Failed to detect MetaMask provider.");
+        // Don't set error here, user can still try to connect manually
       }
     };
 
@@ -208,16 +203,14 @@ export const Web3Provider = ({ children }) => {
   // Connect wallet function
   const connectWallet = useCallback(async () => {
     try {
-      // Check if MetaMask is installed
-      if (typeof window.ethereum === 'undefined') {
-        setError("MetaMask is not installed. Please install MetaMask extension.");
-        window.open("https://metamask.io/download/", "_blank");
-        return;
-      }
+      console.log("🔗 Starting MetaMask connection...");
 
-      // Check if provider exists
-      if (!web3Api.provider && !window.ethereum) {
-        setError("MetaMask provider not available. Please reload the page.");
+      // Check if window.ethereum exists
+      if (typeof window === "undefined" || !window.ethereum) {
+        setError(
+          "MetaMask is not installed. Please install MetaMask extension."
+        );
+        window.open("https://metamask.io/download/", "_blank");
         return;
       }
 
@@ -225,20 +218,26 @@ export const Web3Provider = ({ children }) => {
       setError(null);
 
       console.log("🔗 Requesting account access...");
-      
-      // Use window.ethereum directly if provider not available
-      const provider = web3Api.provider || window.ethereum;
-      
-      // Request account access
-      const accounts = await provider.request({
-        method: "eth_requestAccounts",
-      });
+
+      // Use window.ethereum directly for more reliability
+      const provider = window.ethereum;
+
+      // Simple request without timeout first
+      let accounts;
+      try {
+        accounts = await provider.request({
+          method: "eth_requestAccounts",
+        });
+      } catch (requestError) {
+        // If direct request fails, throw the original error
+        throw requestError;
+      }
 
       if (accounts && accounts.length > 0) {
         console.log("✅ Connected to:", accounts[0]);
         setAccount(accounts[0]); // localStorage sẽ tự động lưu qua useEffect
         setError(null);
-        
+
         // Update provider if not set
         if (!web3Api.provider) {
           const web3Instance = new Web3(provider);
@@ -258,9 +257,18 @@ export const Web3Provider = ({ children }) => {
         setError("Connection request rejected. Please try again.");
       } else if (err.code === -32002) {
         // Request already pending
-        setError("Connection request is already pending. Please check MetaMask.");
+        setError(
+          "Connection request is already pending. Please check MetaMask."
+        );
+      } else if (err.message?.includes("timeout")) {
+        // Connection timeout
+        setError(
+          "Connection timed out. Please try again and make sure MetaMask is unlocked."
+        );
       } else {
-        setError(`Failed to connect to MetaMask: ${err.message || 'Unknown error'}`);
+        setError(
+          `Failed to connect to MetaMask: ${err.message || "Unknown error"}`
+        );
       }
     } finally {
       setIsConnecting(false);
