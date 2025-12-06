@@ -30,7 +30,7 @@ const Marketplace = () => {
   // Lấy filter type từ URL path
   const getFilterType = () => {
     if (location.pathname.includes("/buy")) return "sale";
-    if (location.pathname.includes("/rent")) return "rental";
+    if (location.pathname.includes("/rent")) return "rent"; // Fixed: "rent" instead of "rental"
     return "all";
   };
   const [filterType, setFilterType] = useState(getFilterType());
@@ -61,17 +61,17 @@ const Marketplace = () => {
     // - Blockchain chỉ tham gia khi giao dịch thật diễn ra
     if (listing.status === "active" && listing.price) {
       return {
-        type: listingType === "rental" ? "rent" : "sale",
+        type: listingType === "rent" ? "rent" : "sale", // Fixed: "rent" instead of "rental"
         hasFixedPrice: true, // Có giá cố định từ DB
-        action: listingType === "rental" ? "rent_now" : "buy_now",
+        action: listingType === "rent" ? "rent_now" : "buy_now", // Fixed: "rent" instead of "rental"
         price: formatPriceUtil(listing.price, "ETH"),
       };
     } else {
       // Chưa có giá hoặc không active
       return {
-        type: listingType === "rental" ? "rent" : "sale",
+        type: listingType === "rent" ? "rent" : "sale", // Fixed: "rent" instead of "rental"
         hasFixedPrice: false,
-        action: listingType === "rental" ? "make_rent_offer" : "make_buy_offer",
+        action: listingType === "rent" ? "make_rent_offer" : "make_buy_offer", // Fixed: "rent" instead of "rental"
         price: "Liên hệ",
       };
     }
@@ -115,7 +115,7 @@ const Marketplace = () => {
         const info = getListingInfo(listing);
         return info.type === "sale";
       });
-    } else if (filterType === "rental") {
+    } else if (filterType === "rent") {
       filtered = filtered.filter((listing) => {
         const info = getListingInfo(listing);
         return info.type === "rent";

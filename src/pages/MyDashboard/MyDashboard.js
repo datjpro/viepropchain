@@ -85,8 +85,15 @@ const MyDashboard = () => {
   };
 
   const handleListProperty = (property, listingType = "sale") => {
+    console.log("🔥 handleListProperty called:", { property, listingType });
+    console.log("🔥 Setting selectedProperty:", { ...property, listingType });
     setSelectedProperty({ ...property, listingType });
+    console.log("🔥 Setting showListingModal to true");
     setShowListingModal(true);
+    console.log("🔥 Modal state should now be:", {
+      showListingModal: true,
+      selectedProperty: { ...property, listingType },
+    });
   };
 
   const handleEditProperty = (property) => {
@@ -328,6 +335,39 @@ const MyDashboard = () => {
                             </button>
                           </div>
                         )}
+
+                        {/* DEBUG BUTTONS - ALWAYS SHOW */}
+                        <div
+                          className="action-buttons"
+                          style={{
+                            marginTop: "10px",
+                            borderTop: "1px solid #ccc",
+                            paddingTop: "10px",
+                          }}
+                        >
+                          <button
+                            className="btn-action btn-view"
+                            onClick={() => {
+                              console.log("🔍 Property debug:", property);
+                              alert(
+                                `Property: ${property.name}\nStatus: ${
+                                  property.status
+                                }\nHas NFT: ${!!property.nftData}\nListing: ${!!property.currentListing}`
+                              );
+                            }}
+                          >
+                            🔍 DEBUG
+                          </button>
+                          <button
+                            className="btn-action btn-list"
+                            onClick={() => {
+                              console.log("🚀 Force modal open:", property);
+                              handleListProperty(property, "sale");
+                            }}
+                          >
+                            🚀 FORCE MODAL
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -342,11 +382,29 @@ const MyDashboard = () => {
 
       {/* Listing Modal */}
       {showListingModal && selectedProperty && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            background: "red",
+            color: "white",
+            padding: "10px",
+            zIndex: 9999,
+          }}
+        >
+          DEBUG: Modal should render! showListingModal=
+          {showListingModal.toString()}, selectedProperty=
+          {selectedProperty?.name}
+        </div>
+      )}
+      {showListingModal && selectedProperty && (
         <ListingModal
           isOpen={showListingModal}
           property={selectedProperty}
           userAccount={user?.walletAddress}
           onClose={() => {
+            console.log("🔥 Modal closing...");
             setShowListingModal(false);
             setSelectedProperty(null);
             fetchMyProperties();

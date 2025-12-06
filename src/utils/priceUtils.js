@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * ========================================================================
  * PRICE UTILITIES - Convert between ETH and Wei
@@ -48,12 +49,37 @@ export const weiToEth = (priceInWei) => {
 export const ethToWei = (priceInEth) => {
   if (!priceInEth || priceInEth === "0") return "0";
 
-  // Convert to number first, then multiply by 1e18
-  const eth = parseFloat(priceInEth);
-  // eslint-disable-next-line no-undef
-  const wei = BigInt(Math.floor(eth * 1e18));
+  console.log("🔧 Converting ETH to Wei:", priceInEth);
 
-  return wei.toString();
+  // Use string manipulation to avoid floating point precision errors
+  const ethString = priceInEth.toString();
+
+  // Find decimal point
+  const decimalIndex = ethString.indexOf(".");
+
+  if (decimalIndex === -1) {
+    // No decimal point, just append 18 zeros
+    // eslint-disable-next-line no-undef
+    const result = (
+      BigInt(ethString) * BigInt("1000000000000000000")
+    ).toString();
+    console.log("🔧 Result (no decimal):", result);
+    return result;
+  }
+
+  // Handle decimal numbers
+  const integerPart = ethString.slice(0, decimalIndex);
+  const decimalPart = ethString.slice(decimalIndex + 1);
+
+  // Pad or trim decimal part to 18 digits
+  const paddedDecimal = decimalPart.padEnd(18, "0").slice(0, 18);
+
+  // Combine and convert to wei
+  const fullNumber = integerPart + paddedDecimal;
+  // eslint-disable-next-line no-undef
+  const result = BigInt(fullNumber).toString();
+  console.log("🔧 Result (with decimal):", result);
+  return result;
 };
 
 /**
@@ -75,9 +101,27 @@ export const formatPrice = (price, currency = "ETH") => {
     priceInWei = price;
   }
 
+  console.log("🎯 formatPrice input:", { price, priceInWei, currency });
+
+  // Handle corrupted Wei values from database
+  // If Wei value is astronomically large (more than reasonable),
+  // treat it as already converted or corrupted
+  const weiString = priceInWei.toString();
+  if (weiString.length > 25) {
+    // This is likely a corrupted value, try to extract reasonable price
+    console.log("⚠️  Detected corrupted Wei value:", weiString);
+
+    // Try to extract the first few digits as ETH
+    const extractedEth = weiString.substring(0, 2); // Take first 2 digits
+    console.log("🔧 Extracted ETH from corrupted Wei:", extractedEth);
+    return `${extractedEth}.0000 ${currency}`;
+  }
+
   // Convert wei to ETH
   const ethValue = weiToEth(priceInWei);
   const ethNumber = parseFloat(ethValue);
+
+  console.log("📊 Conversion result:", { ethValue, ethNumber });
 
   // Format with appropriate decimals
   let formatted;
@@ -89,7 +133,9 @@ export const formatPrice = (price, currency = "ETH") => {
     formatted = ethNumber.toFixed(6);
   }
 
-  return `${formatted} ${currency}`;
+  const result = `${formatted} ${currency}`;
+  console.log("✅ Final formatted price:", result);
+  return result;
 };
 
 /**
@@ -119,6 +165,12 @@ export const formatPriceVND = (price) => {
     ethString: ethString,
     ethValue: ethValue,
   });
+
+  // Kiểm tra nếu giá trị quá lớn (có thể là Wei thô)
+  if (ethValue > 1000000) {
+    console.log("⚠️ Giá trị quá lớn, có thể đã nhận Wei thô!");
+    return "Giá không hợp lệ";
+  }
 
   // Convert ETH to VND (1 ETH = 100M VND)
   const vndValue = ethValue * 100000000;

@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Web3 } from "web3";
 import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
+import { ethToWei } from "../../utils/priceUtils";
+import "./ListingModal.css";
 
 const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
   const [listingType, setListingType] = useState("sale");
   const [price, setPrice] = useState("");
   const [loading, setLoading] = useState(false);
+
+  console.log("🔥 ListingModal render:", {
+    isOpen,
+    property: property?.name,
+    userAccount,
+  });
 
   useEffect(() => {
     if (!isOpen) {
@@ -19,17 +27,44 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
     setLoading(true);
 
     try {
-      const priceInWei = Web3.utils.toWei(price, "ether");
+      // Kiểm tra xem property đã được mint thành NFT chưa
+      const tokenId =
+        property.nftData?.tokenId !== undefined
+          ? property.nftData.tokenId
+          : property.tokenId;
+      if (tokenId === undefined || tokenId === null) {
+        alert(
+          "Tài sản này chưa được mint thành NFT. Vui lòng mint NFT trước khi niêm yết."
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log("🔥 TokenId found:", tokenId);
+
+      const priceInWei = ethToWei(price);
+      console.log("🔥 Price conversion:", { price, priceInWei });
 
       const listingData = {
+        tokenId: tokenId,
+        contractAddress:
+          property.nftData?.contractAddress ||
+          "0x55f732E0d866A155b3A151A862996A13a22C0e8e",
         propertyId: property.id,
-        tokenId: property.tokenId,
-        listingType: listingType,
         price: priceInWei,
-        listingPrice: price, // Store readable price
-        status: "active",
-        listedBy: userAccount,
+        listingType: listingType,
+        description: `${listingType === "sale" ? "Bán" : "Cho thuê"}: ${
+          property.name
+        }`,
+        // Add rental-specific fields if needed
+        ...(listingType === "rent" && {
+          pricePerDay: priceInWei,
+          maxDurationDays: 365,
+        }),
       };
+
+      console.log("🔥 Sending listing request:", listingData);
+      console.log("🔥 Auth headers:", getAuthHeaders());
 
       const response = await fetch(API_ENDPOINTS.MARKETPLACE.LISTINGS, {
         method: "POST",
@@ -37,29 +72,54 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
         body: JSON.stringify(listingData),
       });
 
+      console.log("🔥 Response status:", response.status);
+      console.log("🔥 Response headers:", [...response.headers]);
+
       if (response.ok) {
-        alert(`Property successfully listed for ${listingType}!`);
+        const result = await response.json();
+        console.log("🔥 Success result:", result);
+        alert(
+          `Tài sản đã được niêm yết ${
+            listingType === "sale" ? "bán" : "thuê"
+          } thành công!`
+        );
         onClose();
         // Refresh the dashboard
         window.location.reload();
       } else {
-        throw new Error("Failed to create listing");
+        const errorData = await response.json();
+        console.log("🔥 Error response:", errorData);
+
+        // Xử lý các lỗi cụ thể
+        let errorMessage = "Không thể tạo niêm yết";
+        if (errorData.error === "NFT not found") {
+          errorMessage = "Không tìm thấy NFT. Vui lòng kiểm tra lại tài sản.";
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Listing error:", error);
-      alert("Failed to list property: " + error.message);
+      alert("Lỗi niêm yết tài sản: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  console.log("🔥 Before return null check, isOpen =", isOpen);
+  if (!isOpen) {
+    console.log("🔥 Modal not open, returning null");
+    return null;
+  }
 
+  console.log("🔥 Modal SHOULD render now!");
   return (
     <div className="listing-modal-overlay">
       <div className="listing-modal">
         <div className="modal-header">
-          <h2>List Property</h2>
+          <h2>Niêm Yết Tài Sản</h2>
           <button className="modal-close" onClick={onClose}>
             &times;
           </button>
@@ -87,21 +147,21 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
                   className={`tab ${listingType === "sale" ? "active" : ""}`}
                   onClick={() => setListingType("sale")}
                 >
-                  For Sale
+                  Bán
                 </button>
                 <button
                   type="button"
                   className={`tab ${listingType === "rent" ? "active" : ""}`}
                   onClick={() => setListingType("rent")}
                 >
-                  For Rent
+                  Cho Thuê
                 </button>
               </div>
             </div>
 
             <div className="form-group">
               <label>
-                Price {listingType === "rent" ? "(ETH per month)" : "(ETH)"}
+                Giá {listingType === "rent" ? "(ETH mỗi tháng)" : "(ETH)"}
               </label>
               <input
                 type="number"
@@ -109,7 +169,7 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
                 min="0"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                placeholder={`Enter price in ETH`}
+                placeholder={`Nhập giá bằng ETH`}
                 required
                 className="price-input"
               />
@@ -122,14 +182,14 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
                 onClick={onClose}
                 disabled={loading}
               >
-                Cancel
+                Hủy
               </button>
               <button
                 type="submit"
                 className="btn-submit"
                 disabled={loading || !price}
               >
-                {loading ? "Creating Listing..." : "Create Listing"}
+                {loading ? "Đang tạo niêm yết..." : "Tạo Niêm Yết"}
               </button>
             </div>
           </form>

@@ -46,9 +46,9 @@ export const API_ENDPOINTS = {
     HEALTH: `${API_GATEWAY_URL}/api/ipfs/health`,
   },
 
-  // User Service - via /api/user/*
+  // User Service - via /api/user/* (TEMPORARILY DIRECT FOR TESTING)
   USER: {
-    MY_PROPERTIES: `${API_GATEWAY_URL}/api/user/my-properties`,
+    MY_PROPERTIES: `http://localhost:4006/my-properties`,
     HEALTH: `${API_GATEWAY_URL}/api/user/health`,
   },
 };
