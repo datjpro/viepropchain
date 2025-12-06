@@ -45,11 +45,13 @@ function App() {
                   <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="/ai-chat" element={<AIChat />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/properties" element={<Properties />} />
+                  <Route path="/my-dashboard" element={<Properties />} />
                   <Route path="/my-properties" element={<MyProperties />} />
                   <Route path="/create-property" element={<CreateProperty />} />
                   <Route path="/edit-property/:id" element={<EditProperty />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/market" element={<Marketplace />} />
+                  <Route path="/market/buy" element={<Marketplace />} />
+                  <Route path="/market/rent" element={<Marketplace />} />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}
                   <Route

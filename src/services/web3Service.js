@@ -170,6 +170,88 @@ const web3Service = {
   },
 
   // ========================================================================
+  // RENTAL - ERC4907
+  // ========================================================================
+
+  /**
+   * Cho thuê NFT bằng cách setUser (ERC4907)
+   * @param {object} web3 - Web3 instance
+   * @param {string} account - Owner wallet address
+   * @param {number} tokenId - NFT token ID
+   * @param {string} renterAddress - Renter wallet address
+   * @param {number} durationDays - Số ngày cho thuê
+   */
+  rentNFT: async (web3, account, tokenId, renterAddress, durationDays) => {
+    try {
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+
+      // Tính expires timestamp (UNIX timestamp)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const expiresTimestamp = currentTime + durationDays * 24 * 60 * 60;
+
+      console.log("🏠 Setting user (rent NFT):", {
+        tokenId,
+        renterAddress,
+        durationDays,
+        expiresTimestamp,
+      });
+
+      // Gọi setUser function
+      const tx = await nftContract.methods
+        .setUser(tokenId, renterAddress, expiresTimestamp)
+        .send({
+          from: account,
+          gas: 150000,
+        });
+
+      console.log("✅ Rent successful:", tx.transactionHash);
+      return {
+        success: true,
+        transactionHash: tx.transactionHash,
+        blockNumber: tx.blockNumber,
+      };
+    } catch (error) {
+      console.error("❌ Rent failed:", error);
+      throw {
+        success: false,
+        error: error.message || "Transaction failed",
+      };
+    }
+  },
+
+  /**
+   * Kiểm tra user hiện tại của NFT (ERC4907)
+   * @param {object} web3 - Web3 instance
+   * @param {number} tokenId - NFT token ID
+   */
+  getUserOf: async (web3, tokenId) => {
+    try {
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      const user = await nftContract.methods.userOf(tokenId).call();
+      return user;
+    } catch (error) {
+      console.error("❌ Get user failed:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Lấy thời gian hết hạn của user (ERC4907)
+   * @param {object} web3 - Web3 instance
+   * @param {number} tokenId - NFT token ID
+   */
+  getUserExpires: async (web3, tokenId) => {
+    try {
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      const expires = await nftContract.methods.userExpires(tokenId).call();
+      return parseInt(expires);
+    } catch (error) {
+      console.error("❌ Get user expires failed:", error);
+      return 0;
+    }
+  },
+
+  // ========================================================================
   // AUCTION - RENTAL NFT
   // ========================================================================
 
@@ -406,6 +488,215 @@ const web3Service = {
     } catch (error) {
       console.error("❌ Get auction failed:", error);
       return null;
+    }
+  },
+
+  // ========================================================================
+  // AUCTION - FOR PROPERTIES PAGE (NFT chưa có giá cố định)
+  // ========================================================================
+
+  /**
+   * Tạo auction cho NFT (dành cho trang Properties)
+   * @param {object} web3 - Web3 instance
+   * @param {string} account - Owner wallet address
+   * @param {number} tokenId - NFT token ID
+   * @param {string} startingBidWei - Starting bid in Wei
+   * @param {number} durationSeconds - Auction duration in seconds
+   */
+  createAuction: async (
+    web3,
+    account,
+    tokenId,
+    startingBidWei,
+    durationSeconds
+  ) => {
+    try {
+      const auctionContract = web3Service.getContract(web3, "Auction");
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      const auctionAddress = CONTRACTS.addresses.Auction;
+
+      console.log("🎯 Creating auction:", {
+        tokenId,
+        startingBidWei,
+        durationSeconds,
+        from: account,
+      });
+
+      // Step 1: Approve auction contract to transfer NFT
+      console.log("⏳ Approving auction contract...");
+      const approveTx = await nftContract.methods
+        .approve(auctionAddress, tokenId)
+        .send({
+          from: account,
+          gas: 100000,
+        });
+
+      console.log("✅ Approved:", approveTx.transactionHash);
+
+      // Step 2: Create auction
+      console.log("⏳ Creating auction...");
+      const auctionTx = await auctionContract.methods
+        .createAuction(tokenId, startingBidWei, durationSeconds)
+        .send({
+          from: account,
+          gas: 300000,
+        });
+
+      console.log("✅ Auction created:", auctionTx.transactionHash);
+      return {
+        success: true,
+        transactionHash: auctionTx.transactionHash,
+        blockNumber: auctionTx.blockNumber,
+      };
+    } catch (error) {
+      console.error("❌ Create auction failed:", error);
+      throw {
+        success: false,
+        error: error.message || "Transaction failed",
+      };
+    }
+  },
+
+  /**
+   * Tạo rental auction cho NFT (dành cho trang Properties)
+   * @param {object} web3 - Web3 instance
+   * @param {string} account - Owner wallet address
+   * @param {number} tokenId - NFT token ID
+   * @param {string} startingBidWei - Starting bid per day in Wei
+   * @param {number} auctionDurationSeconds - Auction duration in seconds
+   * @param {number} rentalDays - Rental period in days
+   */
+  createRentalAuction: async (
+    web3,
+    account,
+    tokenId,
+    startingBidWei,
+    auctionDurationSeconds,
+    rentalDays
+  ) => {
+    try {
+      const auctionContract = web3Service.getContract(web3, "Auction");
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      const auctionAddress = CONTRACTS.addresses.Auction;
+
+      console.log("🏠 Creating rental auction:", {
+        tokenId,
+        startingBidWei,
+        auctionDurationSeconds,
+        rentalDays,
+        from: account,
+      });
+
+      // Step 1: Approve auction contract to set user (ERC4907)
+      console.log("⏳ Approving auction contract...");
+      const approveTx = await nftContract.methods
+        .approve(auctionAddress, tokenId)
+        .send({
+          from: account,
+          gas: 100000,
+        });
+
+      console.log("✅ Approved:", approveTx.transactionHash);
+
+      // Step 2: Create rental auction
+      console.log("⏳ Creating rental auction...");
+      const auctionTx = await auctionContract.methods
+        .createRentalAuction(
+          tokenId,
+          startingBidWei,
+          auctionDurationSeconds,
+          rentalDays
+        )
+        .send({
+          from: account,
+          gas: 300000,
+        });
+
+      console.log("✅ Rental auction created:", auctionTx.transactionHash);
+      return {
+        success: true,
+        transactionHash: auctionTx.transactionHash,
+        blockNumber: auctionTx.blockNumber,
+      };
+    } catch (error) {
+      console.error("❌ Create rental auction failed:", error);
+      throw {
+        success: false,
+        error: error.message || "Transaction failed",
+      };
+    }
+  },
+
+  /**
+   * Đặt giá trong auction
+   * @param {object} web3 - Web3 instance
+   * @param {string} account - Bidder wallet address
+   * @param {number} auctionId - Auction ID
+   * @param {string} bidAmountWei - Bid amount in Wei
+   */
+  placeBid: async (web3, account, auctionId, bidAmountWei) => {
+    try {
+      const auctionContract = web3Service.getContract(web3, "Auction");
+
+      console.log("💰 Placing bid:", {
+        auctionId,
+        bidAmountWei,
+        from: account,
+      });
+
+      const tx = await auctionContract.methods.placeBid(auctionId).send({
+        from: account,
+        value: bidAmountWei,
+        gas: 200000,
+      });
+
+      console.log("✅ Bid placed:", tx.transactionHash);
+      return {
+        success: true,
+        transactionHash: tx.transactionHash,
+        blockNumber: tx.blockNumber,
+      };
+    } catch (error) {
+      console.error("❌ Place bid failed:", error);
+      throw {
+        success: false,
+        error: error.message || "Transaction failed",
+      };
+    }
+  },
+
+  /**
+   * Kết thúc auction
+   * @param {object} web3 - Web3 instance
+   * @param {string} account - Account address
+   * @param {number} auctionId - Auction ID
+   */
+  endAuction: async (web3, account, auctionId) => {
+    try {
+      const auctionContract = web3Service.getContract(web3, "Auction");
+
+      console.log("🏁 Ending auction:", {
+        auctionId,
+        from: account,
+      });
+
+      const tx = await auctionContract.methods.endAuction(auctionId).send({
+        from: account,
+        gas: 300000,
+      });
+
+      console.log("✅ Auction ended:", tx.transactionHash);
+      return {
+        success: true,
+        transactionHash: tx.transactionHash,
+        blockNumber: tx.blockNumber,
+      };
+    } catch (error) {
+      console.error("❌ End auction failed:", error);
+      throw {
+        success: false,
+        error: error.message || "Transaction failed",
+      };
     }
   },
 

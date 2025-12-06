@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { useWeb3 } from "../../contexts/Web3Context";
 import { useAuth } from "../../contexts/AuthContext";
-import { API_GATEWAY_URL } from "../../config/api";
 import web3Service from "../../services/web3Service";
-import marketplaceService from "../../services/marketplaceService";
-import { formatPrice } from "../../utils/priceUtils";
 import LoadingSpinner from "../LoadingSpinner";
 import "./BuyNFTModal.css";
 
@@ -13,76 +10,30 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [step, setStep] = useState(1); // 1: Chọn payment, 2: Processing, 3: Success
-  const [paymentMethod, setPaymentMethod] = useState(""); // "bank_transfer" hoặc "crypto"
-  const [orderId, setOrderId] = useState("");
+  const [step, setStep] = useState(1); // 1: Confirm, 2: Processing, 3: Success
+  const [transactionHash, setTransactionHash] = useState("");
 
   // Xử lý cả 2 trường hợp: listing (từ Marketplace) hoặc nft (từ PropertyDetailModal)
   const data = listing || nft || {};
 
-  // Tính giá và phí
-  const basePrice =
+  // Tính giá (NFT đã list trên blockchain, giá đang là Wei)
+  const price =
     typeof data.price === "object"
       ? parseFloat(data.price.amount)
       : parseFloat(data.price) || 0;
 
-  // SALE FEE: Fiat 1%, Crypto 0.1%
-  const platformFee =
-    paymentMethod === "crypto" ? basePrice * 0.001 : basePrice * 0.01;
-  const totalPrice = basePrice + platformFee;
-  const totalPriceETH = totalPrice / 100000000; // 1 ETH ≈ 100M VND
+  const priceInETH = price / 1e18; // Wei to ETH: chia 10^18
 
-  const handleBankTransfer = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setStep(2);
-
-      const token = localStorage.getItem("viepropchain_token");
-      const response = await fetch(
-        `${API_GATEWAY_URL}/api/marketplace/orders/buy`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "x-user-email": user?.email,
-          },
-          body: JSON.stringify({
-            propertyId: data.propertyId || data._id,
-            tokenId: data.tokenId,
-            totalPrice: totalPrice,
-            paymentMethod: "bank_transfer",
-            buyerEmail: user?.email,
-            sellerWallet: data.seller?.walletAddress || data.ownerWallet,
-          }),
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (!responseData.success) {
-        throw new Error(responseData.error || "Không thể tạo đơn mua");
-      }
-
-      setOrderId(responseData.data?.orderId || "");
-      setStep(3);
-    } catch (err) {
-      console.error("❌ Bank transfer error:", err);
-      setError(err.message);
-      setStep(1);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCryptoPayment = async () => {
+  const handleBuyNFT = async () => {
     // Kiểm tra user đã kết nối ví chưa
     if (!account) {
-      setError(
-        "⚠️ Vui lòng kết nối ví MetaMask trước khi thanh toán bằng ETH!"
-      );
-      setStep(1);
+      setError("⚠️ Vui lòng kết nối ví MetaMask để mua NFT!");
+      return;
+    }
+
+    // Kiểm tra có listingId không (NFT phải được list trên blockchain)
+    if (!data.listingId && data.listingId !== 0) {
+      setError("❌ NFT này chưa được list trên marketplace!");
       return;
     }
 
@@ -91,65 +42,31 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
       setError("");
       setStep(2);
 
-      console.log("💰 Sending ETH payment...", {
-        tokenId: data.tokenId,
-        amount: totalPriceETH,
+      console.log("🛒 Buying NFT from blockchain...", {
+        listingId: data.listingId,
+        priceInETH,
+        account,
       });
 
-      // Bước 1: Gửi ETH đến ví Admin
-      const adminWallet = "0x6c8c0796886c5e91f95ec04af7d06e6a7da0e7a8";
-
-      const txResult = await web3Api.web3.eth.sendTransaction({
-        from: account,
-        to: adminWallet,
-        value: web3Api.web3.utils.toWei(totalPriceETH.toString(), "ether"),
-      });
-
-      console.log("✅ ETH payment success:", txResult.transactionHash);
-
-      // Bước 2: Gửi thông tin lên Backend để chuyển NFT
-      const token = localStorage.getItem("viepropchain_token");
-      const response = await fetch(
-        `${API_GATEWAY_URL}/api/marketplace/orders/buy`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-            "x-user-email": user?.email,
-          },
-          body: JSON.stringify({
-            propertyId: data.propertyId || data._id,
-            tokenId: data.tokenId,
-            totalPrice: totalPrice,
-            paymentMethod: "crypto",
-            transactionHash: txResult.transactionHash,
-            buyerEmail: user?.email,
-            buyerWallet: account,
-            sellerWallet: data.seller?.walletAddress || data.ownerWallet,
-            // Backend sẽ dùng thông tin này để chuyển NFT
-            transferParams: {
-              tokenId: data.tokenId,
-              from: data.seller?.walletAddress || data.ownerWallet,
-              to: account,
-            },
-          }),
-        }
+      // Gọi buyNFT function từ smart contract Marketplace
+      const result = await web3Service.buyNFT(
+        web3Api.web3,
+        account,
+        data.listingId,
+        priceInETH
       );
 
-      const responseData = await response.json();
-
-      if (!responseData.success) {
-        throw new Error(responseData.error || "Không thể tạo đơn mua");
-      }
-
-      console.log("✅ Backend processed, NFT transferred:", responseData);
-
-      setOrderId(responseData.data?.orderId || txResult.transactionHash);
+      console.log("✅ Buy NFT success:", result);
+      setTransactionHash(result.transactionHash);
       setStep(3);
+
+      // Gọi callback sau 2s
+      setTimeout(() => {
+        onSuccess && onSuccess();
+      }, 2000);
     } catch (err) {
-      console.error("❌ Crypto payment error:", err);
-      setError(err.message);
+      console.error("❌ Buy NFT error:", err);
+      setError(err.error || err.message || "Giao dịch thất bại");
       setStep(1);
     } finally {
       setLoading(false);
@@ -193,130 +110,60 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
             {/* Price Summary */}
             <div className="price-summary">
               <div className="price-row">
-                <span>Giá bất động sản:</span>
-                <strong>{(basePrice / 1000000).toFixed(2)} triệu VND</strong>
+                <span>💎 Giá NFT:</span>
+                <strong style={{ fontSize: "20px", color: "#10b981" }}>
+                  {priceInETH.toFixed(4)} ETH
+                </strong>
               </div>
-            </div>
-
-            {/* Payment Methods */}
-            <div className="payment-methods">
-              {/* Bank Transfer */}
-              <div
-                className={`payment-option ${
-                  paymentMethod === "bank_transfer" ? "selected" : ""
-                }`}
-                onClick={() => {
-                  setError("");
-                  setPaymentMethod("bank_transfer");
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#6b7280",
+                  marginTop: "10px",
                 }}
-                style={{ cursor: "pointer" }}
               >
-                <div className="payment-icon">🏦</div>
-                <div className="payment-info">
-                  <h4>Chuyển khoản Ngân hàng</h4>
-                  <div className="fee-breakdown">
-                    <p className="fee-item">
-                      Giá: {(basePrice / 1000000).toFixed(2)}M VND
-                    </p>
-                    <p className="fee-item platform-fee-bank">
-                      Phí Platform (1%):
-                      <span className="fee-amount">
-                        +{(platformFee / 1000000).toFixed(2)}M VND
-                      </span>
-                    </p>
-                    <p className="fee-total">
-                      Tổng thanh toán:
-                      <strong>{(totalPrice / 1000000).toFixed(2)}M VND</strong>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Crypto */}
-              <div
-                className={`payment-option crypto-option ${
-                  paymentMethod === "crypto" ? "selected" : ""
-                }`}
-                onClick={() => {
-                  if (!account) {
-                    setError(
-                      "⚠️ Vui lòng kết nối ví MetaMask trước khi chọn thanh toán bằng ETH!"
-                    );
-                    return;
-                  }
-                  setError("");
-                  setPaymentMethod("crypto");
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <div className="savings-badge">💰 SIÊU ƯU ĐÃI 0.9%</div>
-                <div className="payment-icon">💎</div>
-                <div className="payment-info">
-                  <h4>
-                    Tiền điện tử (ETH)
-                    {!account && (
-                      <span
-                        style={{
-                          color: "#ef4444",
-                          fontSize: "12px",
-                          marginLeft: "8px",
-                        }}
-                      >
-                        (Cần kết nối ví)
-                      </span>
-                    )}
-                    {account && (
-                      <span
-                        style={{
-                          color: "#10b981",
-                          fontSize: "12px",
-                          marginLeft: "8px",
-                        }}
-                      >
-                        ✓ Đã kết nối
-                      </span>
-                    )}
-                  </h4>
-                  <div className="fee-breakdown">
-                    <p className="fee-item">
-                      Giá: {(basePrice / 1000000).toFixed(2)}M VND
-                    </p>
-                    <p className="fee-item platform-fee-crypto">
-                      Phí Platform (0.1%):
-                      <span className="fee-amount crypto">
-                        +{(platformFee / 1000000).toFixed(2)}M VND
-                      </span>
-                    </p>
-                    <p className="fee-savings">
-                      ✨ Tiết kiệm:{" "}
-                      <strong>
-                        {((basePrice * 0.009) / 1000000).toFixed(2)}M VND
-                      </strong>
-                    </p>
-                    <p className="fee-total">
-                      Tổng thanh toán:
-                      <strong>{(totalPrice / 1000000).toFixed(2)}M VND</strong>
-                    </p>
-                    <p className="eth-amount">
-                      ≈ {totalPriceETH.toFixed(4)} ETH
-                    </p>
-                  </div>
-                </div>
-              </div>
+                ℹ️ Giao dịch được thực hiện trực tiếp trên blockchain, không qua
+                trung gian
+              </p>
             </div>
 
             {/* Seller Info */}
             <div className="buy-nft-seller">
-              <p>
-                <strong>Người bán:</strong>
+              <p style={{ marginBottom: "5px" }}>
+                <strong>💼 Người bán:</strong>
               </p>
-              <p className="seller-address">
+              <p
+                className="seller-address"
+                style={{
+                  fontSize: "13px",
+                  color: "#6b7280",
+                  wordBreak: "break-all",
+                }}
+              >
                 {data.seller?.walletAddress ||
                   data.ownerWallet ||
                   data.blockchain?.seller ||
                   "Unknown"}
               </p>
             </div>
+
+            {/* Wallet Connection Warning */}
+            {!account && (
+              <div
+                style={{
+                  background: "#fef3c7",
+                  border: "2px solid #fbbf24",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                }}
+              >
+                <p style={{ margin: 0, color: "#92400e" }}>
+                  ⚠️ <strong>Vui lòng kết nối ví MetaMask</strong> để mua NFT
+                  này
+                </p>
+              </div>
+            )}
 
             {error && <div className="buy-error">❌ {error}</div>}
 
@@ -330,19 +177,15 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
                 Hủy
               </button>
               <button
-                onClick={
-                  paymentMethod === "bank_transfer"
-                    ? handleBankTransfer
-                    : handleCryptoPayment
-                }
+                onClick={handleBuyNFT}
                 className="btn-buy"
-                disabled={loading || !paymentMethod}
+                disabled={loading || !account}
               >
                 {loading
                   ? "Đang xử lý..."
-                  : paymentMethod
-                  ? "Xác nhận mua"
-                  : "Chọn phương thức thanh toán"}
+                  : !account
+                  ? "Kết nối ví để mua"
+                  : "🛒 Xác nhận mua"}
               </button>
             </div>
           </>
@@ -364,64 +207,31 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
         return (
           <div className="buy-success">
             <div className="success-icon">✅</div>
-            <h2>
-              {paymentMethod === "crypto"
-                ? "Thanh toán thành công!"
-                : "Đơn hàng đã được tạo!"}
-            </h2>
+            <h2>Mua NFT thành công!</h2>
 
             <div className="order-info">
               <div className="order-info-row">
-                <span className="order-info-label">Mã đơn hàng:</span>
+                <span className="order-info-label">Transaction Hash:</span>
                 <span className="order-info-value order-id">
-                  {orderId || "Đang xử lý..."}
+                  {transactionHash || "Đang xử lý..."}
                 </span>
               </div>
               <div className="order-info-row">
-                <span className="order-info-label">Phương thức:</span>
-                <span className="order-info-value payment-method-display">
-                  {paymentMethod === "crypto"
-                    ? "💎 Crypto (ETH)"
-                    : "🏦 Chuyển khoản"}
-                </span>
-              </div>
-              <div className="order-info-row">
-                <span className="order-info-label">Tổng thanh toán:</span>
+                <span className="order-info-label">Giá thanh toán:</span>
                 <span className="order-info-value">
-                  {(totalPrice / 1000000).toFixed(2)}M VND
-                  {paymentMethod === "crypto" && (
-                    <span style={{ color: "#10b981", marginLeft: "8px" }}>
-                      (≈ {totalPriceETH.toFixed(4)} ETH)
-                    </span>
-                  )}
+                  <strong style={{ color: "#10b981" }}>
+                    {priceInETH.toFixed(4)} ETH
+                  </strong>
                 </span>
               </div>
             </div>
 
             <div className="success-message">
-              {paymentMethod === "crypto" ? (
-                <>
-                  <p className="status-crypto">
-                    ✅ Giao dịch đã được xác nhận trên blockchain
-                  </p>
-                  <p>NFT sẽ được chuyển vào ví của bạn trong vài phút.</p>
-                  <p>Bạn có thể kiểm tra trong mục "My NFTs".</p>
-                </>
-              ) : (
-                <>
-                  <p className="status-pending">
-                    ⏳ Đơn hàng đang chờ xác nhận từ người bán
-                  </p>
-                  <p>
-                    Người bán sẽ xem xét và phản hồi đơn hàng của bạn sớm nhất
-                    có thể.
-                  </p>
-                  <p className="note">
-                    ℹ️ Bạn sẽ nhận được thông báo qua email khi đơn hàng được xử
-                    lý.
-                  </p>
-                </>
-              )}
+              <p className="status-crypto">
+                ✅ Giao dịch đã được xác nhận trên blockchain
+              </p>
+              <p>NFT đã được chuyển vào ví của bạn.</p>
+              <p>Bạn có thể kiểm tra trong mục "My NFTs".</p>
             </div>
 
             <button onClick={onClose} className="btn-close-success">

@@ -1,16 +1,22 @@
 import React, { useState } from "react";
-import BuyNFTModal from "../BuyNFTModal";
-import RentNFTModal from "../RentNFTModal";
+import BuyNFTModal from "../BuyNFTModal/BuyNFTModal";
+import RentNFTModal from "../RentNFTModal/RentNFTModal";
+import OfferNFTModal from "../OfferNFTModal/OfferNFTModal";
 import "./PropertyDetailModal.css";
 
 const PropertyDetailModal = ({ property, onClose }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showRentModal, setShowRentModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [offerType, setOfferType] = useState("buy");
 
   if (!property) return null;
 
-  const images = property.images || property.media?.images || [];
+  // Support both marketplace listing and property data structures
+  const images =
+    property.propertyImages || property.images || property.media?.images || [];
+
   const currentImage =
     images[selectedImageIndex]?.url ||
     images[selectedImageIndex] ||
@@ -18,9 +24,35 @@ const PropertyDetailModal = ({ property, onClose }) => {
 
   const formatPrice = (price) => {
     if (!price) return "N/A";
-    const billions = price / 1000000000;
-    return `${billions.toFixed(2)} tỷ VND`;
+    const priceValue = typeof price === "object" ? price.amount : price;
+    const billions = priceValue / 1000000000;
+    const ethValue = priceValue / 100000000; // 1 ETH ≈ 100M VND
+    return {
+      vnd: `${billions.toFixed(2)} tỷ VND`,
+      eth: `${ethValue.toFixed(4)} ETH`,
+    };
   };
+
+  // Xác định loại action button
+  const getPropertyInfo = () => {
+    // Check if có giá blockchain (đã list trên marketplace)
+    const hasBlockchainPrice =
+      property.blockchainPrice ||
+      (property.price &&
+        (property.price.currency === "ETH" || property.price.amount)) ||
+      property.listingId !== undefined; // Nếu có listingId thì đã list
+
+    // Check listing type từ DB - default là sale nếu không có
+    const listingType = property.listingType || property.type || "sale";
+
+    return {
+      hasBlockchainPrice,
+      listingType,
+      hasNFT: !!(property.tokenId || property.nft?.tokenId),
+    };
+  };
+
+  const propertyInfo = getPropertyInfo();
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -28,8 +60,34 @@ const PropertyDetailModal = ({ property, onClose }) => {
     }
   };
 
+  const handleBuyAction = () => {
+    if (propertyInfo.hasBlockchainPrice && propertyInfo.hasNFT) {
+      setShowBuyModal(true);
+    } else {
+      setOfferType("buy");
+      setShowOfferModal(true);
+    }
+  };
+
+  const handleRentAction = () => {
+    if (propertyInfo.hasBlockchainPrice && propertyInfo.hasNFT) {
+      setShowRentModal(true);
+    } else {
+      setOfferType("rent");
+      setShowOfferModal(true);
+    }
+  };
+
   const propertyDetails = property.details || {};
-  const propertyAddress = property.address || property.location || {};
+  const propertyAddress =
+    property.propertyAddress || property.address || property.location || {};
+
+  // Get property name from various possible fields
+  const propertyName =
+    property.propertyName ||
+    property.title ||
+    property.name ||
+    "Chi tiết bất động sản";
 
   return (
     <>
@@ -40,9 +98,7 @@ const PropertyDetailModal = ({ property, onClose }) => {
         <div className="property-detail-modal">
           {/* Header */}
           <div className="modal-header">
-            <h2>
-              {property.title || property.name || "Chi tiết bất động sản"}
-            </h2>
+            <h2>{propertyName}</h2>
             <button className="close-button" onClick={onClose}>
               ✕
             </button>
@@ -86,27 +142,35 @@ const PropertyDetailModal = ({ property, onClose }) => {
 
             {/* Badges */}
             <div className="badges">
-              {property.nft?.isMinted && (
+              {(property.tokenId !== undefined ||
+                property.nft?.tokenId !== undefined) && (
                 <span className="badge nft">
-                  🎨 NFT #{property.nft.tokenId}
+                  🎨 NFT #{property.tokenId ?? property.nft?.tokenId}
                 </span>
+              )}
+              {(property.listingId !== undefined ||
+                property.listingId === 0) && (
+                <span className="badge verified">⚡ Listed on Blockchain</span>
               )}
               {property.verificationStatus === "verified" && (
                 <span className="badge verified">✅ Đã xác minh</span>
-              )}
-              {property.status && (
-                <span className="badge status">
-                  {property.status === "active"
-                    ? "🏷️ Đang bán"
-                    : property.status}
-                </span>
               )}
             </div>
 
             {/* Price */}
             <div className="price-section">
               <div className="price-label">💰 Giá bán</div>
-              <div className="price-value">{formatPrice(property.price)}</div>
+              <div className="price-value">
+                {formatPrice(property.price).vnd}
+              </div>
+              <div className="price-eth">
+                ≈ {formatPrice(property.price).eth}
+              </div>
+              <p
+                style={{ fontSize: "13px", color: "#6b7280", marginTop: "8px" }}
+              >
+                ℹ️ Giao dịch trực tiếp trên blockchain bằng ETH
+              </p>
             </div>
 
             {/* Property Info Grid */}
@@ -114,21 +178,31 @@ const PropertyDetailModal = ({ property, onClose }) => {
               <div className="info-card">
                 <div className="info-label">📏 Diện tích</div>
                 <div className="info-value">
-                  {property.area || propertyDetails.area || "N/A"} m²
+                  {property.propertyArea ||
+                    property.area ||
+                    propertyDetails.area ||
+                    "N/A"}{" "}
+                  m²
                 </div>
               </div>
 
               <div className="info-card">
                 <div className="info-label">🛏️ Phòng ngủ</div>
                 <div className="info-value">
-                  {property.bedrooms || propertyDetails.bedrooms || "N/A"}
+                  {property.propertyBedrooms ||
+                    property.bedrooms ||
+                    propertyDetails.bedrooms ||
+                    "N/A"}
                 </div>
               </div>
 
               <div className="info-card">
                 <div className="info-label">🚿 Phòng tắm</div>
                 <div className="info-value">
-                  {property.bathrooms || propertyDetails.bathrooms || "N/A"}
+                  {property.propertyBathrooms ||
+                    property.bathrooms ||
+                    propertyDetails.bathrooms ||
+                    "N/A"}
                 </div>
               </div>
 
@@ -147,10 +221,12 @@ const PropertyDetailModal = ({ property, onClose }) => {
             </div>
 
             {/* Description */}
-            {property.description && (
+            {(property.propertyDescription || property.description) && (
               <div className="description-section">
                 <h3>📝 Mô tả</h3>
-                <p className="description-text">{property.description}</p>
+                <p className="description-text">
+                  {property.propertyDescription || property.description}
+                </p>
               </div>
             )}
 
@@ -158,9 +234,11 @@ const PropertyDetailModal = ({ property, onClose }) => {
             <div className="description-section">
               <h3>📍 Địa chỉ</h3>
               <p className="description-text">
-                {propertyAddress.street || propertyAddress.address},{" "}
+                {propertyAddress.street || propertyAddress.address || ""}
+                {(propertyAddress.street || propertyAddress.address) && ", "}
                 {propertyAddress.ward && `${propertyAddress.ward}, `}
-                {propertyAddress.district},{" "}
+                {propertyAddress.district}
+                {propertyAddress.district && ", "}
                 {propertyAddress.city === "HoChiMinh"
                   ? "TP. Hồ Chí Minh"
                   : propertyAddress.city}
@@ -197,31 +275,67 @@ const PropertyDetailModal = ({ property, onClose }) => {
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Thông minh */}
           <div className="action-buttons">
-            <button
-              className="btn-action btn-buy"
-              onClick={() => setShowBuyModal(true)}
-              disabled={!property.nft?.isMinted}
-            >
-              🛒 Mua ngay
-            </button>
-            <button
-              className="btn-action btn-rent"
-              onClick={() => setShowRentModal(true)}
-              disabled={!property.nft?.isMinted}
-            >
-              🏠 Thuê
-            </button>
+            {propertyInfo.listingType === "sale" ||
+            !propertyInfo.listingType ? (
+              // Nút mua
+              <button
+                className="btn-action btn-buy"
+                onClick={handleBuyAction}
+                style={{
+                  background: propertyInfo.hasBlockchainPrice
+                    ? "linear-gradient(135deg, #3b82f6, #1d4ed8)"
+                    : "linear-gradient(135deg, #f59e0b, #d97706)",
+                }}
+              >
+                {propertyInfo.hasBlockchainPrice
+                  ? "🛒 Mua Ngay"
+                  : "💰 Gửi Đề Nghị Mua"}
+              </button>
+            ) : (
+              // Nút thuê
+              <button
+                className="btn-action btn-rent"
+                onClick={handleRentAction}
+                style={{
+                  background: propertyInfo.hasBlockchainPrice
+                    ? "linear-gradient(135deg, #10b981, #047857)"
+                    : "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                }}
+              >
+                {propertyInfo.hasBlockchainPrice
+                  ? "🏠 Thuê Ngay"
+                  : "📅 Đề Nghị Thuê"}
+              </button>
+            )}
+
+            {/* Nếu là dual listing thì hiện cả 2 nút */}
+            {(!propertyInfo.listingType ||
+              propertyInfo.listingType === "both") && (
+              <button
+                className="btn-action btn-rent"
+                onClick={handleRentAction}
+                style={{
+                  background: propertyInfo.hasBlockchainPrice
+                    ? "linear-gradient(135deg, #10b981, #047857)"
+                    : "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                }}
+              >
+                {propertyInfo.hasBlockchainPrice
+                  ? "🏠 Thuê Ngay"
+                  : "📅 Đề Nghị Thuê"}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Buy Modal */}
-      {showBuyModal && property.nft?.tokenId && (
+      {showBuyModal && propertyInfo.hasNFT && (
         <BuyNFTModal
           nft={{
-            tokenId: property.nft.tokenId,
+            tokenId: property.tokenId || property.nft?.tokenId,
             name: property.title || property.name,
             price: property.price,
             image: images[0]?.url || images[0],
@@ -231,19 +345,28 @@ const PropertyDetailModal = ({ property, onClose }) => {
       )}
 
       {/* Rent Modal */}
-      {showRentModal && property.nft?.tokenId && (
+      {showRentModal && propertyInfo.hasNFT && (
         <RentNFTModal
           nft={{
-            tokenId: property.nft.tokenId,
+            tokenId: property.tokenId || property.nft?.tokenId,
             name: property.title || property.name,
-            // Tính giá thuê/ngày từ lợi suất 4.5%/năm, KHÔNG chia thẳng giá BĐS
             pricePerDay: property.rentalPrice
-              ? property.rentalPrice / 30 // Nếu có rentalPrice (giá/tháng), chia 30
-              : (property.price * 0.045) / 365, // Ngược lại: (Giá × 4.5%) / 365 ngày
+              ? property.rentalPrice / 30
+              : (property.price * 0.045) / 365,
             image: images[0]?.url || images[0],
-            price: property.price, // Truyền thêm giá BĐS để tính toán
+            price: property.price,
           }}
           onClose={() => setShowRentModal(false)}
+        />
+      )}
+
+      {/* Offer Modal - Cho property chưa list hoặc chưa có giá cố định */}
+      {showOfferModal && (
+        <OfferNFTModal
+          isOpen={showOfferModal}
+          onClose={() => setShowOfferModal(false)}
+          property={property}
+          type={offerType}
         />
       )}
     </>

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { formatPrice } from "../../utils/priceUtils";
-import BuyNFTModal from "../../components/BuyNFTModal";
-import RentNFTModal from "../../components/RentNFTModal";
+import BuyNFTModal from "../../components/BuyNFTModal/BuyNFTModal";
+import RentNFTModal from "../../components/RentNFTModal/RentNFTModal";
+import OfferNFTModal from "../../components/OfferNFTModal/OfferNFTModal";
+import PropertyDetailModal from "../../components/PropertyDetailModal/PropertyDetailModal";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 
 const Marketplace = () => {
+  const location = useLocation();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,25 +19,106 @@ const Marketplace = () => {
   const [selectedListing, setSelectedListing] = useState(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showRentModal, setShowRentModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [offerType, setOfferType] = useState("buy"); // "buy" or "rent"
+
+  // Lấy filter type từ URL path
+  const getFilterType = () => {
+    if (location.pathname.includes("/buy")) return "sale";
+    if (location.pathname.includes("/rent")) return "rental";
+    return "all";
+  };
+  const [filterType, setFilterType] = useState(getFilterType());
+
+  // Format giá thống nhất (VND và ETH)
+  const formatPrice = (price, currency = "VND") => {
+    if (!price) return "Liên hệ";
+
+    if (currency === "ETH") {
+      // Nếu là ETH blockchain price
+      let priceInWei;
+      if (typeof price === "object" && price.amount) {
+        priceInWei = price.amount;
+      } else {
+        priceInWei = price;
+      }
+      const ethValue = parseFloat(priceInWei) / 1e18;
+      return `${ethValue.toFixed(4)} ETH`;
+    } else {
+      // Nếu là VND traditional price
+      const priceNumber = typeof price === "number" ? price : parseFloat(price);
+      if (priceNumber >= 1000000000) {
+        const billions = priceNumber / 1000000000;
+        return `${billions.toFixed(2)} tỷ VND`;
+      } else if (priceNumber >= 1000000) {
+        const millions = priceNumber / 1000000;
+        return `${millions.toFixed(0)} triệu VND`;
+      } else {
+        return `${priceNumber.toLocaleString("vi-VN")} VND`;
+      }
+    }
+  };
+
+  // Xác định loại listing và action button
+  const getListingInfo = (listing) => {
+    console.log("🔍 Analyzing listing:", listing); // Debug log
+
+    // Check if có giá blockchain (đã list trên marketplace)
+    const hasBlockchainPrice =
+      listing.blockchainPrice ||
+      (listing.price &&
+        (listing.price.currency === "ETH" || listing.price.amount)) ||
+      listing.listingId; // Nếu có listingId thì đã list
+
+    // Check listing type từ DB - default là sale nếu không có
+    const listingType = listing.listingType || listing.type || "sale";
+
+    // Debug log
+    console.log(
+      `📋 Listing ${listing.name}: type=${listingType}, hasBlockchainPrice=${hasBlockchainPrice}`
+    );
+
+    if (hasBlockchainPrice) {
+      // Đã list trên blockchain marketplace
+      return {
+        type: listingType === "rental" ? "rent" : "sale",
+        hasFixedPrice: true,
+        action: listingType === "rental" ? "rent_now" : "buy_now",
+        price: formatPrice(listing.blockchainPrice || listing.price, "ETH"),
+      };
+    } else {
+      // Chưa list, cần tạo offer
+      return {
+        type: listingType === "rental" ? "rent" : "sale",
+        hasFixedPrice: false,
+        action: listingType === "rental" ? "make_rent_offer" : "make_buy_offer",
+        price: formatPrice(listing.price),
+      };
+    }
+  };
 
   useEffect(() => {
     fetchListings();
-  }, []);
+    setFilterType(getFilterType()); // Cập nhật filter khi URL thay đổi
+  }, [location.pathname]);
 
   const fetchListings = async () => {
     try {
       setLoading(true);
-      // Lấy tất cả listings từ marketplace
+      // Lấy tất cả listings (không filter status để debug)
       const response = await fetch(
         `${API_ENDPOINTS.MARKETPLACE.LISTINGS}?limit=200`
       );
       const data = await response.json();
 
       if (data.success) {
-        setListings(data.data?.listings || data.data || []);
+        const allListings = data.data?.listings || data.data || [];
+        console.log("📊 All listings from API:", allListings); // Debug log
+        setListings(allListings);
         setError("");
       } else {
-        setError("Không thể tải marketplace");
+        setError("Không thể tải thị trường BDS");
       }
     } catch (err) {
       setError("Lỗi kết nối: " + err.message);
@@ -45,6 +129,19 @@ const Marketplace = () => {
 
   const getSortedListings = () => {
     let filtered = listings;
+
+    // Filter theo type từ URL
+    if (filterType === "sale") {
+      filtered = filtered.filter((listing) => {
+        const info = getListingInfo(listing);
+        return info.type === "sale";
+      });
+    } else if (filterType === "rental") {
+      filtered = filtered.filter((listing) => {
+        const info = getListingInfo(listing);
+        return info.type === "rent";
+      });
+    }
 
     // Search
     if (searchTerm) {
@@ -93,25 +190,63 @@ const Marketplace = () => {
     return sorted;
   };
 
-  // formatPrice được import từ utils/priceUtils.js
+  // Handler functions cho các modal
+  const handleMakeOffer = (listing, type) => {
+    setSelectedListing(listing);
+    setOfferType(type);
+    setShowOfferModal(true);
+  };
+
+  const handleBuyNow = (listing) => {
+    setSelectedListing(listing);
+    setShowBuyModal(true);
+  };
+
+  const handleRentNow = (listing) => {
+    setSelectedListing(listing);
+    setShowRentModal(true);
+  };
+
+  const handleViewDetails = (listing) => {
+    setSelectedListing(listing);
+    setShowDetailModal(true);
+  };
+
+  const getPageTitle = () => {
+    if (filterType === "sale") return "🏠 Mua Nhà - Thị Trường BDS";
+    if (filterType === "rental") return "🏡 Thuê Nhà - Thị Trường BDS";
+    return "🏘️ Thị Trường Bất Động Sản";
+  };
+
+  const getPageSubtitle = () => {
+    if (filterType === "sale") return "Tìm ngôi nhà mơ ước của bạn";
+    if (filterType === "rental") return "Thuê nhà tiện nghi, giá hợp lý";
+    return "Mua bán & cho thuê bất động sản trên blockchain";
+  };
 
   const sortedListings = getSortedListings();
 
   if (loading) {
-    return <LoadingSpinner message="Đang tải marketplace..." />;
+    return <LoadingSpinner message="Đang tải thị trường..." />;
   }
 
   return (
     <>
       <Header />
       <div
-        style={{ padding: "40px 20px", maxWidth: "1400px", margin: "0 auto" }}
+        style={{
+          padding: "40px 20px",
+          paddingTop:
+            "110px" /* Thêm space cho header cố định (70px) + padding (40px) */,
+          maxWidth: "1400px",
+          margin: "0 auto",
+        }}
       >
         <h1 style={{ fontSize: "36px", marginBottom: "10px" }}>
-          🛒 Marketplace
+          {getPageTitle()}
         </h1>
         <p style={{ color: "#666", marginBottom: "30px", fontSize: "16px" }}>
-          Mua bán bất động sản NFT trên blockchain
+          {getPageSubtitle()}
         </p>
 
         {error && (
@@ -275,6 +410,10 @@ const Marketplace = () => {
             {sortedListings.map((listing) => (
               <div
                 key={listing._id}
+                onClick={() => {
+                  setSelectedListing(listing);
+                  setShowDetailModal(true);
+                }}
                 style={{
                   background: "#fff",
                   border: "2px solid #e5e7eb",
@@ -348,14 +487,12 @@ const Marketplace = () => {
                       left: "0",
                       right: "0",
                       background:
-                        "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
+                        "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
                       padding: "40px 16px 16px",
                       color: "#fff",
                     }}
                   >
-                    <div style={{ fontSize: "24px", fontWeight: "800" }}>
-                      💰 {formatPrice(listing.price)}
-                    </div>
+                    {formatPrice(listing.price)}
                   </div>
                 </div>
 
@@ -435,128 +572,206 @@ const Marketplace = () => {
                     )}
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons - Logic thông minh */}
                   <div
                     style={{
                       display: "flex",
                       gap: "8px",
-                      marginTop: "4px",
+                      marginTop: "16px",
                     }}
+                    onClick={(e) => e.stopPropagation()} // Prevent card click when clicking buttons
                   >
-                    {listing.listingType === "sale" || !listing.listingType ? (
-                      <button
-                        onClick={() => {
-                          setSelectedListing(listing);
-                          setShowBuyModal(true);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: "14px",
-                          background:
-                            "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "10px",
-                          fontSize: "15px",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "transform 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "scale(1.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "scale(1)";
-                        }}
-                      >
-                        🛒 Mua ngay
-                      </button>
-                    ) : listing.listingType === "rent" ? (
-                      <button
-                        onClick={() => {
-                          setSelectedListing(listing);
-                          setShowRentModal(true);
-                        }}
-                        style={{
-                          flex: 1,
-                          padding: "14px",
-                          background:
-                            "linear-gradient(135deg, #8b5cf6, #ec4899)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "10px",
-                          fontSize: "15px",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "transform 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "scale(1.05)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "scale(1)";
-                        }}
-                      >
-                        🏠 Thuê ngay
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => {
-                            setSelectedListing(listing);
-                            setShowBuyModal(true);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: "12px",
-                            background:
-                              "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "10px",
-                            fontSize: "14px",
-                            fontWeight: "700",
-                            cursor: "pointer",
-                            transition: "transform 0.2s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.05)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                          }}
-                        >
-                          🛒 Mua
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedListing(listing);
-                            setShowRentModal(true);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: "12px",
-                            background:
-                              "linear-gradient(135deg, #8b5cf6, #ec4899)",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "10px",
-                            fontSize: "14px",
-                            fontWeight: "700",
-                            cursor: "pointer",
-                            transition: "transform 0.2s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.05)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                          }}
-                        >
-                          🏠 Thuê
-                        </button>
-                      </>
-                    )}
+                    {(() => {
+                      const listingInfo = getListingInfo(listing);
+
+                      if (listingInfo.type === "sale") {
+                        // Listing bán nhà
+                        if (listingInfo.hasFixedPrice) {
+                          // Có giá cố định -> Mua ngay
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBuyNow(listing);
+                              }}
+                              style={{
+                                width: "100%",
+                                padding: "12px",
+                                background:
+                                  "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "10px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.02)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              🛒 Mua Ngay
+                            </button>
+                          );
+                        } else {
+                          // Chưa có giá cố định -> Gửi đề nghị
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMakeOffer(listing, "buy");
+                              }}
+                              style={{
+                                width: "100%",
+                                padding: "12px",
+                                background:
+                                  "linear-gradient(135deg, #f59e0b, #d97706)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "10px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.02)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              💰 Gửi Đề Nghị
+                            </button>
+                          );
+                        }
+                      } else if (listingInfo.type === "rent") {
+                        // Listing cho thuê nhà
+                        if (listingInfo.hasFixedPrice) {
+                          // Có giá cố định -> Thuê ngay
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRentNow(listing);
+                              }}
+                              style={{
+                                width: "100%",
+                                padding: "12px",
+                                background:
+                                  "linear-gradient(135deg, #10b981, #047857)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "10px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.02)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              🏠 Thuê Ngay
+                            </button>
+                          );
+                        } else {
+                          // Chưa có giá cố định -> Gửi đề nghị thuê
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMakeOffer(listing, "rent");
+                              }}
+                              style={{
+                                width: "100%",
+                                padding: "12px",
+                                background:
+                                  "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "10px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.02)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                              }}
+                            >
+                              📅 Đề Nghị Thuê
+                            </button>
+                          );
+                        }
+                      } else {
+                        // Dual listing (vừa bán vừa cho thuê)
+                        return (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                listingInfo.hasFixedPrice
+                                  ? handleBuyNow(listing)
+                                  : handleMakeOffer(listing, "buy");
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: "10px",
+                                background:
+                                  "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                            >
+                              {listingInfo.hasFixedPrice
+                                ? "🛒 Mua"
+                                : "💰 Offer"}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                listingInfo.hasFixedPrice
+                                  ? handleRentNow(listing)
+                                  : handleMakeOffer(listing, "rent");
+                              }}
+                              style={{
+                                flex: 1,
+                                padding: "10px",
+                                background:
+                                  "linear-gradient(135deg, #10b981, #047857)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "8px",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                transition: "transform 0.2s",
+                              }}
+                            >
+                              {listingInfo.hasFixedPrice
+                                ? "🏠 Thuê"
+                                : "📅 Offer"}
+                            </button>
+                          </>
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
               </div>
@@ -603,6 +818,30 @@ const Marketplace = () => {
             }}
             onSuccess={() => {
               fetchListings(); // Refresh listings
+            }}
+          />
+        )}
+
+        {/* Offer Modal - Cho listing chưa có giá cố định */}
+        {showOfferModal && selectedListing && (
+          <OfferNFTModal
+            isOpen={showOfferModal}
+            onClose={() => {
+              setShowOfferModal(false);
+              setSelectedListing(null);
+            }}
+            property={selectedListing}
+            type={offerType}
+          />
+        )}
+
+        {/* Detail Modal */}
+        {showDetailModal && selectedListing && (
+          <PropertyDetailModal
+            property={selectedListing}
+            onClose={() => {
+              setShowDetailModal(false);
+              setSelectedListing(null);
             }}
           />
         )}

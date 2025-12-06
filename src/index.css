@@ -15,6 +15,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Tránh header đè nội dung trang */
+.page-content {
+  padding-top: 90px; /* Header height + buffer */
+}
+
+/* Z-index hierarchy for consistent layering */
+.header {
+  z-index: 9999 !important;
+}
+
+.modal-overlay {
+  z-index: 10000 !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

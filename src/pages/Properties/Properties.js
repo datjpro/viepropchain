@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PropertyDetailModal from "../../components/PropertyDetailModal";
+import OfferNFTModal from "../../components/OfferNFTModal/OfferNFTModal";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 
@@ -12,6 +13,9 @@ const Properties = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [selectedNFTProperty, setSelectedNFTProperty] = useState(null);
+  const [offerType, setOfferType] = useState("buy"); // "buy" or "rent"
 
   useEffect(() => {
     fetchProperties();
@@ -91,6 +95,18 @@ const Properties = () => {
     }
   };
 
+  const handleMakeOffer = (property, type) => {
+    setSelectedNFTProperty(property);
+    setOfferType(type);
+    setShowOfferModal(true);
+  };
+
+  const handleCloseOfferModal = () => {
+    setShowOfferModal(false);
+    setSelectedNFTProperty(null);
+    setOfferType("buy");
+  };
+
   const filteredProperties = getFilteredProperties();
 
   if (loading) {
@@ -101,13 +117,19 @@ const Properties = () => {
     <>
       <Header />
       <div
-        style={{ padding: "40px 20px", maxWidth: "1400px", margin: "0 auto" }}
+        style={{
+          padding: "40px 20px",
+          paddingTop:
+            "110px" /* Thêm space cho header cố định (70px) + padding (40px) */,
+          maxWidth: "1400px",
+          margin: "0 auto",
+        }}
       >
         <h1 style={{ fontSize: "32px", marginBottom: "10px" }}>
-          🏘️ Danh Sách Bất Động Sản
+          🏠 Quản Lý Tài Sản
         </h1>
         <p style={{ color: "#666", marginBottom: "30px" }}>
-          Khám phá các bất động sản được tokenize trên blockchain
+          Quản lý danh sách bất động sản của bạn
         </p>
 
         {error && (
@@ -183,15 +205,15 @@ const Properties = () => {
             onClick={() => setFilter("minted")}
             style={{
               padding: "12px 24px",
-              background: filter === "minted" ? "#8b5cf6" : "#fff",
+              background: filter === "minted" ? "#f59e0b" : "#fff",
               color: filter === "minted" ? "#fff" : "#333",
-              border: "2px solid #8b5cf6",
+              border: "2px solid #f59e0b",
               borderRadius: "8px",
               cursor: "pointer",
               fontWeight: "600",
             }}
           >
-            NFT
+            Đã mint NFT
           </button>
 
           <button
@@ -376,33 +398,98 @@ const Properties = () => {
                     </div>
                   )}
 
-                  {/* View Details Button */}
-                  <button
-                    onClick={() => setSelectedProperty(property)}
+                  {/* Action Buttons */}
+                  <div
                     style={{
                       marginTop: "16px",
-                      width: "100%",
-                      padding: "12px",
-                      background: "#3b82f6",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.background = "#2563eb";
-                      e.target.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.background = "#3b82f6";
-                      e.target.style.transform = "translateY(0)";
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
                     }}
                   >
-                    👁️ Xem chi tiết
-                  </button>
+                    {/* View Details Button */}
+                    <button
+                      onClick={() => setSelectedProperty(property)}
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        background: "#6b7280",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.background = "#4b5563";
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.background = "#6b7280";
+                      }}
+                    >
+                      👁️ Xem chi tiết
+                    </button>
+
+                    {/* NFT Offer Buttons - Chỉ hiện cho NFT đã mint */}
+                    {property.nft?.isMinted && (
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMakeOffer(property, "buy");
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "10px 8px",
+                            background: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                          onMouseOver={(e) => {
+                            e.target.style.background = "#2563eb";
+                          }}
+                          onMouseOut={(e) => {
+                            e.target.style.background = "#3b82f6";
+                          }}
+                        >
+                          💰 Đặt giá mua
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMakeOffer(property, "rent");
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "10px 8px",
+                            background: "#10b981",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: "600",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                          }}
+                          onMouseOver={(e) => {
+                            e.target.style.background = "#059669";
+                          }}
+                          onMouseOut={(e) => {
+                            e.target.style.background = "#10b981";
+                          }}
+                        >
+                          📅 Đặt giá thuê
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -430,6 +517,16 @@ const Properties = () => {
           <PropertyDetailModal
             property={selectedProperty}
             onClose={() => setSelectedProperty(null)}
+          />
+        )}
+
+        {/* Offer NFT Modal - Cho NFT chưa list trên marketplace */}
+        {showOfferModal && selectedNFTProperty && (
+          <OfferNFTModal
+            isOpen={showOfferModal}
+            onClose={handleCloseOfferModal}
+            property={selectedNFTProperty}
+            type={offerType}
           />
         )}
       </div>

@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10400; /* Cao hơn header */
   padding: 20px;
   overflow-y: auto;
 }
@@ -161,6 +161,14 @@
 .price-value {
   font-size: 32px;
   font-weight: 700;
+}
+
+.price-eth {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 8px;
+  opacity: 0.9;
+  color: #10b981;
 }
 
 .description-section {

@@ -18,7 +18,7 @@ export const CONTRACTS = {
     ViePropChainNFT: "0x17Aaf4b68DF5bA409FAEBE59ff771E27e1db85E2",
     Marketplace: "0x0d32Dc114C7fba20bef83509CcaBE58d81e296cb",
     Offers: "0xbb1De761881f47a6128C60dcf5aD954Df95d58D6",
-    // Auction: undefined - Chưa deploy
+    Auction: "0xABCDEF123456789000000000000000000000001", // TODO: Deploy auction contract
   },
 
   // Marketplace ABI (minimal - chỉ functions cần thiết)
@@ -138,6 +138,32 @@ export const CONTRACTS = {
         name: "transferFrom",
         outputs: [],
         stateMutability: "nonpayable",
+        type: "function",
+      },
+      // ERC4907 - Rental functions
+      {
+        inputs: [
+          { internalType: "uint256", name: "tokenId", type: "uint256" },
+          { internalType: "address", name: "user", type: "address" },
+          { internalType: "uint64", name: "expires", type: "uint64" },
+        ],
+        name: "setUser",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+      {
+        inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+        name: "userOf",
+        outputs: [{ internalType: "address", name: "", type: "address" }],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+        name: "userExpires",
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+        stateMutability: "view",
         type: "function",
       },
     ],

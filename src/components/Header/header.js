@@ -91,10 +91,13 @@ const Header = () => {
                   <a href="/">{t(translations.nav.home)}</a>
                 </li>
                 <li>
-                  <a href="/properties">{t(translations.nav.properties)}</a>
+                  <a href="/market">Thị Trường BDS</a>
                 </li>
                 <li>
-                  <a href="/marketplace">{t(translations.nav.marketplace)}</a>
+                  <a href="/market/buy">Mua Nhà</a>
+                </li>
+                <li>
+                  <a href="/market/rent">Thuê Nhà</a>
                 </li>
                 <li>
                   <a href="/analytics">{t(translations.nav.analytics)}</a>
