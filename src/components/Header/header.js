@@ -169,6 +169,18 @@ const Header = () => {
                         <button
                           className="dropdown-profile-btn"
                           onClick={() => {
+                            navigate("/my-dashboard");
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          <span>📊</span>
+                          {language === "en"
+                            ? "My Dashboard"
+                            : "Bảng Điều Khiển"}
+                        </button>
+                        <button
+                          className="dropdown-profile-btn"
+                          onClick={() => {
                             navigate("/my-properties");
                             setShowUserDropdown(false);
                           }}

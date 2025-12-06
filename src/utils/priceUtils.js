@@ -12,14 +12,34 @@
 export const weiToEth = (priceInWei) => {
   if (!priceInWei || priceInWei === "0") return "0";
 
-  // Convert to BigInt to handle large numbers
-  // eslint-disable-next-line no-undef
-  const wei = BigInt(priceInWei);
-  const eth = Number(wei) / 1e18;
+  // Handle string numbers properly
+  const weiString = priceInWei.toString();
 
-  return eth.toString();
+  // Always use string manipulation for precision
+  const weiLength = weiString.length;
+  if (weiLength <= 18) {
+    // Pad with zeros if needed
+    const paddedWei = weiString.padStart(18, "0");
+    const ethResult = "0." + paddedWei.replace(/0+$/, "") || "0";
+    return ethResult === "0." ? "0" : ethResult;
+  } else {
+    // Large numbers: split at 18 digits from right
+    const ethPart = weiString.slice(0, weiLength - 18) || "0";
+    const decimalPart = weiString.slice(weiLength - 18);
+
+    // Remove trailing zeros from decimal part
+    const cleanDecimal = decimalPart.replace(/0+$/, "");
+
+    const result = cleanDecimal ? `${ethPart}.${cleanDecimal}` : ethPart;
+    console.log("🔢 Large number result:", {
+      ethPart,
+      decimalPart,
+      cleanDecimal,
+      result,
+    });
+    return result;
+  }
 };
-
 /**
  * Convert price from ETH to wei
  * @param {string|number} priceInEth - Price in ETH
@@ -90,7 +110,15 @@ export const formatPriceVND = (price) => {
   }
 
   // Convert wei to ETH first
-  const ethValue = parseFloat(weiToEth(priceInWei));
+  const ethString = weiToEth(priceInWei);
+  const ethValue = parseFloat(ethString);
+
+  console.log("🧮 formatPriceVND debug:", {
+    originalPrice: price,
+    priceInWei: priceInWei,
+    ethString: ethString,
+    ethValue: ethValue,
+  });
 
   // Convert ETH to VND (1 ETH = 100M VND)
   const vndValue = ethValue * 100000000;

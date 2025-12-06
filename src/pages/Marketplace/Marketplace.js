@@ -8,6 +8,10 @@ import OfferNFTModal from "../../components/OfferNFTModal/OfferNFTModal";
 import PropertyDetailModal from "../../components/PropertyDetailModal/PropertyDetailModal";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
+import {
+  formatPrice as formatPriceUtil,
+  formatPriceVND,
+} from "../../utils/priceUtils";
 
 const Marketplace = () => {
   const location = useLocation();
@@ -31,34 +35,7 @@ const Marketplace = () => {
   };
   const [filterType, setFilterType] = useState(getFilterType());
 
-  // Format giá thống nhất (VND và ETH)
-  const formatPrice = (price, currency = "VND") => {
-    if (!price) return "Liên hệ";
-
-    if (currency === "ETH") {
-      // Nếu là ETH blockchain price
-      let priceInWei;
-      if (typeof price === "object" && price.amount) {
-        priceInWei = price.amount;
-      } else {
-        priceInWei = price;
-      }
-      const ethValue = parseFloat(priceInWei) / 1e18;
-      return `${ethValue.toFixed(4)} ETH`;
-    } else {
-      // Nếu là VND traditional price
-      const priceNumber = typeof price === "number" ? price : parseFloat(price);
-      if (priceNumber >= 1000000000) {
-        const billions = priceNumber / 1000000000;
-        return `${billions.toFixed(2)} tỷ VND`;
-      } else if (priceNumber >= 1000000) {
-        const millions = priceNumber / 1000000;
-        return `${millions.toFixed(0)} triệu VND`;
-      } else {
-        return `${priceNumber.toLocaleString("vi-VN")} VND`;
-      }
-    }
-  };
+  // Sử dụng formatPrice function từ priceUtils thay vì local function
 
   // Xác định loại listing và action button
   const getListingInfo = (listing) => {
@@ -79,21 +56,23 @@ const Marketplace = () => {
       `📋 Listing ${listing.name}: type=${listingType}, hasBlockchainPrice=${hasBlockchainPrice}`
     );
 
-    if (hasBlockchainPrice) {
-      // Đã list trên blockchain marketplace
+    // OFF-CHAIN LISTING MODEL:
+    // - Listing trong DB với giá = User có thể mua/thuê ngay
+    // - Blockchain chỉ tham gia khi giao dịch thật diễn ra
+    if (listing.status === "active" && listing.price) {
       return {
         type: listingType === "rental" ? "rent" : "sale",
-        hasFixedPrice: true,
+        hasFixedPrice: true, // Có giá cố định từ DB
         action: listingType === "rental" ? "rent_now" : "buy_now",
-        price: formatPrice(listing.blockchainPrice || listing.price, "ETH"),
+        price: formatPriceUtil(listing.price, "ETH"),
       };
     } else {
-      // Chưa list, cần tạo offer
+      // Chưa có giá hoặc không active
       return {
         type: listingType === "rental" ? "rent" : "sale",
         hasFixedPrice: false,
         action: listingType === "rental" ? "make_rent_offer" : "make_buy_offer",
-        price: formatPrice(listing.price),
+        price: "Liên hệ",
       };
     }
   };
@@ -492,7 +471,11 @@ const Marketplace = () => {
                       color: "#fff",
                     }}
                   >
-                    {formatPrice(listing.price)}
+                    {/* Hiển thị giá dựa trên listing info */}
+                    {(() => {
+                      const info = getListingInfo(listing);
+                      return info.price || "Liên hệ";
+                    })()}
                   </div>
                 </div>
 

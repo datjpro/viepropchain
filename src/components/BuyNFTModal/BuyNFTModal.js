@@ -16,6 +16,9 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
   // Xử lý cả 2 trường hợp: listing (từ Marketplace) hoặc nft (từ PropertyDetailModal)
   const data = listing || nft || {};
 
+  // Debug log để kiểm tra data
+  console.log("🛒 BuyNFTModal received data:", data);
+
   // Tính giá (NFT đã list trên blockchain, giá đang là Wei)
   const price =
     typeof data.price === "object"
@@ -31,8 +34,22 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
       return;
     }
 
-    // Kiểm tra có listingId không (NFT phải được list trên blockchain)
-    if (!data.listingId && data.listingId !== 0) {
+    // Kiểm tra có listingId hoặc các thông tin marketplace không
+    const hasMarketplaceInfo =
+      data.listingId !== undefined || // Có listingId
+      (data.status === "active" && data.price?.currency === "ETH") || // Hoặc active với giá ETH
+      (data.tokenId !== undefined && data.price?.amount); // Hoặc có tokenId với price amount
+
+    console.log("🔍 Marketplace validation:", {
+      listingId: data.listingId,
+      status: data.status,
+      priceCurrency: data.price?.currency,
+      tokenId: data.tokenId,
+      priceAmount: data.price?.amount,
+      hasMarketplaceInfo,
+    });
+
+    if (!hasMarketplaceInfo) {
       setError("❌ NFT này chưa được list trên marketplace!");
       return;
     }
@@ -44,17 +61,71 @@ const BuyNFTModal = ({ listing, nft, onClose, onSuccess }) => {
 
       console.log("🛒 Buying NFT from blockchain...", {
         listingId: data.listingId,
+        tokenId: data.tokenId,
         priceInETH,
         account,
       });
 
-      // Gọi buyNFT function từ smart contract Marketplace
-      const result = await web3Service.buyNFT(
-        web3Api.web3,
-        account,
-        data.listingId,
-        priceInETH
-      );
+      // Xử lý 2 trường hợp: có listingId hoặc chỉ có tokenId
+      let result;
+      let listingId = data.listingId;
+
+      // Nếu không có listingId, thử tìm từ tokenId
+      if (listingId === undefined || listingId === null) {
+        console.log(
+          "🔍 Missing listingId, trying to find from tokenId:",
+          data.tokenId
+        );
+        const listingInfo = await web3Service.getListingByTokenId(
+          web3Api.web3,
+          data.tokenId
+        );
+
+        if (listingInfo) {
+          console.log("✅ Found listing info:", listingInfo);
+          listingId = listingInfo.listingId;
+        } else {
+          console.log("❌ No listing found for tokenId:", data.tokenId);
+
+          // Đơn giản hóa thông báo lỗi - không cần kiểm tra owner vì có RPC error
+          setError(
+            "❌ NFT này chưa được đăng bán trên blockchain! 📋\n\n" +
+              "🔍 Nguyên nhân có thể:\n" +
+              "• NFT chưa được list trên marketplace smart contract\n" +
+              "• NFT chưa được mint hoặc có vấn đề kết nối blockchain\n\n" +
+              "💡 Giải pháp:\n" +
+              "• Liên hệ admin để kiểm tra NFT\n" +
+              "• Sử dụng chức năng 'Đưa ra giá' để thương lượng\n" +
+              "• Hoặc thử lại sau"
+          );
+
+          return;
+        }
+      }
+
+      // Validate listingId is a valid number
+      if (
+        listingId !== undefined &&
+        listingId !== null &&
+        !isNaN(listingId) &&
+        listingId > 0
+      ) {
+        console.log(
+          "🛒 Calling smart contract buyItem with listingId:",
+          listingId
+        );
+
+        // Trường hợp: NFT đã được list với listingId trên marketplace
+        result = await web3Service.buyNFT(
+          web3Api.web3,
+          account,
+          listingId,
+          priceInETH
+        );
+      } else {
+        setError("❌ Không tìm thấy thông tin listing hợp lệ!");
+        return;
+      }
 
       console.log("✅ Buy NFT success:", result);
       setTransactionHash(result.transactionHash);

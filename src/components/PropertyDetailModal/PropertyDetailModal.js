@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import BuyNFTModal from "../BuyNFTModal/BuyNFTModal";
 import RentNFTModal from "../RentNFTModal/RentNFTModal";
 import OfferNFTModal from "../OfferNFTModal/OfferNFTModal";
+import { formatPrice, formatPriceVND } from "../../utils/priceUtils";
 import "./PropertyDetailModal.css";
 
 const PropertyDetailModal = ({ property, onClose }) => {
@@ -22,15 +23,23 @@ const PropertyDetailModal = ({ property, onClose }) => {
     images[selectedImageIndex] ||
     "https://via.placeholder.com/800x600?text=No+Image";
 
-  const formatPrice = (price) => {
+  const formatPriceDisplay = (price) => {
     if (!price) return "N/A";
-    const priceValue = typeof price === "object" ? price.amount : price;
-    const billions = priceValue / 1000000000;
-    const ethValue = priceValue / 100000000; // 1 ETH ≈ 100M VND
-    return {
-      vnd: `${billions.toFixed(2)} tỷ VND`,
-      eth: `${ethValue.toFixed(4)} ETH`,
-    };
+
+    // Sử dụng hàm chuẩn từ priceUtils
+    if (typeof price === "object" && price.amount && price.currency === "ETH") {
+      // Blockchain price (Wei)
+      return {
+        vnd: formatPriceVND(price),
+        eth: formatPrice(price, "ETH"),
+      };
+    } else {
+      // Traditional VND price
+      return {
+        vnd: formatPriceVND(price),
+        eth: "N/A",
+      };
+    }
   };
 
   // Xác định loại action button
@@ -161,10 +170,10 @@ const PropertyDetailModal = ({ property, onClose }) => {
             <div className="price-section">
               <div className="price-label">💰 Giá bán</div>
               <div className="price-value">
-                {formatPrice(property.price).vnd}
+                {formatPriceDisplay(property.price).vnd}
               </div>
               <div className="price-eth">
-                ≈ {formatPrice(property.price).eth}
+                ≈ {formatPriceDisplay(property.price).eth}
               </div>
               <p
                 style={{ fontSize: "13px", color: "#6b7280", marginTop: "8px" }}
@@ -334,11 +343,15 @@ const PropertyDetailModal = ({ property, onClose }) => {
       {/* Buy Modal */}
       {showBuyModal && propertyInfo.hasNFT && (
         <BuyNFTModal
-          nft={{
+          listing={{
+            listingId: property.listingId,
             tokenId: property.tokenId || property.nft?.tokenId,
-            name: property.title || property.name,
+            name: property.propertyName || property.title || property.name,
             price: property.price,
-            image: images[0]?.url || images[0],
+            status: property.status,
+            images: images,
+            // Truyền toàn bộ property để BuyNFTModal có đủ thông tin
+            ...property,
           }}
           onClose={() => setShowBuyModal(false)}
         />
@@ -347,14 +360,18 @@ const PropertyDetailModal = ({ property, onClose }) => {
       {/* Rent Modal */}
       {showRentModal && propertyInfo.hasNFT && (
         <RentNFTModal
-          nft={{
+          listing={{
+            listingId: property.listingId,
             tokenId: property.tokenId || property.nft?.tokenId,
-            name: property.title || property.name,
+            name: property.propertyName || property.title || property.name,
             pricePerDay: property.rentalPrice
               ? property.rentalPrice / 30
-              : (property.price * 0.045) / 365,
-            image: images[0]?.url || images[0],
+              : ((property.price?.amount || property.price || 0) * 0.045) / 365,
             price: property.price,
+            status: property.status,
+            images: images,
+            // Truyền toàn bộ property
+            ...property,
           }}
           onClose={() => setShowRentModal(false)}
         />

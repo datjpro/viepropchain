@@ -251,6 +251,119 @@ const web3Service = {
     }
   },
 
+  /**
+   * Lấy thông tin listing từ tokenId
+   * @param {object} web3 - Web3 instance
+   * @param {number} tokenId - NFT token ID
+   * @returns {Object|null} - Listing info hoặc null
+   */
+  getListingByTokenId: async (web3, tokenId) => {
+    try {
+      const marketplaceContract = web3Service.getContract(web3, "Marketplace");
+
+      // Kiểm tra contract address
+      console.log(
+        "📋 Marketplace contract address:",
+        marketplaceContract.options.address
+      );
+
+      // Lấy tổng số listings
+      const listingCount = await marketplaceContract.methods
+        .getListingCount()
+        .call();
+      console.log(
+        `🔍 Searching through ${listingCount} listings for tokenId ${tokenId}`
+      );
+
+      // Debug: Nếu có listings, hiển thị hết để check
+      if (listingCount > 0) {
+        console.log("📋 DEBUG: All listings on contract:");
+        for (let j = 1; j <= listingCount; j++) {
+          try {
+            const testListing = await marketplaceContract.methods
+              .getListing(j)
+              .call();
+            console.log(`Listing ${j}:`, {
+              tokenId: testListing.tokenId,
+              tokenIdType: typeof testListing.tokenId,
+              seller: testListing.seller,
+              price: testListing.price,
+              status: testListing.status,
+              statusType: typeof testListing.status,
+              listingType: testListing.listingType,
+            });
+          } catch (err) {
+            console.log(`Error reading listing ${j}:`, err.message);
+          }
+        }
+      }
+
+      // Nếu không có listing nào, thông báo cần list NFT
+      if (listingCount == 0) {
+        console.log("⚠️ No listings found on blockchain. Total listings: 0");
+        console.log(
+          "💡 Suggestion: Owner should list NFT on marketplace first"
+        );
+        return null;
+      }
+
+      // Duyệt qua tất cả listings để tìm listing active cho tokenId này
+      for (let i = 1; i <= listingCount; i++) {
+        try {
+          const listing = await marketplaceContract.methods
+            .getListing(i)
+            .call();
+
+          console.log(`🔍 Checking listing ${i}:`, {
+            tokenId: listing.tokenId,
+            tokenIdType: typeof listing.tokenId,
+            targetTokenId: tokenId,
+            targetTokenIdType: typeof tokenId,
+            seller: listing.seller,
+            status: listing.status,
+            statusType: typeof listing.status,
+            listingType: listing.listingType,
+            isTokenIdMatch: listing.tokenId == tokenId,
+            isStatusActive: listing.status == "0" || listing.status == 0,
+          });
+
+          // Kiểm tra nếu listing này khớp với tokenId và đang active
+          // Sử dụng both string và number comparison cho status
+          const isActive = listing.status == "0" || listing.status == 0;
+          const isTokenMatch = listing.tokenId == tokenId;
+
+          if (isTokenMatch && isActive) {
+            // 0 = Active
+            console.log(
+              `✅ Found active listing ${i} for tokenId ${tokenId}:`,
+              listing
+            );
+            return {
+              listingId: i,
+              seller: listing.seller,
+              tokenId: parseInt(listing.tokenId),
+              price: listing.price,
+              status: listing.status,
+              listingType: listing.listingType == "0" ? "sale" : "rental",
+            };
+          }
+        } catch (error) {
+          // Listing có thể không tồn tại, bỏ qua
+          console.log(`⚠️ Skipping listing ${i}:`, error.message);
+        }
+      }
+
+      console.log(`❌ No active listing found for tokenId ${tokenId}`);
+      console.log(
+        `💡 Found ${listingCount} total listings, but none match tokenId ${tokenId} with active status`
+      );
+      return null;
+    } catch (error) {
+      console.error("❌ Get listing by tokenId failed:", error);
+      return null;
+    }
+  },
+
   // ========================================================================
   // AUCTION - RENTAL NFT
   // ========================================================================

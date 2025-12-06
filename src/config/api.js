@@ -45,6 +45,12 @@ export const API_ENDPOINTS = {
     CONTENT: (hash) => `${API_GATEWAY_URL}/api/ipfs/content/${hash}`,
     HEALTH: `${API_GATEWAY_URL}/api/ipfs/health`,
   },
+
+  // User Service - via /api/user/*
+  USER: {
+    MY_PROPERTIES: `${API_GATEWAY_URL}/api/user/my-properties`,
+    HEALTH: `${API_GATEWAY_URL}/api/user/health`,
+  },
 };
 
 // Helper function to get auth headers
