@@ -51,7 +51,13 @@ export const Web3Provider = ({ children }) => {
   useEffect(() => {
     const loadProvider = async () => {
       try {
-        const provider = await detectEthereumProvider();
+        // Try multiple ways to detect provider
+        let provider = await detectEthereumProvider();
+        
+        // Fallback to window.ethereum if detectEthereumProvider fails
+        if (!provider && window.ethereum) {
+          provider = window.ethereum;
+        }
 
         if (provider) {
           // Tăng max listeners để tránh warning
@@ -201,19 +207,30 @@ export const Web3Provider = ({ children }) => {
 
   // Connect wallet function
   const connectWallet = useCallback(async () => {
-    if (!web3Api.provider) {
-      setError("MetaMask is not installed. Please install MetaMask extension.");
-      window.open("https://metamask.io/download/", "_blank");
-      return;
-    }
-
-    setIsConnecting(true);
-    setError(null);
-
     try {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum === 'undefined') {
+        setError("MetaMask is not installed. Please install MetaMask extension.");
+        window.open("https://metamask.io/download/", "_blank");
+        return;
+      }
+
+      // Check if provider exists
+      if (!web3Api.provider && !window.ethereum) {
+        setError("MetaMask provider not available. Please reload the page.");
+        return;
+      }
+
+      setIsConnecting(true);
+      setError(null);
+
       console.log("🔗 Requesting account access...");
+      
+      // Use window.ethereum directly if provider not available
+      const provider = web3Api.provider || window.ethereum;
+      
       // Request account access
-      const accounts = await web3Api.provider.request({
+      const accounts = await provider.request({
         method: "eth_requestAccounts",
       });
 
@@ -221,6 +238,17 @@ export const Web3Provider = ({ children }) => {
         console.log("✅ Connected to:", accounts[0]);
         setAccount(accounts[0]); // localStorage sẽ tự động lưu qua useEffect
         setError(null);
+        
+        // Update provider if not set
+        if (!web3Api.provider) {
+          const web3Instance = new Web3(provider);
+          setWeb3Api({
+            provider: provider,
+            web3: web3Instance,
+          });
+        }
+      } else {
+        setError("No accounts found. Please unlock MetaMask.");
       }
     } catch (err) {
       console.error("❌ Error connecting to MetaMask:", err);
@@ -228,8 +256,11 @@ export const Web3Provider = ({ children }) => {
       if (err.code === 4001) {
         // User rejected the connection request
         setError("Connection request rejected. Please try again.");
+      } else if (err.code === -32002) {
+        // Request already pending
+        setError("Connection request is already pending. Please check MetaMask.");
       } else {
-        setError("Failed to connect to MetaMask. Please try again.");
+        setError(`Failed to connect to MetaMask: ${err.message || 'Unknown error'}`);
       }
     } finally {
       setIsConnecting(false);
