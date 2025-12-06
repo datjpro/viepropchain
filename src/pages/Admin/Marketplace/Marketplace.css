@@ -58,7 +58,7 @@
 }
 
 .stat-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -67,12 +67,24 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.stat-card.primary::before { background: #3b82f6; }
-.stat-card.active::before { background: #10b981; }
-.stat-card.sale::before { background: #f59e0b; }
-.stat-card.rental::before { background: #8b5cf6; }
-.stat-card.completed::before { background: #06b6d4; }
-.stat-card.value::before { background: #ef4444; }
+.stat-card.primary::before {
+  background: #3b82f6;
+}
+.stat-card.active::before {
+  background: #10b981;
+}
+.stat-card.sale::before {
+  background: #f59e0b;
+}
+.stat-card.rental::before {
+  background: #8b5cf6;
+}
+.stat-card.completed::before {
+  background: #06b6d4;
+}
+.stat-card.value::before {
+  background: #ef4444;
+}
 
 .stat-icon {
   font-size: 32px;
@@ -420,7 +432,8 @@
   border-color: #f59e0b;
 }
 
-.listing-card.sold, .listing-card.rented {
+.listing-card.sold,
+.listing-card.rented {
   border-color: #06b6d4;
 }
 
@@ -457,7 +470,7 @@
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   letter-spacing: 0.5px;
 }
 
@@ -601,7 +614,7 @@
   color: #475569;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 12px;
 }
 
@@ -621,7 +634,7 @@
   color: #92400e;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 11px;
   font-weight: 600;
 }

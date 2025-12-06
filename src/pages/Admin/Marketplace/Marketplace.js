@@ -15,7 +15,7 @@ const Marketplace = () => {
     activeListings: 0,
     soldListings: 0,
     cancelledListings: 0,
-    totalValue: 0
+    totalValue: 0,
   });
 
   useEffect(() => {
@@ -27,14 +27,16 @@ const Marketplace = () => {
     try {
       const response = await fetch(API_ENDPOINTS.MARKETPLACE.LISTINGS);
       const data = await response.json();
-      
+
       if (data.success) {
         const allListings = data.data.listings || data.data || [];
-        const active = allListings.filter(l => l.status === 'active').length;
-        const sold = allListings.filter(l => l.status === 'sold').length;
-        const cancelled = allListings.filter(l => l.status === 'cancelled').length;
+        const active = allListings.filter((l) => l.status === "active").length;
+        const sold = allListings.filter((l) => l.status === "sold").length;
+        const cancelled = allListings.filter(
+          (l) => l.status === "cancelled"
+        ).length;
         const totalValue = allListings
-          .filter(l => l.status === 'active')
+          .filter((l) => l.status === "active")
           .reduce((sum, l) => sum + parseFloat(l.price?.amount || 0), 0);
 
         setStats({
@@ -42,7 +44,7 @@ const Marketplace = () => {
           activeListings: active,
           soldListings: sold,
           cancelledListings: cancelled,
-          totalValue: totalValue
+          totalValue: totalValue,
         });
       }
     } catch (err) {
@@ -288,7 +290,9 @@ const Marketplace = () => {
         <div className="stat-card value">
           <div className="stat-icon">💎</div>
           <div className="stat-content">
-            <div className="stat-number">{formatPrice({ amount: stats.totalValue, currency: "ETH" })}</div>
+            <div className="stat-number">
+              {formatPrice({ amount: stats.totalValue, currency: "ETH" })}
+            </div>
             <div className="stat-label">Tổng giá trị</div>
           </div>
         </div>
@@ -296,8 +300,8 @@ const Marketplace = () => {
 
       {/* Quick Actions */}
       <div className="admin-actions">
-        <button 
-          className="btn-action refresh" 
+        <button
+          className="btn-action refresh"
           onClick={() => {
             fetchListings();
             fetchStats();
@@ -305,35 +309,44 @@ const Marketplace = () => {
         >
           🔄 Làm mới tất cả
         </button>
-        <button 
+        <button
           className="btn-action export"
           onClick={() => {
             const dataStr = JSON.stringify(listings, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const dataBlob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = url;
-            link.download = `marketplace-listings-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `marketplace-listings-${
+              new Date().toISOString().split("T")[0]
+            }.json`;
             link.click();
           }}
         >
           📥 Xuất dữ liệu
         </button>
         <div className="search-container">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="🔍 Tìm kiếm listings..."
             className="search-input"
             onChange={(e) => {
               const searchTerm = e.target.value.toLowerCase();
-              if (searchTerm === '') {
+              if (searchTerm === "") {
                 fetchListings();
               } else {
-                const filtered = listings.filter(listing => 
-                  listing.property?.title?.toLowerCase().includes(searchTerm) ||
-                  listing.property?.address?.district?.toLowerCase().includes(searchTerm) ||
-                  listing.property?.address?.city?.toLowerCase().includes(searchTerm) ||
-                  listing._id.toLowerCase().includes(searchTerm)
+                const filtered = listings.filter(
+                  (listing) =>
+                    listing.property?.title
+                      ?.toLowerCase()
+                      .includes(searchTerm) ||
+                    listing.property?.address?.district
+                      ?.toLowerCase()
+                      .includes(searchTerm) ||
+                    listing.property?.address?.city
+                      ?.toLowerCase()
+                      .includes(searchTerm) ||
+                    listing._id.toLowerCase().includes(searchTerm)
                 );
                 setListings(filtered);
               }
@@ -354,51 +367,64 @@ const Marketplace = () => {
           className={filter === "ACTIVE" ? "active" : ""}
           onClick={() => setFilter("ACTIVE")}
         >
-          ✅ Đang hoạt động ({listings.filter(l => l.status === 'active').length})
+          ✅ Đang hoạt động (
+          {listings.filter((l) => l.status === "active").length})
         </button>
         <button
           className={filter === "FOR_SALE" ? "active" : ""}
           onClick={() => setFilter("FOR_SALE")}
         >
-          💰 Bán ({listings.filter(l => l.listingType === 'sale').length})
+          💰 Bán ({listings.filter((l) => l.listingType === "sale").length})
         </button>
         <button
           className={filter === "FOR_RENT" ? "active" : ""}
           onClick={() => setFilter("FOR_RENT")}
         >
-          🏠 Cho thuê ({listings.filter(l => l.listingType === 'rental').length})
+          🏠 Cho thuê (
+          {listings.filter((l) => l.listingType === "rental").length})
         </button>
         <button
           className={filter === "SOLD" ? "active" : ""}
           onClick={() => setFilter("SOLD")}
         >
-          🎉 Đã giao dịch ({listings.filter(l => l.status === 'sold' || l.status === 'rented').length})
+          🎉 Đã giao dịch (
+          {
+            listings.filter((l) => l.status === "sold" || l.status === "rented")
+              .length
+          }
+          )
         </button>
         <button
           className={filter === "CANCELLED" ? "active" : ""}
           onClick={() => setFilter("CANCELLED")}
         >
-          ❌ Đã hủy ({listings.filter(l => l.status === 'cancelled').length})
+          ❌ Đã hủy ({listings.filter((l) => l.status === "cancelled").length})
         </button>
       </div>
 
       {/* Sorting Options */}
       <div className="sort-controls">
         <label>Sắp xếp theo:</label>
-        <select 
+        <select
           onChange={(e) => {
             const sortBy = e.target.value;
             const sorted = [...listings].sort((a, b) => {
-              switch(sortBy) {
-                case 'price-asc':
-                  return (parseFloat(a.price?.amount) || 0) - (parseFloat(b.price?.amount) || 0);
-                case 'price-desc':
-                  return (parseFloat(b.price?.amount) || 0) - (parseFloat(a.price?.amount) || 0);
-                case 'date-new':
+              switch (sortBy) {
+                case "price-asc":
+                  return (
+                    (parseFloat(a.price?.amount) || 0) -
+                    (parseFloat(b.price?.amount) || 0)
+                  );
+                case "price-desc":
+                  return (
+                    (parseFloat(b.price?.amount) || 0) -
+                    (parseFloat(a.price?.amount) || 0)
+                  );
+                case "date-new":
                   return new Date(b.createdAt) - new Date(a.createdAt);
-                case 'date-old':
+                case "date-old":
                   return new Date(a.createdAt) - new Date(b.createdAt);
-                case 'status':
+                case "status":
                   return a.status.localeCompare(b.status);
                 default:
                   return 0;
@@ -498,7 +524,9 @@ const Marketplace = () => {
 
                   <div className="info-row">
                     <strong>📅 Tạo:</strong>
-                    <span className="date-small">{formatDate(listing.createdAt)}</span>
+                    <span className="date-small">
+                      {formatDate(listing.createdAt)}
+                    </span>
                   </div>
 
                   {listing.nftTokenId && (
@@ -512,9 +540,11 @@ const Marketplace = () => {
                   <div className="admin-info">
                     <div className="info-row">
                       <strong>🔗 Property ID:</strong>
-                      <span className="property-id">{listing.propertyId?.slice(-8) || 'N/A'}</span>
+                      <span className="property-id">
+                        {listing.propertyId?.slice(-8) || "N/A"}
+                      </span>
                     </div>
-                    
+
                     {listing.viewCount && (
                       <div className="info-row">
                         <strong>👁️ Lượt xem:</strong>
@@ -525,7 +555,7 @@ const Marketplace = () => {
                 </div>
 
                 <div className="listing-footer">
-                  <button 
+                  <button
                     className="btn-view primary"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -534,7 +564,7 @@ const Marketplace = () => {
                   >
                     👁️ Chi tiết
                   </button>
-                  
+
                   {/* Quick admin actions */}
                   <div className="quick-actions">
                     {listing.status === "pending" && (
@@ -549,8 +579,9 @@ const Marketplace = () => {
                         ✅
                       </button>
                     )}
-                    
-                    {(listing.status === "active" || listing.status === "pending") && (
+
+                    {(listing.status === "active" ||
+                      listing.status === "pending") && (
                       <button
                         className="btn-quick cancel"
                         onClick={(e) => {
