@@ -278,9 +278,14 @@ export const Web3Provider = ({ children }) => {
   // Disconnect wallet function
   const disconnectWallet = useCallback(() => {
     console.log("🔌 Disconnecting wallet...");
-    setAccount(null); // localStorage sẽ tự động xóa qua useEffect
+
+    // Simply clear local state - MetaMask will still have the connection
+    // but the dApp will treat it as disconnected
+    setAccount(null);
     setBalance(null);
     setError(null);
+
+    console.log("✅ Wallet disconnected successfully");
   }, []);
 
   // Format address helper

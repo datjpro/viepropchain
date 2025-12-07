@@ -536,7 +536,7 @@ const Profile = () => {
                 )}
               </div>
               <div className="profile-actions">
-                {!user?.walletAddress ? (
+                {!account ? (
                   <button
                     className="connect-btn-new"
                     onClick={handleConnectWalletClick}
@@ -549,7 +549,11 @@ const Profile = () => {
                 ) : (
                   <button
                     className="disconnect-btn-new"
-                    onClick={disconnectWallet}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      disconnectWallet();
+                    }}
                   >
                     <span>🔓</span>
                     <span>

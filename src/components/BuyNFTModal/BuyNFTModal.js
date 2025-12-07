@@ -50,75 +50,59 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
       setError("");
       setStep(2);
 
-      console.log("💰 Buying NFT via Marketplace smart contract...", {
-        listingId: itemData.listingId,
+      console.log("💰 Buying NFT directly via smart contract...", {
         tokenId: itemData.tokenId,
+        seller: itemData.seller?.walletAddress,
         priceInETH,
         priceInWei: price,
-        account,
+        buyer: account,
       });
 
-      // 1. Gọi smart contract Marketplace.buyItem()
+      // ========================================================================
+      // OFF-CHAIN LISTING MODEL:
+      // Frontend gọi trực tiếp smart contract buyItemDirect()
+      // Không cần listingId on-chain, chỉ cần tokenId + seller address từ DB
+      // ========================================================================
+
       const marketplaceContract = new web3Api.web3.eth.Contract(
         CONTRACTS.abis.Marketplace,
         CONTRACTS.addresses.Marketplace
       );
 
-      // Nếu không có listingId trong DB, tìm bằng tokenId
-      let listingId = itemData.listingId;
-      if (!listingId && itemData.tokenId !== undefined) {
-        console.log("🔍 Finding listingId by tokenId:", itemData.tokenId);
-        try {
-          const listing = await marketplaceContract.methods
-            .getListingByTokenId(itemData.tokenId)
-            .call();
-          listingId = listing.listingId || listing[0]; // listingId là field đầu tiên
-          console.log("✅ Found listingId:", listingId);
-        } catch (findError) {
-          console.error("❌ Cannot find listing:", findError);
-          throw new Error(
-            "NFT này chưa được list trên Marketplace smart contract!"
-          );
-        }
-      }
-
-      if (!listingId) {
-        throw new Error("Không tìm thấy listingId cho NFT này!");
-      }
-
-      console.log("📝 Calling Marketplace.buyItem()...");
-      console.log("   ListingId:", listingId);
+      console.log("📝 Calling Marketplace.buyItemDirect()...");
       console.log("   TokenId:", itemData.tokenId);
+      console.log("   Seller:", itemData.seller?.walletAddress);
       console.log("   Sending:", priceInETH, "ETH");
 
-      const tx = await marketplaceContract.methods.buyItem(listingId).send({
-        from: account,
-        value: price.toString(), // Gửi ETH
-      });
+      // Gọi buyItemDirect(tokenId, sellerAddress) với ETH payment
+      const tx = await marketplaceContract.methods
+        .buyItemDirect(itemData.tokenId, itemData.seller?.walletAddress)
+        .send({
+          from: account,
+          value: price.toString(),
+        });
 
-      console.log("✅ Transaction successful!");
+      console.log("✅ Blockchain transaction successful!");
       console.log("   TX Hash:", tx.transactionHash);
       console.log("   Block:", tx.blockNumber);
 
       setTransactionHash(tx.transactionHash);
 
-      // 2. Gọi backend để cập nhật database
+      // Gọi backend để cập nhật database (status = sold)
       try {
         const authToken = getAuthToken();
-        await fetch(`${API_ENDPOINTS.MARKETPLACE.BASE}/orders/buy`, {
+        await fetch(`${API_ENDPOINTS.MARKETPLACE.BASE}/orders/finalize-sale`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authToken}`,
           },
           body: JSON.stringify({
-            propertyId: itemData.propertyId,
+            listingId: itemData._id, // MongoDB listing ID
             tokenId: itemData.tokenId,
-            buyerEmail: user?.email,
-            amount: price.toString(),
-            paymentMethod: "crypto",
             transactionHash: tx.transactionHash,
             blockNumber: tx.blockNumber,
+            buyer: account,
           }),
         });
         console.log("✅ Database updated");

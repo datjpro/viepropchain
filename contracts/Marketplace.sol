@@ -207,6 +207,52 @@ contract Marketplace is Ownable, ReentrancyGuard {
         emit ItemSold(_listingId, msg.sender, listing.tokenId);
     }
 
+    /**
+     * @dev OFF-CHAIN LISTING MODEL: Buy NFT directly without on-chain listing
+     * Used when listing data is stored off-chain (MongoDB) for gas savings
+     * @param _tokenId NFT token ID to purchase
+     * @param _seller Seller wallet address (from database)
+     */
+    function buyItemDirect(
+        uint256 _tokenId,
+        address _seller
+    ) external payable nonReentrant {
+        require(_seller != address(0), "Invalid seller address");
+        require(_seller != msg.sender, "Cannot buy from yourself");
+        require(msg.value > 0, "Payment required");
+
+        // Verify seller owns the NFT
+        require(
+            nftContract.ownerOf(_tokenId) == _seller,
+            "Seller does not own this NFT"
+        );
+
+        // Verify NFT is not currently rented
+        require(
+            nftContract.userExpires(_tokenId) <= block.timestamp,
+            "Cannot buy an actively rented NFT"
+        );
+
+        uint256 totalPrice = msg.value;
+        uint256 fee = (totalPrice * feePercent) / 100;
+        uint256 sellerProceeds = totalPrice - fee;
+
+        // Transfer payment to seller
+        (bool sentSeller, ) = payable(_seller).call{value: sellerProceeds}("");
+        require(sentSeller, "Failed to send Ether to seller");
+
+        // Transfer fee to platform
+        (bool sentFee, ) = payable(feeAccount).call{value: fee}("");
+        require(sentFee, "Failed to send Ether to fee account");
+
+        // Transfer NFT from seller to buyer
+        // Requires seller to approve Marketplace via setApprovalForAll
+        nftContract.transferFrom(_seller, msg.sender, _tokenId);
+
+        // Emit event (using listingId = 0 for off-chain listings)
+        emit ItemSold(0, msg.sender, _tokenId);
+    }
+
     // --- SỬA LẠI: Rent NFT (Thêm logic cập nhật status) ---
     function rentItem(
         uint256 _listingId,
