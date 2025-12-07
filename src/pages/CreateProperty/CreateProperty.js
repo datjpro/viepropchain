@@ -302,6 +302,82 @@ const CreateProperty = () => {
     }
   };
 
+  // Submit Demo (bỏ qua validation và thanh toán)
+  const handleDemoSubmit = async () => {
+    setLoading(true);
+    try {
+      // Tạo dữ liệu demo với format hợp lệ
+      const demoData = {
+        title: formData.title || "Demo Property - " + Date.now(),
+        description: formData.description || "Demo property for testing",
+        propertyType: formData.propertyType || "house",
+        price: parseFloat(formData.price) || 5000000000,
+        currency: "VND",
+        area: parseFloat(formData.area) || 100,
+        bedrooms: parseInt(formData.bedrooms) || 3,
+        bathrooms: parseInt(formData.bathrooms) || 2,
+        address: {
+          street: formData.street || "123 Demo Street",
+          ward: formData.ward || "Ward 1",
+          district: formData.district || "Quận 1",
+          city: formData.city || "HoChiMinh",
+          country: "Vietnam",
+        },
+        // Legal document ID với format đúng: CS + 5 số
+        legalDocumentId: "CS" + Math.floor(10000 + Math.random() * 90000),
+        images:
+          formData.imageUrls.length > 0
+            ? formData.imageUrls
+            : ["https://via.placeholder.com/800x600?text=Demo+Property"],
+        legalDocuments:
+          formData.legalDocuments.length > 0
+            ? formData.legalDocuments
+            : ["demo_legal_doc_" + Date.now()],
+        owner:
+          user?.email ||
+          localStorage.getItem("userEmail") ||
+          "demo@viepropchain.com",
+        status: "approved", // Demo tự động approved
+        verificationStatus: "verified", // Demo tự động verified
+        paymentMethod: "demo",
+        listingFee: 0, // Demo miễn phí
+        isDemo: true, // Đánh dấu là demo
+      };
+
+      const token = localStorage.getItem("viepropchain_token");
+      const userEmail = user?.email || localStorage.getItem("userEmail");
+
+      console.log("🎮 Creating DEMO property:", demoData);
+
+      const response = await fetch(API_ENDPOINTS.ADMIN.PROPERTIES, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "x-user-email": userEmail,
+        },
+        body: JSON.stringify(demoData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(
+          "✅ Demo property created successfully! PropertyId: " +
+            result.data._id
+        );
+        navigate("/my-properties");
+      } else {
+        const data = await response.json();
+        setError(data.message || "Failed to create demo property");
+      }
+    } catch (err) {
+      setError("Error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Render progress bar
   const renderProgressBar = () => {
     const steps = [
@@ -710,6 +786,22 @@ const CreateProperty = () => {
             <div className="btn-content">
               <div className="btn-title">Trả bằng Ví Crypto</div>
               <div className="btn-subtitle">Thanh toán bằng MetaMask</div>
+            </div>
+          </button>
+
+          <button
+            className="payment-btn demo-btn"
+            onClick={handleDemoSubmit}
+            disabled={loading}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              marginTop: "20px",
+            }}
+          >
+            <span className="btn-icon">🎮</span>
+            <div className="btn-content">
+              <div className="btn-title">Tạo Demo (Miễn phí)</div>
+              <div className="btn-subtitle">Bỏ qua validation & thanh toán</div>
             </div>
           </button>
         </div>

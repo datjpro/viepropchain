@@ -340,20 +340,29 @@ const PropertyDetailModal = ({ property, onClose }) => {
         </div>
       </div>
 
-      {/* Buy Modal */}
+      {/* Buy Modal - Unified */}
       {showBuyModal && propertyInfo.hasNFT && (
         <BuyNFTModal
-          listing={{
+          data={{
+            _id: property._id || property.listingId,
             listingId: property.listingId,
             tokenId: property.tokenId || property.nft?.tokenId,
-            name: property.propertyName || property.title || property.name,
+            propertyName:
+              property.propertyName || property.title || property.name,
             price: property.price,
-            status: property.status,
-            images: images,
+            status: property.status || "active",
+            propertyImages: images.map((img) => img.url || img),
+            images: images.map((img) => img.url || img),
+            propertyAddress: property.propertyAddress || property.address,
+            priceInWei: property.priceInWei || property.price?.amount,
             // Truyền toàn bộ property để BuyNFTModal có đủ thông tin
             ...property,
           }}
           onClose={() => setShowBuyModal(false)}
+          onSuccess={() => {
+            setShowBuyModal(false);
+            // Refresh parent component if needed
+          }}
         />
       )}
 

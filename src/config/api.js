@@ -33,7 +33,9 @@ export const API_ENDPOINTS = {
 
   // Marketplace Service - via /api/marketplace/*
   MARKETPLACE: {
+    BASE: `${API_GATEWAY_URL}/api/marketplace`,
     LISTINGS: `${API_GATEWAY_URL}/api/marketplace/listings`,
+    ORDERS: `${API_GATEWAY_URL}/api/marketplace/orders`,
     HEALTH: `${API_GATEWAY_URL}/api/marketplace/health`,
   },
 

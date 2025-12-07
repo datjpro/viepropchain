@@ -778,23 +778,25 @@ const Marketplace = () => {
           </p>
         </div>
 
-        {/* Modals */}
+        {/* Modals - Unified */}
         {showBuyModal && selectedListing && (
           <BuyNFTModal
-            listing={selectedListing}
+            data={selectedListing}
             onClose={() => {
               setShowBuyModal(false);
               setSelectedListing(null);
             }}
             onSuccess={() => {
               fetchListings(); // Refresh listings
+              setShowBuyModal(false);
+              setSelectedListing(null);
             }}
           />
         )}
 
         {showRentModal && selectedListing && (
           <RentNFTModal
-            listing={selectedListing}
+            data={selectedListing}
             onClose={() => {
               setShowRentModal(false);
               setSelectedListing(null);
