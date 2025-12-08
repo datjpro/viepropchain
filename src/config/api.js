@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   AUTH: {
     STATS: `${API_GATEWAY_URL}/api/auth/stats`,
     USERS_RECENT: `${API_GATEWAY_URL}/api/auth/users/recent`,
+    LINK_WALLET: `${API_GATEWAY_URL}/api/auth/link-wallet`,
     HEALTH: `${API_GATEWAY_URL}/api/auth/health`,
   },
 
