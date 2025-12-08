@@ -1,47 +1,73 @@
 import React, { useState } from "react";
-import { useWeb3 } from "../../contexts/Web3Context";
+// import { useWeb3 } from "../../contexts/Web3Context"; // Commented out - using direct Web3
 import { useAuth } from "../../contexts/AuthContext";
-import web3Service from "../../services/web3Service";
+// import web3Service from "../../services/web3Service"; // Not used - using direct Web3
 import { API_ENDPOINTS } from "../../config/api";
 import { CONTRACTS } from "../../config/contracts";
+import { ethToWei, weiToEth } from "../../utils/priceUtils";
+import Web3 from "web3";
 import LoadingSpinner from "../LoadingSpinner";
+import CryptoPaymentModal from "../CryptoPaymentModal/CryptoPaymentModal";
 import "./BuyNFTModal.css";
 
 const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
-  const { web3Api, account } = useWeb3();
+  // const { web3Api, account } = useWeb3(); // Commented out - using direct connection
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1); // 1: Confirm, 2: Processing, 3: Success
   const [transactionHash, setTransactionHash] = useState("");
+  const [showCryptoPayment, setShowCryptoPayment] = useState(false);
 
   // Xử lý cả 3 trường hợp: data (unified), listing (từ Marketplace), hoặc nft (từ PropertyDetailModal)
   const itemData = data || listing || nft || {};
 
-  // Lấy token từ AuthContext hoặc localStorage
-  const getAuthToken = () => {
-    if (token) return token;
-    return localStorage.getItem("viepropchain_token");
-  };
-
   console.log("🛒 BuyNFTModal received data:", itemData);
 
-  // Tính giá (NFT đã list trên blockchain, giá đang là Wei)
-  const price =
-    typeof itemData.price === "object"
-      ? parseFloat(itemData.price.amount)
-      : parseFloat(itemData.price) || 0;
+  // Tính giá (NFT đã list trên blockchain, giá đang là object {amount: wei, currency: "ETH"})
+  const getPriceInfo = () => {
+    console.log("💰 Raw price data:", itemData.price, typeof itemData.price);
 
-  const priceInETH = price / 1e18; // Wei to ETH
+    if (typeof itemData.price === "object" && itemData.price.amount) {
+      // Database format: { amount: "12000000000000000000", currency: "ETH" }
+      // amount is already in Wei
+      const amountInWei = itemData.price.amount;
+      const amountInETH = weiToEth(amountInWei);
 
-  const handleBuyNFT = async () => {
-    if (!account) {
-      setError("⚠️ Vui lòng kết nối ví MetaMask để mua NFT!");
-      return;
+      console.log("✅ Processing object price:", { amountInWei, amountInETH });
+
+      return {
+        priceInETH: parseFloat(amountInETH),
+        priceInWei: amountInWei,
+      };
+    } else if (typeof itemData.price === "string") {
+      // Fallback: string format like "12.0000 ETH"
+      const ethMatch = itemData.price.match(/([\d,]+\.?\d*)/);
+      if (ethMatch) {
+        const amount = parseFloat(ethMatch[1].replace(/,/g, ""));
+        return {
+          priceInETH: amount,
+          priceInWei: ethToWei(amount.toString()),
+        };
+      }
     }
 
-    if (!web3Api.web3) {
-      setError("⚠️ Web3 chưa được khởi tạo!");
+    // Fallback: assume it's ETH value
+    const amount = parseFloat(itemData.price) || 0;
+    return {
+      priceInETH: amount,
+      priceInWei: ethToWei(amount.toString()),
+    };
+  };
+
+  const priceInfo = getPriceInfo();
+  const priceInETH = priceInfo.priceInETH;
+  const priceInWei = priceInfo.priceInWei;
+
+  const handleBuyNFT = async () => {
+    const userAccount = user?.walletAddress;
+    if (!userAccount) {
+      setError("⚠️ Vui lòng đăng nhập và liên kết ví để mua NFT!");
       return;
     }
 
@@ -54,17 +80,20 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
         tokenId: itemData.tokenId,
         seller: itemData.seller?.walletAddress,
         priceInETH,
-        priceInWei: price,
-        buyer: account,
+        priceInWei,
+        buyer: userAccount,
       });
 
       // ========================================================================
-      // OFF-CHAIN LISTING MODEL:
-      // Frontend gọi trực tiếp smart contract buyItemDirect()
-      // Không cần listingId on-chain, chỉ cần tokenId + seller address từ DB
+      // DIRECT BLOCKCHAIN PAYMENT - No MetaMask popup required
       // ========================================================================
 
-      const marketplaceContract = new web3Api.web3.eth.Contract(
+      // Create direct Web3 connection to Ganache (bypass MetaMask)
+      const directWeb3 = new Web3("http://127.0.0.1:8545");
+
+      console.log("🔗 Using direct blockchain connection (no MetaMask)...");
+
+      const marketplaceContract = new directWeb3.eth.Contract(
         CONTRACTS.abis.Marketplace,
         CONTRACTS.addresses.Marketplace
       );
@@ -72,14 +101,17 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
       console.log("📝 Calling Marketplace.buyItemDirect()...");
       console.log("   TokenId:", itemData.tokenId);
       console.log("   Seller:", itemData.seller?.walletAddress);
-      console.log("   Sending:", priceInETH, "ETH");
+      console.log("   Price:", priceInETH, "ETH (", priceInWei, "Wei )");
+      console.log("   From account:", userAccount);
 
-      // Gọi buyItemDirect(tokenId, sellerAddress) với ETH payment
+      // Send transaction directly using the user's linked wallet
       const tx = await marketplaceContract.methods
         .buyItemDirect(itemData.tokenId, itemData.seller?.walletAddress)
         .send({
-          from: account,
-          value: price.toString(),
+          from: userAccount, // Use the user's linked wallet address
+          value: priceInWei,
+          gas: 500000,
+          gasPrice: directWeb3.utils.toWei("20", "gwei"),
         });
 
       console.log("✅ Blockchain transaction successful!");
@@ -90,19 +122,18 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
 
       // Gọi backend để cập nhật database (status = sold)
       try {
-        const authToken = getAuthToken();
         await fetch(`${API_ENDPOINTS.MARKETPLACE.BASE}/orders/finalize-sale`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             listingId: itemData._id, // MongoDB listing ID
             tokenId: itemData.tokenId,
             transactionHash: tx.transactionHash,
             blockNumber: tx.blockNumber,
-            buyer: account,
+            buyer: userAccount,
           }),
         });
         console.log("✅ Database updated");
@@ -204,7 +235,7 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
             </div>
 
             {/* Wallet Connection Warning */}
-            {!account && (
+            {!user?.walletAddress && (
               <div
                 style={{
                   background: "#fef3c7",
@@ -233,15 +264,23 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
                 Hủy
               </button>
               <button
-                onClick={handleBuyNFT}
-                className="btn-buy"
-                disabled={loading || !account}
+                onClick={() => {
+                  console.log("🎯 Crypto payment button clicked!");
+                  console.log("User wallet:", user?.walletAddress);
+                  console.log("Setting showCryptoPayment to true...");
+                  setShowCryptoPayment(true);
+                }}
+                className="btn-buy btn-crypto"
+                disabled={loading || !user?.walletAddress}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  border: "none",
+                }}
               >
-                {loading
-                  ? "Đang xử lý..."
-                  : !account
+                {!user?.walletAddress
                   ? "Kết nối ví để mua"
-                  : "🛒 Xác nhận mua"}
+                  : "💳 Thanh toán bằng Crypto"}
               </button>
             </div>
           </>
@@ -302,14 +341,39 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="buy-nft-modal-overlay" onClick={onClose}>
-      <div className="buy-nft-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          ×
-        </button>
-        <h2 className="modal-title">🛒 Mua NFT</h2>
-        {renderContent()}
-      </div>
+    <div>
+      {/* Main BuyNFT Modal - Hide khi CryptoPayment mở */}
+      {!showCryptoPayment && (
+        <div className="buy-nft-modal-overlay" onClick={onClose}>
+          <div className="buy-nft-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={onClose}>
+              ×
+            </button>
+            <h2 className="modal-title">🛒 Mua NFT</h2>
+            {renderContent()}
+          </div>
+        </div>
+      )}
+
+      {/* Crypto Payment Modal */}
+      {showCryptoPayment && (
+        <>
+          {console.log("🎯 Rendering CryptoPaymentModal with data:", itemData)}
+          <CryptoPaymentModal
+            listing={itemData}
+            onClose={() => {
+              console.log("🎯 Closing CryptoPaymentModal");
+              setShowCryptoPayment(false);
+            }}
+            onSuccess={() => {
+              console.log("🎯 CryptoPaymentModal success");
+              setShowCryptoPayment(false);
+              onSuccess && onSuccess();
+              onClose && onClose();
+            }}
+          />
+        </>
+      )}
     </div>
   );
 };

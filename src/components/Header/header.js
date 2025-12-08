@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./header.css";
 import logo from "../../assets/logo-removebg-preview.png";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useAdmin } from "../../contexts/AdminContext";
+import { useWeb3 } from "../../contexts/Web3Context";
 import { translations } from "../../translations/translations";
 import Toast from "../Toast/Toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,9 +13,11 @@ const Header = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const { user, login, logout, isAuthenticated, loading, error } = useAuth();
   const { isAdmin } = useAdmin();
+  const { account, web3 } = useWeb3();
   const [toast, setToast] = useState(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [dropdownTimer, setDropdownTimer] = useState(null);
+  const [accountBalance, setAccountBalance] = useState(null);
   const navigate = useNavigate();
   const handleNavigate = () => {
     navigate("/");
@@ -34,6 +37,31 @@ const Header = () => {
           type: "error",
         })
       );
+  };
+
+  // Fetch account balance when account or web3 changes
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (account && web3) {
+        try {
+          const balance = await web3.eth.getBalance(account);
+          const ethBalance = web3.utils.fromWei(balance, "ether");
+          setAccountBalance(parseFloat(ethBalance).toFixed(4));
+        } catch (error) {
+          console.error("Error fetching balance:", error);
+          setAccountBalance("0.0000");
+        }
+      } else {
+        setAccountBalance(null);
+      }
+    };
+
+    fetchBalance();
+  }, [account, web3]);
+
+  const formatAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   // Handle mouse enter - show dropdown immediately
@@ -156,6 +184,35 @@ const Header = () => {
                             {user.email}
                           </span>
                         </div>
+
+                        {/* Wallet Address */}
+                        {account && (
+                          <div className="user-dropdown-wallet">
+                            <span className="wallet-icon">🔗</span>
+                            <span
+                              className="wallet-text"
+                              onClick={() => copyToClipboard(account)}
+                              title={
+                                language === "en"
+                                  ? "Click to copy wallet address"
+                                  : "Nhấn để sao chép địa chỉ ví"
+                              }
+                            >
+                              {formatAddress(account)}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Account Balance */}
+                        {accountBalance !== null && (
+                          <div className="user-dropdown-balance">
+                            <span className="balance-icon">💰</span>
+                            <span className="balance-text">
+                              {accountBalance} ETH
+                            </span>
+                          </div>
+                        )}
+
                         <button
                           className="dropdown-profile-btn"
                           onClick={() => {

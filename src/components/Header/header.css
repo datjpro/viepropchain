@@ -288,6 +288,76 @@
   flex: 1;
 }
 
+/* Wallet Address Styles */
+.user-dropdown-wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(46, 204, 113, 0.1) 0%,
+    rgba(46, 204, 113, 0.2) 100%
+  );
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  transition: all 0.3s ease;
+}
+
+.user-dropdown-wallet:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(46, 204, 113, 0.2) 0%,
+    rgba(46, 204, 113, 0.3) 100%
+  );
+  border-color: rgba(46, 204, 113, 0.5);
+  transform: translateY(-1px);
+}
+
+.wallet-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.wallet-text {
+  color: #2ecc71;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+/* Balance Styles */
+.user-dropdown-balance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(241, 196, 15, 0.1) 0%,
+    rgba(241, 196, 15, 0.2) 100%
+  );
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.balance-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.balance-text {
+  color: #f1c40f;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex: 1;
+}
+
 .dropdown-profile-btn {
   width: 100%;
   background: linear-gradient(

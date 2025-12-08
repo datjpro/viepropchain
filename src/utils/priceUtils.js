@@ -126,7 +126,9 @@ export const formatPrice = (price, currency = "ETH") => {
   // Format with appropriate decimals
   let formatted;
   if (ethNumber >= 1000) {
-    formatted = ethNumber.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    // For large numbers, use fixed decimals without thousand separators
+    // to avoid confusion (e.g., "1000.00" instead of "1,000.00" which might be read as 1 ETH)
+    formatted = ethNumber.toFixed(2);
   } else if (ethNumber >= 1) {
     formatted = ethNumber.toFixed(4);
   } else {

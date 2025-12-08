@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useWeb3 } from "../../contexts/Web3Context";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { API_GATEWAY_URL } from "../../config/api";
+import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import KYCModal from "../../components/KYCModal/KYCModal";
@@ -33,10 +33,10 @@ const Profile = () => {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycLoading, setKycLoading] = useState(true);
 
-  // Wallet Selection State
-  const [availableWallets, setAvailableWallets] = useState([]);
-  const [selectedWallet, setSelectedWallet] = useState(null);
-  const [showWalletSelector, setShowWalletSelector] = useState(false);
+  // Wallet Selection State - Commented out as we now connect directly
+  // const [availableWallets, setAvailableWallets] = useState([]);
+  // const [selectedWallet, setSelectedWallet] = useState(null);
+  // const [showWalletSelector, setShowWalletSelector] = useState(false);
 
   // Wallet Terms State
   const [showWalletTerms, setShowWalletTerms] = useState(false);
@@ -96,50 +96,50 @@ const Profile = () => {
     checkKYCStatus();
   }, [user?.id]);
 
-  // Fetch available wallets from MetaMask
-  const fetchWallets = async () => {
-    if (window.ethereum && user && !user.walletAddress) {
-      try {
-        // Get current account
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        console.log("👛 Current account:", accounts);
-        setAvailableWallets(accounts);
-        if (accounts.length > 0) {
-          setSelectedWallet(accounts[0]);
-        }
-      } catch (error) {
-        console.error("❌ Error fetching wallets:", error);
-      }
-    }
-  };
+  // Fetch available wallets from MetaMask - Commented out as we now connect directly
+  // const fetchWallets = async () => {
+  //   if (window.ethereum && user && !user.walletAddress) {
+  //     try {
+  //       // Get current account
+  //       const accounts = await window.ethereum.request({
+  //         method: "eth_requestAccounts",
+  //       });
+  //       console.log("👛 Current account:", accounts);
+  //       setAvailableWallets(accounts);
+  //       if (accounts.length > 0) {
+  //         setSelectedWallet(accounts[0]);
+  //       }
+  //     } catch (error) {
+  //       console.error("❌ Error fetching wallets:", error);
+  //     }
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchWallets();
-  }, [user]);
+  // useEffect(() => {
+  //   fetchWallets();
+  // }, [user]);
 
-  // Listen for account changes in MetaMask
-  useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        console.log("🔄 MetaMask account changed:", accounts);
-        if (accounts.length > 0) {
-          setAvailableWallets(accounts);
-          setSelectedWallet(accounts[0]);
-        }
-      };
+  // Listen for account changes in MetaMask - Commented out as Web3Context handles this
+  // useEffect(() => {
+  //   if (window.ethereum) {
+  //     const handleAccountsChanged = (accounts) => {
+  //       console.log("🔄 MetaMask account changed:", accounts);
+  //       if (accounts.length > 0) {
+  //         setAvailableWallets(accounts);
+  //         setSelectedWallet(accounts[0]);
+  //       }
+  //     };
 
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
+  //     window.ethereum.on("accountsChanged", handleAccountsChanged);
 
-      return () => {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-      };
-    }
-  }, []);
+  //     return () => {
+  //       window.ethereum.removeListener(
+  //         "accountsChanged",
+  //         handleAccountsChanged
+  //       );
+  //     };
+  //   }
+  // }, []);
 
   // Function to link selected wallet
   const linkWallet = async (walletAddress) => {
@@ -173,7 +173,7 @@ const Profile = () => {
 
       // Call link wallet API
       console.log("📡 Calling link wallet API...");
-      const response = await fetch(`${API_GATEWAY_URL}/api/auth/link-wallet`, {
+      const response = await fetch(`${API_ENDPOINTS.AUTH.LINK_WALLET}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -263,9 +263,22 @@ const Profile = () => {
       return;
     }
 
-    // Fetch available wallets and show selector
-    await fetchWallets();
-    setShowWalletSelector(true);
+    try {
+      // Connect to MetaMask directly
+      await connectWallet();
+
+      // After successful connection, link the wallet if we have an account
+      if (account) {
+        await linkWallet(account);
+      }
+    } catch (error) {
+      console.error("❌ Error connecting wallet:", error);
+      alert(
+        language === "en"
+          ? "Failed to connect wallet. Please try again."
+          : "Không thể kết nối ví. Vui lòng thử lại."
+      );
+    }
   };
 
   // Fetch user data khi có wallet hoặc user thay đổi
@@ -295,7 +308,10 @@ const Profile = () => {
 
         // 1️⃣ Fetch Properties from Database (by userId)
         const propertiesResponse = await fetch(
-          `${API_GATEWAY_URL}/api/user/users/${userId}/properties`
+          `${API_ENDPOINTS.USER.MY_PROPERTIES}`,
+          {
+            headers: getAuthHeaders(),
+          }
         );
         const propertiesData = await propertiesResponse.json();
         console.log("📦 Properties Response:", propertiesData);
@@ -321,7 +337,9 @@ const Profile = () => {
         let nftsData = { success: false, data: { nfts: [], balance: 0 } };
         if (user?.walletAddress) {
           const nftsResponse = await fetch(
-            `${API_GATEWAY_URL}/api/marketplace/my-nfts/${user.walletAddress.toLowerCase()}`
+            `${
+              API_ENDPOINTS.MARKETPLACE.BASE
+            }/my-nfts/${user.walletAddress.toLowerCase()}`
           );
           nftsData = await nftsResponse.json();
           console.log("🎨 NFTs Response:", nftsData);
@@ -349,7 +367,9 @@ const Profile = () => {
         if (user?.walletAddress) {
           try {
             const txResponse = await fetch(
-              `${API_GATEWAY_URL}/api/marketplace/transactions/${user.walletAddress.toLowerCase()}`
+              `${
+                API_ENDPOINTS.MARKETPLACE.BASE
+              }/transactions/${user.walletAddress.toLowerCase()}`
             );
 
             if (txResponse.ok) {
@@ -1334,8 +1354,8 @@ const Profile = () => {
         />
       )}
 
-      {/* Wallet Selector Modal */}
-      {showWalletSelector && (
+      {/* Wallet Selector Modal - Commented out as we now connect directly */}
+      {/* {showWalletSelector && (
         <div
           className="modal-overlay"
           onClick={() => setShowWalletSelector(false)}
@@ -1460,7 +1480,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <Footer />
     </>

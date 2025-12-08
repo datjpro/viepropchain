@@ -1,0 +1,398 @@
+/* ========================================================================
+   CRYPTO PAYMENT MODAL - Styling cho modal thanh toán crypto
+   ======================================================================== */
+
+.crypto-payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9); /* Darker background để debug */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10500;
+  animation: fadeIn 0.2s ease;
+}
+
+.crypto-payment-modal-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  color: white;
+}
+
+/* ========================================================================
+   HEADER
+   ======================================================================== */
+.crypto-modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.crypto-modal-header h3 {
+  font-size: 24px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.crypto-modal-subtitle {
+  font-size: 13px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* ========================================================================
+   INFO SECTIONS
+   ======================================================================== */
+.wallet-info-section,
+.order-info-section,
+.seller-info-section {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.wallet-info-section h4,
+.order-info-section h4 {
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px 0;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-row .label {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.info-row .value {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.info-row .value.mono {
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.info-row .value.mono.small {
+  font-size: 11px;
+}
+
+.info-row .value.highlight {
+  color: #ffd700;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.price-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 12px;
+  margin-top: 8px;
+}
+
+.info-row .value.price {
+  color: #ff6b6b;
+  font-size: 22px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================================================
+   ERROR MESSAGE
+   ======================================================================== */
+.error-message {
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.5);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 15px 0;
+  color: #ffe0e0;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ========================================================================
+   MODAL ACTIONS
+   ======================================================================== */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-confirm-payment {
+  flex: 1;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+}
+
+.btn-confirm-payment:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+}
+
+.btn-confirm-payment:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-confirm-payment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  flex: 0.4;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================================================
+   PROCESSING STEP
+   ======================================================================== */
+.processing-step {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid white;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.processing-step h3 {
+  font-size: 20px;
+  margin: 0 0 10px 0;
+}
+
+.processing-step p {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0 0 20px 0;
+}
+
+.blockchain-info {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.blockchain-info p {
+  margin: 5px 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* ========================================================================
+   SUCCESS STEP
+   ======================================================================== */
+.success-step {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-step h3 {
+  font-size: 24px;
+  margin: 0 0 20px 0;
+}
+
+.transaction-details {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.transaction-details p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.tx-hash {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  word-break: break-all;
+  font-size: 12px;
+  margin: 10px 0;
+}
+
+.success-message {
+  font-size: 16px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.profile-note {
+  font-size: 14px;
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.btn-close-success {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.btn-close-success:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================================================
+   ANIMATIONS
+   ======================================================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ========================================================================
+   RESPONSIVE
+   ======================================================================== */
+@media (max-width: 600px) {
+  .crypto-payment-modal-content {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .crypto-modal-header h3 {
+    font-size: 20px;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .info-row .value {
+    text-align: left;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-confirm-payment,
+  .btn-cancel {
+    flex: 1;
+    width: 100%;
+  }
+}
