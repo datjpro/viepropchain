@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useWeb3 } from "../../contexts/Web3Context";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import KYCModal from "../../components/KYCModal/KYCModal";
+import SmartWalletConnection from "../../components/SmartWalletConnection";
 import WalletTermsModal from "../../components/WalletTermsModal/WalletTermsModal";
 import kycService from "../../services/kycService";
 import "./Profile.css";
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
-  const { account, connectWallet, disconnectWallet } = useWeb3();
+  const { account, isConnected, disconnect } = useWeb3();
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
@@ -32,11 +33,6 @@ const Profile = () => {
   const [kycStatus, setKycStatus] = useState(null);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycLoading, setKycLoading] = useState(true);
-
-  // Wallet Selection State - Commented out as we now connect directly
-  // const [availableWallets, setAvailableWallets] = useState([]);
-  // const [selectedWallet, setSelectedWallet] = useState(null);
-  // const [showWalletSelector, setShowWalletSelector] = useState(false);
 
   // Wallet Terms State
   const [showWalletTerms, setShowWalletTerms] = useState(false);
@@ -264,20 +260,10 @@ const Profile = () => {
     }
 
     try {
-      // Connect to MetaMask directly
-      await connectWallet();
-
-      // After successful connection, link the wallet if we have an account
-      if (account) {
-        await linkWallet(account);
-      }
+      // Navigate to wallet tab instead
+      setActiveTab("wallet");
     } catch (error) {
-      console.error("❌ Error connecting wallet:", error);
-      alert(
-        language === "en"
-          ? "Failed to connect wallet. Please try again."
-          : "Không thể kết nối ví. Vui lòng thử lại."
-      );
+      console.error("❌ Error:", error);
     }
   };
 
@@ -572,7 +558,7 @@ const Profile = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      disconnectWallet();
+                      disconnect();
                     }}
                   >
                     <span>🔓</span>
@@ -673,6 +659,14 @@ const Profile = () => {
                 onClick={() => setActiveTab("settings")}
               >
                 {language === "en" ? "Settings" : "Cài đặt"}
+              </button>
+              <button
+                className={`tab-btn-new ${
+                  activeTab === "wallet" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("wallet")}
+              >
+                🔗 {language === "en" ? "Wallet" : "Ví"}
               </button>
             </nav>
           </div>
@@ -1329,6 +1323,17 @@ const Profile = () => {
                       </span>
                     </label>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "wallet" && (
+              <div className="tab-panel-new">
+                <h2 className="tab-title-new">
+                  🔗 {language === "en" ? "Wallet Connection" : "Kết nối ví"}
+                </h2>
+                <div className="wallet-section-new">
+                  <SmartWalletConnection />
                 </div>
               </div>
             )}

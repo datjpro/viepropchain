@@ -4,7 +4,7 @@ import logo from "../../assets/logo-removebg-preview.png";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useAdmin } from "../../contexts/AdminContext";
-import { useWeb3 } from "../../contexts/Web3Context";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import { translations } from "../../translations/translations";
 import Toast from "../Toast/Toast";
 import { Link, useNavigate } from "react-router-dom";

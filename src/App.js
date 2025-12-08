@@ -25,7 +25,7 @@ import AdminLayout from "./layouts/AdminLayout/AdminLayout";
 import ChatWidget from "./components/ChatWidget/ChatWidget";
 import AIChatWidget from "./components/AIChatWidget/AIChatWidget";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { Web3Provider } from "./contexts/Web3Context";
+import { Web3Provider } from "./contexts/GanacheWeb3Context";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";

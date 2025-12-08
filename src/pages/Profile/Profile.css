@@ -50,6 +50,17 @@
   min-width: 250px;
 }
 
+/* Wallet Section Styling */
+.wallet-section-new {
+  margin-top: 1rem;
+}
+
+.wallet-section-new .wallet-connection {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
 .profile-username {
   font-size: 1.75rem;
   font-weight: 700;
