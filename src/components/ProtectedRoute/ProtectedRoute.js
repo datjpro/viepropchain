@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAdmin } from "../../contexts/AdminContext";
-import { useWeb3 } from "../../contexts/Web3Context";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import { useAuth } from "../../contexts/AuthContext";
 import "./ProtectedRoute.css";
 

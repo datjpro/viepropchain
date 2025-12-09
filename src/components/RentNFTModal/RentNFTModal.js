@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useWeb3 } from "../../contexts/Web3Context";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import { useAuth } from "../../contexts/AuthContext";
 import web3Service from "../../services/web3Service";
 import LoadingSpinner from "../LoadingSpinner";

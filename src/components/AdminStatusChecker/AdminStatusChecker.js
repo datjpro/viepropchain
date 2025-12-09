@@ -6,7 +6,7 @@
 import React from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useAdmin } from "../../contexts/AdminContext";
-import { useWeb3 } from "../../contexts/Web3Context";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import "./AdminStatusChecker.css";
 
 const AdminStatusChecker = () => {

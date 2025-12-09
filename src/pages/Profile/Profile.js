@@ -319,13 +319,14 @@ const Profile = () => {
           }
         }
 
-        // 2️⃣ Fetch NFTs from Blockchain (by walletAddress)
+        // 2️⃣ Fetch NFTs from Database (by JWT token)
         let nftsData = { success: false, data: { nfts: [], balance: 0 } };
         if (user?.walletAddress) {
           const nftsResponse = await fetch(
-            `${
-              API_ENDPOINTS.MARKETPLACE.BASE
-            }/my-nfts/${user.walletAddress.toLowerCase()}`
+            `${API_ENDPOINTS.MARKETPLACE.BASE}/authenticated/my-nfts`,
+            {
+              headers: getAuthHeaders(),
+            }
           );
           nftsData = await nftsResponse.json();
           console.log("🎨 NFTs Response:", nftsData);
