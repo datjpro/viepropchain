@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useAdmin } from "../../contexts/AdminContext";
 import BuyNFTModal from "../BuyNFTModal/BuyNFTModal";
 import RentNFTModal from "../RentNFTModal/RentNFTModal";
 import OfferNFTModal from "../OfferNFTModal/OfferNFTModal";
@@ -11,6 +13,9 @@ const PropertyDetailModal = ({ property, onClose }) => {
   const [showRentModal, setShowRentModal] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [offerType, setOfferType] = useState("buy");
+
+  const { user, isAuthenticated } = useAuth();
+  const { isAdmin } = useAdmin();
 
   if (!property) return null;
 
@@ -255,18 +260,22 @@ const PropertyDetailModal = ({ property, onClose }) => {
               </p>
             </div>
 
-            {/* Legal Info */}
-            {property.legalDocumentId && (
-              <div className="description-section">
-                <h3>📄 Thông tin pháp lý</h3>
-                <p className="description-text">
-                  <strong>Mã sổ đỏ:</strong> {property.legalDocumentId}
-                  <br />
-                  <strong>Trạng thái:</strong>{" "}
-                  {property.legalStatus || "Red Book (Sổ Đỏ)"}
-                </p>
-              </div>
-            )}
+            {/* Legal Info - only visible to admin or property owner */}
+            {property.legalDocumentId &&
+              (isAdmin ||
+                (isAuthenticated &&
+                  (user.email === (property.owner || "") ||
+                    user.walletAddress === (property.ownerWallet || "")))) && (
+                <div className="description-section">
+                  <h3>📄 Thông tin pháp lý</h3>
+                  <p className="description-text">
+                    <strong>Mã sổ đỏ:</strong> {property.legalDocumentId}
+                    <br />
+                    <strong>Trạng thái:</strong>{" "}
+                    {property.legalStatus || "Red Book (Sổ Đỏ)"}
+                  </p>
+                </div>
+              )}
 
             {/* Owner Info */}
             {property.owner && (

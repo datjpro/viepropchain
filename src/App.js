@@ -29,7 +29,12 @@ import { Web3Provider } from "./contexts/GanacheWeb3Context";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AppRoutes } from "./routes/AppRoutes";
 
 function App() {
@@ -50,9 +55,17 @@ function App() {
                   <Route path="/my-properties" element={<MyProperties />} />
                   <Route path="/create-property" element={<CreateProperty />} />
                   <Route path="/edit-property/:id" element={<EditProperty />} />
-                  <Route path="/market" element={<Marketplace />} />
+                  <Route path="/properties" element={<Properties />} />
+
+                  {/* Marketplace buy/rent pages (show NFT listings) */}
                   <Route path="/market/buy" element={<Marketplace />} />
                   <Route path="/market/rent" element={<Marketplace />} />
+
+                  {/* Keep /market root redirecting to properties list */}
+                  <Route
+                    path="/market"
+                    element={<Navigate to="/properties" replace />}
+                  />
 
                   {/* 🔒 Admin Routes - Protected by todat2207@gmail.com */}
                   <Route

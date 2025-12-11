@@ -119,7 +119,7 @@ const Header = () => {
                   <a href="/">{t(translations.nav.home)}</a>
                 </li>
                 <li>
-                  <a href="/market">Thị Trường BDS</a>
+                  <a href="/properties">Thị Trường BDS</a>
                 </li>
                 <li>
                   <a href="/market/buy">Mua Nhà</a>
