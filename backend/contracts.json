@@ -1,6 +1,6 @@
 {
   "network": "development",
-  "deployedAt": "2025-12-07T10:05:15.043Z",
+  "deployedAt": "2025-12-11T14:13:20.521Z",
   "contracts": {
     "ViePropChainNFT": {
       "address": "0xEA4F5F49F396B13CA447FaA792A8702054019Cc8",
@@ -1094,7 +1094,7 @@
       ]
     },
     "Marketplace": {
-      "address": "0xA54052d4De4C4F5834Ee15fB1E66FF760fdB02C2",
+      "address": "0xDbdD86085871D1ADd0970f82b8546EBc0F83C774",
       "abi": [
         {
           "inputs": [
@@ -1117,6 +1117,33 @@
           "stateMutability": "nonpayable",
           "type": "constructor",
           "signature": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "ECDSAInvalidSignature",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "length",
+              "type": "uint256"
+            }
+          ],
+          "name": "ECDSAInvalidSignatureLength",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "s",
+              "type": "bytes32"
+            }
+          ],
+          "name": "ECDSAInvalidSignatureS",
+          "type": "error"
         },
         {
           "inputs": [
@@ -1459,9 +1486,19 @@
               "type": "uint256"
             },
             {
+              "internalType": "uint256",
+              "name": "_price",
+              "type": "uint256"
+            },
+            {
               "internalType": "address",
               "name": "_seller",
               "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "_signature",
+              "type": "bytes"
             }
           ],
           "name": "buyItemDirect",
@@ -1469,7 +1506,7 @@
           "stateMutability": "payable",
           "type": "function",
           "payable": true,
-          "signature": "0x4131195a"
+          "signature": "0xbf292247"
         },
         {
           "inputs": [
