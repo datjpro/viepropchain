@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Web3 } from "web3";
 import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
+import { Wallet, solidityPackedKeccak256, getBytes } from "ethers";
 import { ethToWei } from "../../utils/priceUtils";
 import "./ListingModal.css";
 
@@ -29,9 +29,10 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
     try {
       // Kiểm tra xem property đã được mint thành NFT chưa
       const tokenId =
-        property.nftData?.tokenId !== undefined
+        property?.nftData?.tokenId !== undefined
           ? property.nftData.tokenId
-          : property.tokenId;
+          : property?.tokenId;
+
       if (tokenId === undefined || tokenId === null) {
         alert(
           "Tài sản này chưa được mint thành NFT. Vui lòng mint NFT trước khi niêm yết."
@@ -40,10 +41,7 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
         return;
       }
 
-      console.log("🔥 TokenId found:", tokenId);
-
       const priceInWei = ethToWei(price);
-      console.log("🔥 Price conversion:", { price, priceInWei });
 
       const listingData = {
         tokenId: tokenId,
@@ -56,12 +54,38 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
         description: `${listingType === "sale" ? "Bán" : "Cho thuê"}: ${
           property.name
         }`,
-        // Add rental-specific fields if needed
         ...(listingType === "rent" && {
           pricePerDay: priceInWei,
           maxDurationDays: 365,
         }),
       };
+
+      // DEV: auto-sign the message if a private key is provided via env var
+      try {
+        const pk = process.env.REACT_APP_SELLER_PRIVATE_KEY;
+        if (pk) {
+          const wallet = new Wallet(pk);
+          const contractAddr = listingData.contractAddress;
+          const hash = solidityPackedKeccak256(
+            ["uint256", "uint256", "address"],
+            [
+              String(listingData.tokenId),
+              String(listingData.price),
+              contractAddr,
+            ]
+          );
+          const signature = await wallet.signMessage(getBytes(hash));
+          listingData.signature = signature;
+          listingData.seller = wallet.address;
+          console.log("🔥 Auto-signed listing with", wallet.address, signature);
+        } else {
+          console.log(
+            "No REACT_APP_SELLER_PRIVATE_KEY provided — listing created without signature"
+          );
+        }
+      } catch (sigErr) {
+        console.error("Signature generation failed:", sigErr);
+      }
 
       console.log("🔥 Sending listing request:", listingData);
       console.log("🔥 Auth headers:", getAuthHeaders());
@@ -73,7 +97,6 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
       });
 
       console.log("🔥 Response status:", response.status);
-      console.log("🔥 Response headers:", [...response.headers]);
 
       if (response.ok) {
         const result = await response.json();
@@ -84,20 +107,16 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
           } thành công!`
         );
         onClose();
-        // Refresh the dashboard
         window.location.reload();
       } else {
         const errorData = await response.json();
         console.log("🔥 Error response:", errorData);
-
-        // Xử lý các lỗi cụ thể
         let errorMessage = "Không thể tạo niêm yết";
         if (errorData.error === "NFT not found") {
           errorMessage = "Không tìm thấy NFT. Vui lòng kiểm tra lại tài sản.";
         } else if (errorData.message) {
           errorMessage = errorData.message;
         }
-
         throw new Error(errorMessage);
       }
     } catch (error) {

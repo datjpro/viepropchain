@@ -6,6 +6,7 @@ import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import ListingModal from "../../components/ListingModal/ListingModal";
 import "./MyDashboard.css";
+/* global BigInt */
 
 const MyDashboard = () => {
   const { user } = useAuth();

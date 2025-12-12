@@ -1,0 +1,223 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+
+// We'll use a local ecrecover helper instead of OZ ECDSA to avoid version issues
+contract Marketplace {
+    uint256 private _listingIds;
+
+    address payable public immutable feeAccount;
+    uint256 public immutable feePercent;
+
+    IERC721 private immutable nftContract;
+
+    enum ListingStatus {
+        Active,
+        Sold,
+        Cancelled
+    }
+
+    struct Listing {
+        uint256 listingId;
+        address seller;
+        uint256 tokenId;
+        uint256 price;
+        ListingStatus status;
+    }
+
+    mapping(uint256 => Listing) public listings;
+
+    event ItemListed(
+        uint256 indexed listingId,
+        address indexed seller,
+        uint256 indexed tokenId,
+        uint256 price
+    );
+
+    event ItemSold(
+        uint256 indexed listingId,
+        address indexed buyer,
+        uint256 tokenId
+    );
+
+    event ListingCancelled(uint256 indexed listingId);
+
+    constructor(
+        address _nftContractAddress,
+        uint256 _feePercent,
+        address payable _feeAccount
+    ) {
+        nftContract = IERC721(_nftContractAddress);
+        feePercent = _feePercent;
+        feeAccount = _feeAccount;
+    }
+
+    function listItem(uint256 _tokenId, uint256 _price) external {
+        require(
+            _price > 0,
+            "Gia phai lon hon 0 (Price must be greater than zero)"
+        );
+        require(
+            nftContract.ownerOf(_tokenId) == msg.sender,
+            "Ban phai la chu so huu NFT de niem yet (You must own the NFT to list it)"
+        );
+        require(
+            nftContract.getApproved(_tokenId) == address(this) ||
+                nftContract.isApprovedForAll(msg.sender, address(this)),
+            "Marketplace phai duoc phe duyet de chuyen nhuong NFT (Marketplace must be approved to transfer the NFT)"
+        );
+
+        _listingIds++;
+        uint256 listingId = _listingIds;
+
+        // Transfer NFT to the contract
+        nftContract.transferFrom(msg.sender, address(this), _tokenId);
+
+        listings[listingId] = Listing(
+            listingId,
+            msg.sender,
+            _tokenId,
+            _price,
+            ListingStatus.Active
+        );
+
+        emit ItemListed(listingId, msg.sender, _tokenId, _price);
+    }
+
+    function buyItem(uint256 _listingId) external payable {
+        Listing storage listing = listings[_listingId];
+        require(
+            listing.listingId != 0,
+            "Niem yet khong ton tai (Listing does not exist)"
+        );
+        require(
+            listing.status == ListingStatus.Active,
+            "Niem yet khong hoat dong (Listing is not active)"
+        );
+        require(
+            msg.value >= listing.price,
+            "Khong du Ether de thanh toan gia va phi thi truong (Not enough Ether to cover item price and market fee)"
+        );
+
+        // Pay seller and fee account
+        address seller = listing.seller;
+        uint256 price = listing.price;
+        uint256 fee = (price * feePercent) / 100;
+
+        payable(seller).transfer(price);
+        payable(feeAccount).transfer(fee);
+
+        // Update listing status
+        listing.status = ListingStatus.Sold;
+
+        // Transfer NFT to the buyer
+        nftContract.transferFrom(address(this), msg.sender, listing.tokenId);
+
+        emit ItemSold(_listingId, msg.sender, listing.tokenId);
+    }
+
+    // Recover signer helper (expects `ethSignedHash` already produced)
+    function _recoverSigner(
+        bytes32 ethSignedHash,
+        bytes memory signature
+    ) internal pure returns (address) {
+        require(signature.length == 65, "invalid signature length");
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        assembly {
+            r := mload(add(signature, 0x20))
+            s := mload(add(signature, 0x40))
+            v := byte(0, mload(add(signature, 0x60)))
+        }
+        if (v < 27) {
+            v += 27;
+        }
+        require(v == 27 || v == 28, "invalid signature 'v' value");
+        return ecrecover(ethSignedHash, v, r, s);
+    }
+
+    /**
+     * buyItemDirect - allow buyer to purchase using an off-chain seller signature
+     * Seller stays owner until purchase, but must approve this contract to transfer the token.
+     * Signed message = keccak256(abi.encodePacked(tokenId, price, address(this)))
+     */
+    function buyItemDirect(
+        uint256 tokenId,
+        uint256 price,
+        address seller,
+        bytes calldata signature
+    ) external payable {
+        // Recover signer from signature
+        bytes32 hash = keccak256(
+            abi.encodePacked(tokenId, price, address(this))
+        );
+        bytes32 ethSignedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n32", hash)
+        );
+        address signer = _recoverSigner(ethSignedHash, signature);
+        require(signer == seller, "Invalid seller signature");
+
+        // Ensure seller still owns token and contract is approved
+        require(
+            nftContract.ownerOf(tokenId) == seller,
+            "Seller no longer owner"
+        );
+        require(
+            nftContract.getApproved(tokenId) == address(this) ||
+                nftContract.isApprovedForAll(seller, address(this)),
+            "Marketplace not approved by seller"
+        );
+
+        uint256 fee = (price * feePercent) / 100;
+        require(
+            msg.value >= price + fee,
+            "Insufficient payment (price + fee required)"
+        );
+
+        // Transfer funds
+        payable(seller).transfer(price);
+        payable(feeAccount).transfer(fee);
+
+        // Transfer NFT from seller to buyer
+        nftContract.transferFrom(seller, msg.sender, tokenId);
+
+        // Emit ItemSold with listingId = 0 for off-chain sale
+        emit ItemSold(0, msg.sender, tokenId);
+    }
+
+    function cancelListing(uint256 _listingId) external {
+        Listing storage listing = listings[_listingId];
+        require(
+            listing.listingId != 0,
+            "Niem yet khong ton tai (Listing does not exist)"
+        );
+        require(
+            listing.seller == msg.sender,
+            "Ban khong phai la nguoi ban (You are not the seller)"
+        );
+        require(
+            listing.status == ListingStatus.Active,
+            "Niem yet khong hoat dong (Listing is not active)"
+        );
+
+        // Update listing status
+        listing.status = ListingStatus.Cancelled;
+
+        // Return NFT to the seller
+        nftContract.transferFrom(address(this), msg.sender, listing.tokenId);
+
+        emit ListingCancelled(_listingId);
+    }
+
+    function getListing(
+        uint256 _listingId
+    ) public view returns (Listing memory) {
+        return listings[_listingId];
+    }
+
+    function getListingCount() public view returns (uint256) {
+        return _listingIds;
+    }
+}
