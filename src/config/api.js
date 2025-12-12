@@ -54,6 +54,13 @@ export const API_ENDPOINTS = {
     MY_PROPERTIES: `http://localhost:4006/my-properties`,
     HEALTH: `${API_GATEWAY_URL}/api/user/health`,
   },
+  // Indexer Service - via /api/query -> forwarded to indexer
+  INDEXER: {
+    BASE: `${API_GATEWAY_URL}/api/query/api/v1/indexer`,
+    MY_NFTS: (wallet) =>
+      `${API_GATEWAY_URL}/api/query/api/v1/indexer/my-nfts/${wallet}`,
+    HEALTH: `${API_GATEWAY_URL}/api/query/api/v1/indexer/health`,
+  },
 };
 
 // Helper function to get auth headers

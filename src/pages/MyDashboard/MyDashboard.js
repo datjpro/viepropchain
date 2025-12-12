@@ -30,19 +30,85 @@ const MyDashboard = () => {
   const fetchMyProperties = async () => {
     try {
       setLoading(true);
-      const response = await fetch(API_ENDPOINTS.USER.MY_PROPERTIES, {
+
+      const wallet =
+        user?.walletAddress || user?.wallet || user?.address || null;
+
+      if (!wallet) {
+        setError("Không tìm thấy địa chỉ ví của người dùng");
+        setProperties([]);
+        return;
+      }
+
+      const url =
+        API_ENDPOINTS.INDEXER.MY_NFTS(wallet) +
+        "?includeInactive=true&limit=100&page=1";
+
+      const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        setProperties(data.data || []);
-      } else {
-        setError(data.message || "Không thể tải danh sách tài sản");
-      }
+      // indexer may return { success, data: [...] } or an array directly
+      const items =
+        data?.data || data?.items || (Array.isArray(data) ? data : []);
+
+      const mapItemToProperty = (item) => {
+        const property = item.property || item.propertyData || item;
+        const nft = item.nft || item.nftData || property.nft || item;
+        const tokenId =
+          nft?.tokenId ?? nft?.token ?? nft?.token?.toString() ?? null;
+
+        let currentListing =
+          item.listing || property.currentListing || nft.currentListing || null;
+
+        if (
+          currentListing &&
+          typeof currentListing === "object" &&
+          !currentListing.type &&
+          !(
+            currentListing.price ||
+            currentListing.amount ||
+            currentListing.priceAmount
+          )
+        ) {
+          currentListing = null;
+        }
+
+        return {
+          id:
+            property._id ||
+            property.id ||
+            nft.propertyId ||
+            (nft.property && nft.property._id) ||
+            `${tokenId}`,
+          name:
+            property.name || property.title || `Tài sản ${property._id || ""}`,
+          images: property.images || property.photos || [],
+          address: property.address || property.location?.address || "",
+          area: property.area || property.size || null,
+          status: property.status || (tokenId ? "active" : "draft"),
+          nftData: nft
+            ? {
+                tokenId: tokenId ?? undefined,
+                metadataUri:
+                  nft.metadataUri ||
+                  nft.tokenURI ||
+                  nft.metadataCID ||
+                  nft.metadata,
+              }
+            : null,
+          currentListing,
+        };
+      };
+
+      const mapped = Array.isArray(items) ? items.map(mapItemToProperty) : [];
+
+      setProperties(mapped || []);
     } catch (err) {
       setError("Lỗi kết nối: " + err.message);
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -145,6 +211,21 @@ const MyDashboard = () => {
       };
     }
     return { label: "Không xác định", color: "unknown", icon: "⚫" };
+  };
+
+  const formatAddress = (addr) => {
+    if (!addr) return "";
+    if (typeof addr === "string") return addr;
+    if (typeof addr === "object") {
+      const parts = [];
+      if (addr.street) parts.push(addr.street);
+      if (addr.ward) parts.push(addr.ward);
+      if (addr.district) parts.push(addr.district);
+      if (addr.city) parts.push(addr.city);
+      if (addr.country) parts.push(addr.country);
+      return parts.filter(Boolean).join(", ");
+    }
+    return String(addr);
   };
 
   if (loading) {
@@ -253,7 +334,14 @@ const MyDashboard = () => {
 
                     <div className="property-info">
                       <h3 className="property-title">{property.name}</h3>
-                      <p className="property-address">{property.address}</p>
+                      {property.nftData?.tokenId && (
+                        <p className="property-token">
+                          Token ID: {property.nftData.tokenId}
+                        </p>
+                      )}
+                      <p className="property-address">
+                        {formatAddress(property.address)}
+                      </p>
                       <p className="property-area">{property.area} m²</p>
 
                       {property.currentListing && (
@@ -336,38 +424,7 @@ const MyDashboard = () => {
                           </div>
                         )}
 
-                        {/* DEBUG BUTTONS - ALWAYS SHOW */}
-                        <div
-                          className="action-buttons"
-                          style={{
-                            marginTop: "10px",
-                            borderTop: "1px solid #ccc",
-                            paddingTop: "10px",
-                          }}
-                        >
-                          <button
-                            className="btn-action btn-view"
-                            onClick={() => {
-                              console.log("🔍 Property debug:", property);
-                              alert(
-                                `Property: ${property.name}\nStatus: ${
-                                  property.status
-                                }\nHas NFT: ${!!property.nftData}\nListing: ${!!property.currentListing}`
-                              );
-                            }}
-                          >
-                            🔍 DEBUG
-                          </button>
-                          <button
-                            className="btn-action btn-list"
-                            onClick={() => {
-                              console.log("🚀 Force modal open:", property);
-                              handleListProperty(property, "sale");
-                            }}
-                          >
-                            🚀 FORCE MODAL
-                          </button>
-                        </div>
+                        {/* debug buttons removed */}
                       </div>
                     </div>
                   </div>
@@ -380,24 +437,7 @@ const MyDashboard = () => {
 
       <Footer />
 
-      {/* Listing Modal */}
-      {showListingModal && selectedProperty && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            background: "red",
-            color: "white",
-            padding: "10px",
-            zIndex: 9999,
-          }}
-        >
-          DEBUG: Modal should render! showListingModal=
-          {showListingModal.toString()}, selectedProperty=
-          {selectedProperty?.name}
-        </div>
-      )}
+      {/* debug placeholder removed */}
       {showListingModal && selectedProperty && (
         <ListingModal
           isOpen={showListingModal}
