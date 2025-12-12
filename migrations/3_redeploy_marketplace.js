@@ -28,7 +28,7 @@ module.exports = async function (deployer, network, accounts) {
 
   const nftAddress = existingContracts.contracts.ViePropChainNFT.address;
 
-  // Deploy new Marketplace contract
+  // Prepare deploy parameters
   const feePercent = 1; // 1% fee
   const feeAccount = accounts[0]; // Admin wallet
 
@@ -37,30 +37,77 @@ module.exports = async function (deployer, network, accounts) {
   console.log("   Fee Percent:", feePercent + "%");
   console.log("   Fee Account:", feeAccount);
 
-  await deployer.deploy(Marketplace, nftAddress, feePercent, feeAccount);
+  // Ensure existingContracts has proper structure to avoid accidental overwrites
+  if (
+    !existingContracts.contracts ||
+    typeof existingContracts.contracts !== "object"
+  ) {
+    existingContracts.contracts = {};
+  }
 
-  const marketplaceContract = await Marketplace.deployed();
+  // Backup existing contracts.json before modifying
+  try {
+    if (fs.existsSync(contractsFilePath)) {
+      fs.copyFileSync(contractsFilePath, `${contractsFilePath}.bak`);
+      console.log(`🔐 Backup created at ${contractsFilePath}.bak`);
+    }
+  } catch (bakErr) {
+    console.warn(
+      "⚠️ Failed to create backup of contracts.json:",
+      bakErr.message
+    );
+  }
 
-  console.log("\n✅ New Marketplace deployed:", marketplaceContract.address);
+  // Deploy and update contracts.json only on success
+  let marketplaceContract;
+  try {
+    await deployer.deploy(Marketplace, nftAddress, feePercent, feeAccount);
+    marketplaceContract = await Marketplace.deployed();
 
-  // Update contracts.json with new Marketplace address
-  existingContracts.contracts.Marketplace = {
-    address: marketplaceContract.address,
-    abi: Marketplace.abi,
-  };
-  existingContracts.deployedAt = new Date().toISOString();
+    console.log("\n✅ New Marketplace deployed:", marketplaceContract.address);
 
-  fs.writeFileSync(
-    contractsFilePath,
-    JSON.stringify(existingContracts, null, 2)
-  );
+    // Update ONLY the Marketplace entry to avoid affecting other contracts
+    existingContracts.contracts.Marketplace = {
+      address: marketplaceContract.address,
+      abi: Marketplace.abi,
+    };
+    existingContracts.deployedAt = new Date().toISOString();
+
+    fs.writeFileSync(
+      contractsFilePath,
+      JSON.stringify(existingContracts, null, 2)
+    );
+    console.log(`\n✅ Updated: ${contractsFilePath}`);
+  } catch (deployErr) {
+    console.error(
+      "❌ Marketplace deploy failed:",
+      deployErr.message || deployErr
+    );
+    console.log("Restoring backup if available...");
+    try {
+      if (fs.existsSync(`${contractsFilePath}.bak`)) {
+        fs.copyFileSync(`${contractsFilePath}.bak`, contractsFilePath);
+        console.log("🔄 contracts.json restored from backup");
+      }
+    } catch (restoreErr) {
+      console.error(
+        "⚠️ Failed to restore backup:",
+        restoreErr.message || restoreErr
+      );
+    }
+    throw deployErr;
+  }
 
   console.log("\n========================================");
   console.log("📝 Deployment Summary");
   console.log("========================================");
   console.log(`Network: ${network}`);
   console.log(`NFT Contract (unchanged): ${nftAddress}`);
-  console.log(`Marketplace (NEW): ${marketplaceContract.address}`);
+  console.log(
+    `Marketplace (NEW): ${
+      marketplaceContract ? marketplaceContract.address : "N/A"
+    }`
+  );
   console.log(`\n✅ Updated: ${contractsFilePath}`);
   console.log("========================================\n");
 
