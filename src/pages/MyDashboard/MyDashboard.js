@@ -60,9 +60,34 @@ const MyDashboard = () => {
         const tokenId =
           nft?.tokenId ?? nft?.token ?? nft?.token?.toString() ?? null;
 
+        // Accept listing from multiple shapes: item.listing (indexer), nft.currentListing, or top-level listing fields
         let currentListing =
           item.listing || property.currentListing || nft.currentListing || null;
 
+        // If not present, check for flat listing fields returned by the indexer
+        if (!currentListing) {
+          const listingTypeField =
+            item.listingType || nft.listingType || item.listing_type;
+          const currentPriceField =
+            item.currentPrice ||
+            nft.currentPrice ||
+            item.currentPrice ||
+            item.price;
+          const isListedFlag = item.isListed || nft.isListed;
+          if (listingTypeField || currentPriceField || isListedFlag) {
+            currentListing = {
+              type:
+                listingTypeField === "rental" || listingTypeField === "rent"
+                  ? "rent"
+                  : listingTypeField === "sale"
+                  ? "sale"
+                  : undefined,
+              price: currentPriceField,
+            };
+          }
+        }
+
+        // If listing is an object but missing meaningful fields, treat as null
         if (
           currentListing &&
           typeof currentListing === "object" &&
@@ -70,11 +95,30 @@ const MyDashboard = () => {
           !(
             currentListing.price ||
             currentListing.amount ||
-            currentListing.priceAmount
+            currentListing.currentPrice
           )
         ) {
           currentListing = null;
         }
+
+        // try to find contract address from various possible shapes
+        const contractAddress =
+          nft?.contractAddress ||
+          nft?.contract ||
+          nft?.contractAddr ||
+          item.contractAddress ||
+          property.nft?.contractAddress ||
+          undefined;
+
+        // build a lightweight metadata object for ListingModal preview
+        const metadata =
+          property.metadata || property.metadataObj || (nft && nft.metadata)
+            ? nft.metadata
+            : {
+                name: property.name || property.title,
+                description: property.description || property.summary || "",
+                image: property.images?.[0] || null,
+              };
 
         return {
           id:
@@ -97,13 +141,66 @@ const MyDashboard = () => {
                   nft.tokenURI ||
                   nft.metadataCID ||
                   nft.metadata,
+                contractAddress,
               }
             : null,
           currentListing,
+          metadata,
         };
       };
 
-      const mapped = Array.isArray(items) ? items.map(mapItemToProperty) : [];
+      let mapped = Array.isArray(items) ? items.map(mapItemToProperty) : [];
+
+      // For NFTs that lack currentListing but have a tokenId, try fetching indexer history
+      const needHistory = mapped.filter(
+        (p) => !p.currentListing && p.nftData?.tokenId
+      );
+
+      if (needHistory.length > 0) {
+        await Promise.all(
+          needHistory.map(async (p) => {
+            try {
+              const token = p.nftData.tokenId;
+              const url = `${API_ENDPOINTS.INDEXER.BASE}/nft/${token}/history`;
+              const resp = await fetch(url, { headers: getAuthHeaders() });
+              if (!resp.ok) return;
+              const json = await resp.json();
+              const listings = json?.listings || json?.data?.listings || [];
+              // pick the latest active listing if any
+              const active = listings.find(
+                (l) => l.status === "active" || l.status === "Active"
+              );
+              if (active) {
+                p.currentListing = {
+                  type:
+                    active.listingType === "rental" ||
+                    active.listingType === "rent"
+                      ? "rent"
+                      : active.listingType === "sale"
+                      ? "sale"
+                      : active.listingType,
+                  price:
+                    active.price?.amount ||
+                    active.price ||
+                    active.currentPrice ||
+                    null,
+                };
+                // ensure contractAddress from listing
+                if (!p.nftData.contractAddress && active.contractAddress) {
+                  p.nftData.contractAddress = active.contractAddress;
+                }
+              }
+            } catch (err) {
+              // ignore per-item errors
+              console.debug(
+                "history fetch failed for token",
+                p.nftData?.tokenId,
+                err.message
+              );
+            }
+          })
+        );
+      }
 
       setProperties(mapped || []);
     } catch (err) {
@@ -151,15 +248,20 @@ const MyDashboard = () => {
   };
 
   const handleListProperty = (property, listingType = "sale") => {
-    console.log("🔥 handleListProperty called:", { property, listingType });
-    console.log("🔥 Setting selectedProperty:", { ...property, listingType });
+    // prevent opening listing when required NFT info missing
+    if (!property?.nftData?.tokenId) {
+      alert("Không thể niêm yết: thiếu tokenId.");
+      return;
+    }
+    if (!property?.nftData?.contractAddress) {
+      alert(
+        "Không thể niêm yết: thiếu contract address. Vui lòng liên hệ admin."
+      );
+      return;
+    }
+
     setSelectedProperty({ ...property, listingType });
-    console.log("🔥 Setting showListingModal to true");
     setShowListingModal(true);
-    console.log("🔥 Modal state should now be:", {
-      showListingModal: true,
-      selectedProperty: { ...property, listingType },
-    });
   };
 
   const handleEditProperty = (property) => {
@@ -188,28 +290,25 @@ const MyDashboard = () => {
   };
 
   const getStatusInfo = (property) => {
+    // If there's an active listing, show listing status first
+    if (property.currentListing) {
+      const type =
+        property.currentListing.type === "sale" ? "Đang bán" : "Đang cho thuê";
+      return {
+        label: type,
+        color: "listed",
+        icon: property.currentListing.type === "sale" ? "🔵" : "🟣",
+      };
+    }
+
     if (property.status === "draft") {
       return { label: "Bản nháp", color: "draft", icon: "⚪" };
     }
     if (property.status === "pending") {
       return { label: "Chờ duyệt", color: "pending", icon: "🟡" };
     }
-    if (property.status === "active" && property.nftData) {
-      if (property.currentListing) {
-        const type =
-          property.currentListing.type === "sale" ? "Đang bán" : "Đang thuê";
-        return {
-          label: type,
-          color: "listed",
-          icon: property.currentListing.type === "sale" ? "🔵" : "🟣",
-        };
-      }
-      return {
-        label: `NFT #${property.nftData.tokenId}`,
-        color: "minted",
-        icon: "🟢",
-      };
-    }
+
+    // Otherwise, unknown / not yet listed
     return { label: "Không xác định", color: "unknown", icon: "⚫" };
   };
 
@@ -226,6 +325,41 @@ const MyDashboard = () => {
       return parts.filter(Boolean).join(", ");
     }
     return String(addr);
+  };
+
+  const formatWeiToEth = (value) => {
+    if (value === null || value === undefined) return "";
+    // handle object like { amount: '123', currency: 'ETH' }
+    if (typeof value === "object") {
+      const amt = value.amount ?? value.price ?? value.currentPrice;
+      return formatWeiToEth(amt);
+    }
+    const s = String(value);
+    // if already decimal (contains dot) treat as ETH
+    if (s.includes(".")) {
+      const n = Number(s);
+      if (Number.isFinite(n)) return n.toString();
+      return s;
+    }
+
+    // digits-only string -> treat as wei
+    if (/^\d+$/.test(s)) {
+      try {
+        const bn = BigInt(s);
+        const WEI = 10n ** 18n;
+        const whole = bn / WEI;
+        const rem = bn % WEI;
+        if (rem === 0n) return whole.toString();
+        // take first 4 decimal places
+        const frac = rem.toString().padStart(18, "0").slice(0, 4);
+        const fracTrim = frac.replace(/0+$/, "");
+        return fracTrim ? `${whole.toString()}.${fracTrim}` : whole.toString();
+      } catch (e) {
+        return s;
+      }
+    }
+
+    return s;
   };
 
   if (loading) {
@@ -339,6 +473,12 @@ const MyDashboard = () => {
                           Token ID: {property.nftData.tokenId}
                         </p>
                       )}
+                      {property.nftData &&
+                        !property.nftData.contractAddress && (
+                          <div className="property-warning">
+                            ⚠️ Thiếu contract address — không thể niêm yết
+                          </div>
+                        )}
                       <p className="property-address">
                         {formatAddress(property.address)}
                       </p>
@@ -346,7 +486,7 @@ const MyDashboard = () => {
 
                       {property.currentListing && (
                         <div className="listing-price">
-                          💰 {property.currentListing.price} ETH
+                          💰 {formatWeiToEth(property.currentListing.price)} ETH
                           {property.currentListing.type === "rent" && "/tháng"}
                         </div>
                       )}
@@ -382,45 +522,70 @@ const MyDashboard = () => {
                           </div>
                         )}
 
-                        {/* Minted (Ready to List) Status Actions */}
-                        {property.status === "active" &&
-                          property.nftData &&
-                          !property.currentListing && (
+                        {/* Listing area: show Sale/Rent buttons when NFT exists and not listed */}
+                        {property.nftData && !property.currentListing && (
+                          <div className="listing-actions">
+                            {property.nftData.contractAddress ? (
+                              <>
+                                <button
+                                  className="btn-action btn-list btn-list-sale"
+                                  title="Niêm yết để bán"
+                                  onClick={() =>
+                                    handleListProperty(property, "sale")
+                                  }
+                                >
+                                  💰 Niêm yết bán
+                                </button>
+                                <button
+                                  className="btn-action btn-list btn-list-rent"
+                                  title="Niêm yết cho thuê"
+                                  onClick={() =>
+                                    handleListProperty(property, "rent")
+                                  }
+                                >
+                                  🏠 Niêm yết cho thuê
+                                </button>
+                              </>
+                            ) : (
+                              <div className="action-warning">
+                                ⚠️ Thiếu contract address — không thể niêm yết
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* If already listed, show brief info and an Edit action */}
+                        {property.currentListing && (
+                          <div className="listing-info">
+                            <div className="listing-badge">
+                              {property.currentListing.type === "sale"
+                                ? "Đang bán"
+                                : "Đang cho thuê"}
+                              {property.currentListing.price
+                                ? ` · ${formatWeiToEth(
+                                    property.currentListing.price
+                                  )} ETH`
+                                : ""}
+                            </div>
                             <div className="action-buttons">
                               <button
-                                className="btn-action btn-list"
+                                className="btn-action btn-edit"
                                 onClick={() =>
-                                  handleListProperty(property, "sale")
+                                  handleListProperty(
+                                    property,
+                                    property.currentListing?.type || "sale"
+                                  )
                                 }
                               >
-                                💰 Niêm yết bán
+                                ✏️ Chỉnh sửa niêm yết
                               </button>
                               <button
-                                className="btn-action btn-list"
-                                onClick={() =>
-                                  handleListProperty(property, "rent")
-                                }
+                                className="btn-action btn-remove"
+                                onClick={() => handleRemoveListing(property)}
                               >
-                                🏠 Niêm yết thuê
+                                ❌ Gỡ niêm yết
                               </button>
                             </div>
-                          )}
-
-                        {/* Listed Status Actions */}
-                        {property.currentListing && (
-                          <div className="action-buttons">
-                            <button
-                              className="btn-action btn-edit"
-                              onClick={() => handleListProperty(property)}
-                            >
-                              ✏️ Sửa giá
-                            </button>
-                            <button
-                              className="btn-action btn-remove"
-                              onClick={() => handleRemoveListing(property)}
-                            >
-                              ❌ Gỡ niêm yết
-                            </button>
                           </div>
                         )}
 
