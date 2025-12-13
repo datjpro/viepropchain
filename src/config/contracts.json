@@ -1455,13 +1455,23 @@
           "inputs": [
             {
               "internalType": "uint256",
-              "name": "_tokenId",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
               "type": "uint256"
             },
             {
               "internalType": "address",
-              "name": "_seller",
+              "name": "seller",
               "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "signature",
+              "type": "bytes"
             }
           ],
           "name": "buyItemDirect",

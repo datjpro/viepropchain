@@ -1,15 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Header from "../../components/Header/header";
 import Footer from "../../components/Footer/footer";
 import ListingModal from "../../components/ListingModal/ListingModal";
+import web3Service from "../../services/web3Service";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import "./MyDashboard.css";
 /* global BigInt */
 
 const MyDashboard = () => {
   const { user } = useAuth();
+  const { web3Api } = useWeb3();
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +20,7 @@ const MyDashboard = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [showListingModal, setShowListingModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [approvalStatus, setApprovalStatus] = useState({}); // { tokenId: boolean }
 
   useEffect(() => {
     if (user) {
@@ -27,6 +31,49 @@ const MyDashboard = () => {
   useEffect(() => {
     filterProperties();
   }, [properties, activeFilter]);
+
+  const checkApprovalStatus = useCallback(
+    async (tokenId) => {
+      if (!tokenId) return false;
+      try {
+        if (!web3Api?.web3) {
+          console.warn("Web3 not available");
+          return false;
+        }
+
+        const web3 = web3Api.web3;
+        const isApproved = await web3Service.isApprovedForMarketplace(
+          web3,
+          tokenId
+        );
+        setApprovalStatus((prev) => ({ ...prev, [tokenId]: isApproved }));
+        return isApproved;
+      } catch (error) {
+        console.error("Error checking approval:", error);
+        return false;
+      }
+    },
+    [web3Api]
+  );
+
+  // Check approval status for NFTs with listings
+  useEffect(() => {
+    const checkApprovals = async () => {
+      const listedProperties = properties.filter(
+        (p) => p.currentListing && p.nftData?.tokenId
+      );
+      for (const property of listedProperties) {
+        const tokenId = property.nftData.tokenId;
+        if (approvalStatus[tokenId] === undefined) {
+          await checkApprovalStatus(tokenId);
+        }
+      }
+    };
+
+    if (properties.length > 0 && window.ethereum) {
+      checkApprovals();
+    }
+  }, [properties, approvalStatus, checkApprovalStatus]);
 
   const fetchMyProperties = async () => {
     try {
@@ -287,6 +334,79 @@ const MyDashboard = () => {
       } catch (error) {
         console.error("Error removing listing:", error);
       }
+    }
+  };
+
+  const handleApproveNFT = async (property) => {
+    const tokenId = property.nftData?.tokenId;
+    if (!tokenId) {
+      alert("Không tìm thấy tokenId của NFT");
+      return;
+    }
+
+    try {
+      if (!web3Api?.web3) {
+        alert("Web3 không khả dụng");
+        return;
+      }
+
+      const web3 = web3Api.web3;
+
+      // Check network
+      const networkId = await web3.eth.net.getId();
+      console.log("Current network ID:", networkId);
+
+      if (networkId !== 1337) {
+        alert(
+          "Vui lòng kết nối với mạng Ganache (localhost:8545). Hiện tại bạn đang kết nối với network ID: " +
+            networkId
+        );
+        return;
+      }
+
+      const account = web3Api.account;
+
+      console.log("Using account:", account);
+      console.log("Approving tokenId:", tokenId);
+
+      // Check if user owns the NFT
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      console.log("NFT Contract address:", nftContract.options.address);
+
+      const owner = await nftContract.methods.ownerOf(tokenId).call();
+      console.log("NFT owner:", owner);
+
+      if (owner.toLowerCase() !== account.toLowerCase()) {
+        alert("Bạn không phải là chủ sở hữu của NFT này");
+        return;
+      }
+
+      if (
+        window.confirm(
+          `Bạn có chắc muốn approve NFT #${tokenId} cho marketplace?`
+        )
+      ) {
+        const result = await web3Service.approveMarketplace(
+          web3,
+          account,
+          tokenId
+        );
+
+        if (result.success) {
+          if (result.alreadyApproved) {
+            alert(`✅ NFT #${tokenId} đã được approve cho marketplace`);
+          } else {
+            alert(`✅ Đã approve thành công NFT #${tokenId} cho marketplace`);
+          }
+          // Update approval status
+          setApprovalStatus((prev) => ({ ...prev, [tokenId]: true }));
+        } else {
+          alert("❌ Approve thất bại: " + result.error);
+        }
+      }
+    } catch (error) {
+      console.error("Approve error:", error);
+      alert("❌ Lỗi khi approve: " + error.message);
     }
   };
 
@@ -568,6 +688,34 @@ const MyDashboard = () => {
                                   )} ETH`
                                 : ""}
                             </div>
+                            {/* Show approval status and button */}
+                            {property.nftData?.tokenId && (
+                              <div className="approval-status">
+                                {approvalStatus[property.nftData.tokenId] ===
+                                true ? (
+                                  <span className="approval-approved">
+                                    ✅ Đã approve marketplace
+                                  </span>
+                                ) : approvalStatus[property.nftData.tokenId] ===
+                                  false ? (
+                                  <div className="approval-needed">
+                                    <span className="approval-warning">
+                                      ⚠️ Chưa approve marketplace
+                                    </span>
+                                    <button
+                                      className="btn-action btn-approve"
+                                      onClick={() => handleApproveNFT(property)}
+                                    >
+                                      🔓 Approve Marketplace
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className="approval-checking">
+                                    ⏳ Đang kiểm tra...
+                                  </span>
+                                )}
+                              </div>
+                            )}
                             <div className="action-buttons">
                               <button
                                 className="btn-action btn-edit"

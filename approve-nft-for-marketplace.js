@@ -8,11 +8,11 @@ const { Web3 } = require("web3");
 // Cấu hình
 const GANACHE_URL = "http://127.0.0.1:8545";
 const ADMIN_PRIVATE_KEY =
-  "0x4c4fc0e31e7e826e49ea21fb0fcee61e5bf5d30bcd5dd2c8e43be92c0f5a88b4"; // Admin private key
+  "0x843501ecc602247126b5c52ff65d3b0050a9039f23480f005535465ac2734fae"; // Admin private key
 
 const NFT_CONTRACT_ADDRESS = "0xEA4F5F49F396B13CA447FaA792A8702054019Cc8";
 const MARKETPLACE_CONTRACT_ADDRESS =
-  "0x75573f6E6C40780FDf378bA29FcBb8c25c611E24";
+  "0x84e093ED1c99D69739c9B4808a45aa6A159736D0";
 
 const NFT_ABI = [
   {
@@ -53,7 +53,7 @@ async function main() {
   console.log("   NFT Contract:", NFT_CONTRACT_ADDRESS);
   console.log("   Marketplace:", MARKETPLACE_CONTRACT_ADDRESS);
 
-  const tokenId = 0; // TokenId cần approve
+  const tokenId = 6; // TokenId cần approve
 
   try {
     // Kiểm tra owner

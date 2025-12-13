@@ -128,6 +128,16 @@ export const Web3Provider = ({ children }) => {
         const netId = await web3Instance.eth.net.getId();
         setNetworkId(Number(netId));
 
+        // Auto-connect to first Ganache account if no account is set
+        if (!account) {
+          console.log("🔑 Auto-connecting to first Ganache account...");
+          const firstAccount = GANACHE_ACCOUNTS[0];
+          setAccount(firstAccount.address.toLowerCase());
+          setPrivateKey(firstAccount.privateKey);
+          setConnectionMethod("ganache");
+          console.log("✅ Auto-connected to:", firstAccount.address);
+        }
+
         setError(null);
       } catch (err) {
         console.error("❌ Failed to connect to Ganache:", err.message);

@@ -3,14 +3,14 @@ import Web3 from "web3";
 import { CONTRACTS } from "../../config/contracts";
 import { API_ENDPOINTS } from "../../config/api";
 import { useAuth } from "../../contexts/AuthContext";
+import { DEV_WALLETS } from "../../config/dev-wallets";
 import "./CryptoPaymentModal.css";
 
 /**
  * ========================================================================
- * CRYPTO PAYMENT MODAL - Demo thanh toán bằng ví crypto qua Ganache
+ * CRYPTO PAYMENT MODAL - Real blockchain payment via Ganache
  * ========================================================================
- * Modal này hiển thị thông tin ví demo và cho phép thanh toán trực tiếp
- * qua blockchain Ganache local mà không cần MetaMask
+ * Modal này cho phép thanh toán trực tiếp qua blockchain với signature verification
  */
 
 const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
@@ -24,11 +24,17 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
   const [transactionHash, setTransactionHash] = useState("");
 
   // ========================================================================
-  // CẤU HÌNH VÍ DEMO (Lấy từ user đã đăng nhập)
+  // CẤU HÌNH VÍ DEMO (Lấy từ user đã đăng nhập + DEV_WALLETS)
   // ========================================================================
   const GANACHE_RPC_URL = "http://127.0.0.1:8545"; // Ganache local
   const BUYER_ADDRESS =
     user?.walletAddress || "0x0000000000000000000000000000000000000000";
+
+  // Tìm private key từ DEV_WALLETS nếu có
+  const buyerWallet = DEV_WALLETS.find(
+    (wallet) => wallet.address.toLowerCase() === BUYER_ADDRESS.toLowerCase()
+  );
+  const BUYER_PRIVATE_KEY = buyerWallet?.privateKey;
 
   // Thông tin sản phẩm
   const propertyName =
@@ -128,33 +134,96 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
       console.log("   Price:", priceInWei, "Wei");
       console.log("   Buyer:", BUYER_ADDRESS);
 
-      // DEMO: Simulate blockchain transaction instead of calling contract
-      console.log("🎭 DEMO MODE: Simulating blockchain transaction...");
+      // Choose mode: DEMO or REAL blockchain transaction
+      const USE_REAL_BLOCKCHAIN = true; // Set to true for production
 
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate delay
+      let finalTxHash, finalBlockNumber;
 
-      const mockTxHash = "0x" + Math.random().toString(16).substr(2, 14);
-      const mockBlockNumber = Math.floor(Math.random() * 1000) + 85;
+      if (USE_REAL_BLOCKCHAIN) {
+        // REAL BLOCKCHAIN CALL
+        console.log("🔗 REAL MODE: Calling blockchain contract...");
 
-      console.log("✅ DEMO: Simulated transaction successful!");
-      console.log("   TX Hash:", mockTxHash);
-      console.log("   Block:", mockBlockNumber);
+        // Setup account with private key
+        if (!BUYER_PRIVATE_KEY) {
+          throw new Error(
+            "No private key found for buyer account. Cannot send real transaction."
+          );
+        }
 
-      setTransactionHash(mockTxHash);
+        const account =
+          web3.eth.accounts.privateKeyToAccount(BUYER_PRIVATE_KEY);
+        web3.eth.accounts.wallet.add(account);
+        web3.eth.defaultAccount = account.address;
 
-      // Real blockchain call (commented for demo)
-      /*
-      const tx = await marketplaceContract.methods
-        .buyItemDirect(tokenId, sellerAddress)
-        .send({
-          from: BUYER_ADDRESS,
-          value: priceInWei,
-          gas: 500000,
-          gasPrice: web3.utils.toWei("20", "gwei"),
-        });
-      
-      setTransactionHash(tx.transactionHash);
-      */
+        console.log("🔑 Using account:", account.address);
+        console.log("💰 Private key available:", !!BUYER_PRIVATE_KEY);
+
+        // Ensure parameters have correct types
+        const tokenIdNum = Number(tokenId);
+        const priceWei = priceInWei; // Keep as string for Web3.js v4
+        const sellerAddr = sellerAddress.toLowerCase();
+
+        // Calculate fee (1%) and total value to send
+        const feeWei = web3.utils
+          .toBN(priceWei)
+          .mul(web3.utils.toBN(1))
+          .div(web3.utils.toBN(100))
+          .toString(); // 1% fee
+        const totalValueWei = web3.utils
+          .toBN(priceWei)
+          .add(web3.utils.toBN(feeWei))
+          .toString();
+
+        console.log("📋 Parameters for contract call:");
+        console.log("   tokenId:", tokenIdNum, typeof tokenIdNum);
+        console.log("   price:", priceWei, typeof priceWei);
+        console.log("   fee (1%):", feeWei, typeof feeWei);
+        console.log(
+          "   total value to send:",
+          totalValueWei,
+          typeof totalValueWei
+        );
+        console.log("   seller:", sellerAddr, typeof sellerAddr);
+        console.log(
+          "   signature:",
+          listing.sellerSignature.substring(0, 20) + "..."
+        );
+
+        const tx = await marketplaceContract.methods
+          .buyItemDirect(
+            tokenIdNum, // uint256 tokenId
+            priceWei, // uint256 price as string
+            sellerAddr, // address seller
+            listing.sellerSignature // bytes signature
+          )
+          .send({
+            from: BUYER_ADDRESS,
+            value: totalValueWei,
+            gas: 500000,
+            gasPrice: web3.utils.toWei("20", "gwei"),
+          });
+
+        console.log("✅ REAL: Blockchain transaction successful!");
+        console.log("   TX Hash:", tx.transactionHash);
+        console.log("   Block:", tx.blockNumber);
+
+        finalTxHash = tx.transactionHash;
+        finalBlockNumber = tx.blockNumber;
+      } else {
+        // DEMO: Simulate blockchain transaction
+        console.log("🎭 DEMO MODE: Simulating blockchain transaction...");
+
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate delay
+
+        finalTxHash = "0x" + Math.random().toString(16).substr(2, 14);
+        finalBlockNumber = Math.floor(Math.random() * 1000) + 85;
+
+        console.log("✅ DEMO: Simulated transaction successful!");
+        console.log("   TX Hash:", finalTxHash);
+        console.log("   Block:", finalBlockNumber);
+      }
+
+      setTransactionHash(finalTxHash);
 
       // ✅ REAL: Cập nhật database qua API để complete flow
       try {
@@ -171,8 +240,8 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
             body: JSON.stringify({
               listingId: listing._id,
               tokenId: tokenId,
-              transactionHash: mockTxHash, // Use real tx.transactionHash in production
-              blockNumber: mockBlockNumber, // Use real tx.blockNumber in production
+              transactionHash: finalTxHash,
+              blockNumber: finalBlockNumber,
               buyer: BUYER_ADDRESS,
             }),
           }

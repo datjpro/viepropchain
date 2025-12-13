@@ -3,6 +3,8 @@ import { ethToWei, isValidPrice } from "../../utils/priceUtils";
 import marketplaceService from "../../services/marketplaceService";
 import { ethers } from "ethers";
 import { DEV_WALLETS } from "../../config/dev-wallets";
+import web3Service from "../../services/web3Service";
+import Web3 from "web3";
 import "./ListNFTModal.css";
 
 const ListNFTModal = ({ nft, onClose, onSuccess }) => {
@@ -14,6 +16,7 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
     pricePerDay: "",
     maxDurationDays: "30",
     selectedWallet: "", // Thêm selected wallet
+    approveNFT: true, // Auto-approve NFT for marketplace
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -172,6 +175,48 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
       const response = await marketplaceService.createListing(listingData);
 
       console.log("✅ Listing created:", response);
+
+      // Auto-approve NFT for marketplace if requested
+      if (formData.approveNFT) {
+        try {
+          console.log("🔄 Auto-approving NFT for marketplace...");
+
+          if (!window.ethereum) {
+            console.warn("MetaMask not available, skipping auto-approve");
+          } else {
+            const web3 = new Web3(window.ethereum);
+
+            // Check network
+            const networkId = await web3.eth.net.getId();
+            console.log("Current network ID:", networkId);
+
+            if (networkId !== 1337) {
+              console.warn(
+                "Not connected to Ganache network, skipping auto-approve"
+              );
+              return;
+            }
+
+            const accounts = await web3.eth.requestAccounts();
+            const account = accounts[0];
+
+            const tokenId = nft.tokenId || nft.nft?.tokenId;
+            const approveResult = await web3Service.approveMarketplace(
+              web3,
+              account,
+              tokenId
+            );
+
+            if (approveResult.success) {
+              console.log("✅ NFT auto-approved for marketplace");
+            } else {
+              console.warn("⚠️ NFT auto-approve failed:", approveResult.error);
+            }
+          }
+        } catch (approveError) {
+          console.warn("⚠️ Could not auto-approve NFT:", approveError.message);
+        }
+      }
 
       if (onSuccess) {
         onSuccess(response.data);
@@ -348,6 +393,28 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
                 rows="4"
                 className="form-control"
               />
+            </div>
+
+            {/* Auto-approve NFT */}
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="approveNFT"
+                  checked={formData.approveNFT}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      approveNFT: e.target.checked,
+                    }))
+                  }
+                />
+                <span className="checkmark"></span>
+                Tự động approve NFT cho marketplace (khuyến nghị)
+              </label>
+              <small className="form-hint">
+                🔓 Cho phép marketplace chuyển NFT khi có người mua thành công
+              </small>
             </div>
 
             {/* Expiration Date */}

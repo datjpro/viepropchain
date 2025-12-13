@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // import { useWeb3 } from "../../contexts/Web3Context"; // Commented out - using direct Web3
 import { useAuth } from "../../contexts/AuthContext";
 // import web3Service from "../../services/web3Service"; // Not used - using direct Web3
@@ -18,6 +18,7 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
   const [step, setStep] = useState(1); // 1: Confirm, 2: Processing, 3: Success
   const [transactionHash, setTransactionHash] = useState("");
   const [showCryptoPayment, setShowCryptoPayment] = useState(false);
+  const [isApproved, setIsApproved] = useState(null); // null: chưa check, true: approved, false: chưa approved
 
   // Xử lý cả 3 trường hợp: data (unified), listing (từ Marketplace), hoặc nft (từ PropertyDetailModal)
   const itemData = data || listing || nft || {};
@@ -63,6 +64,39 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
   const priceInfo = getPriceInfo();
   const priceInETH = priceInfo.priceInETH;
   const priceInWei = priceInfo.priceInWei;
+
+  // Check NFT approval status
+  useEffect(() => {
+    if (itemData.tokenId && itemData.contractAddress) {
+      checkApprovalStatus();
+    }
+  }, [itemData.tokenId, itemData.contractAddress]);
+
+  const checkApprovalStatus = async () => {
+    if (!itemData.contractAddress || !itemData.tokenId) {
+      setIsApproved(null);
+      return;
+    }
+
+    try {
+      const web3 = new Web3("http://127.0.0.1:8545");
+      const nftContract = new web3.eth.Contract(
+        CONTRACTS.abis.ViePropChainNFT,
+        itemData.contractAddress
+      );
+
+      const approved = await nftContract.methods
+        .getApproved(itemData.tokenId)
+        .call();
+      const marketplaceAddress = CONTRACTS.addresses.Marketplace;
+      setIsApproved(
+        approved.toLowerCase() === marketplaceAddress.toLowerCase()
+      );
+    } catch (error) {
+      console.error("Error checking approval:", error);
+      setIsApproved(false);
+    }
+  };
 
   const handleBuyNFT = async () => {
     const userAccount = user?.walletAddress;
@@ -316,6 +350,32 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
               </div>
             )}
 
+            {/* Approval Status */}
+            {isApproved === false && (
+              <div
+                style={{
+                  background: "#fee2e2",
+                  border: "2px solid #f87171",
+                  padding: "15px",
+                  borderRadius: "8px",
+                  marginBottom: "15px",
+                }}
+              >
+                <p style={{ margin: 0, color: "#dc2626" }}>
+                  ⚠️ <strong>Seller chưa approve NFT cho marketplace</strong>
+                </p>
+                <p
+                  style={{
+                    margin: "5px 0 0 0",
+                    fontSize: "14px",
+                    color: "#dc2626",
+                  }}
+                >
+                  Vui lòng liên hệ seller để approve NFT trước khi mua
+                </p>
+              </div>
+            )}
+
             {error && <div className="buy-error">❌ {error}</div>}
 
             {/* Actions */}
@@ -327,6 +387,7 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
               >
                 Hủy
               </button>
+
               <button
                 onClick={() => {
                   console.log("🎯 Crypto payment button clicked!");
@@ -335,7 +396,9 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
                   setShowCryptoPayment(true);
                 }}
                 className="btn-buy btn-crypto"
-                disabled={loading || !user?.walletAddress}
+                disabled={
+                  loading || isApproved === false || !user?.walletAddress
+                }
                 style={{
                   background:
                     "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -344,6 +407,8 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
               >
                 {!user?.walletAddress
                   ? "Kết nối ví để mua"
+                  : isApproved === false
+                  ? "Chờ seller approve"
                   : "💳 Thanh toán bằng Crypto"}
               </button>
             </div>
