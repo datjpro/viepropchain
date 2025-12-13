@@ -1,0 +1,547 @@
+.rent-nft-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10200;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rent-nft-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f3f4f6;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.modal-close:hover {
+  background: #ef4444;
+  color: white;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.modal-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 28px 0;
+  color: #111827;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* NFT Preview */
+.rent-nft-preview {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.rent-nft-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.rent-nft-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #1f2937;
+}
+
+.rent-nft-location {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Rental Duration Selector */
+.rent-duration {
+  margin-bottom: 24px;
+}
+
+.rent-duration label {
+  display: block;
+  margin-bottom: 12px;
+  color: #374151;
+  font-size: 15px;
+}
+
+.duration-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.duration-selector button {
+  padding: 12px 8px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.duration-selector button:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.duration-selector button.active {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: #fff;
+  border-color: #8b5cf6;
+}
+
+.custom-days-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.custom-days-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+/* Price Details */
+.rent-nft-details {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.rent-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.rent-detail-row:last-child {
+  border-bottom: none;
+}
+
+.rent-detail-row.rent-total {
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 2px solid #8b5cf6;
+  font-size: 18px;
+  color: #8b5cf6;
+}
+
+/* Owner Info */
+.rent-nft-owner {
+  background: #faf5ff;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.rent-nft-owner p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.owner-address {
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+/* Error */
+.rent-error {
+  background: #fee;
+  color: #c00;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Actions */
+.rent-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-cancel,
+.btn-rent {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-rent {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: #fff;
+}
+
+.btn-rent:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-cancel:disabled,
+.btn-rent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Processing State */
+.rent-processing {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.rent-processing h3 {
+  font-size: 22px;
+  margin: 20px 0 10px 0;
+  color: #1f2937;
+}
+
+.rent-processing p {
+  color: #6b7280;
+  margin: 8px 0;
+}
+
+.processing-note {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 20px !important;
+}
+
+/* Success State */
+.rent-success {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 96px;
+  margin-bottom: 24px;
+  animation: bounceIn 0.6s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.rent-success h3 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #10b981;
+  margin: 0 0 24px 0;
+}
+
+.order-info {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px 0;
+  text-align: left;
+}
+
+.order-info p {
+  margin: 12px 0;
+  font-size: 15px;
+  color: #374151;
+}
+
+.order-id {
+  font-size: 16px !important;
+  color: #1f2937 !important;
+  font-family: "Courier New", monospace;
+}
+
+.payment-method-display {
+  color: #6b7280 !important;
+}
+
+.rental-period {
+  color: #6b7280 !important;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+  border: 2px solid #10b981;
+}
+
+.success-message p {
+  color: #065f46;
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.status-crypto {
+  font-size: 18px !important;
+  color: #10b981 !important;
+  margin-bottom: 16px !important;
+}
+
+.status-pending {
+  font-size: 18px !important;
+  color: #f59e0b !important;
+  margin-bottom: 16px !important;
+}
+
+.success-message .note {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px !important;
+  font-size: 14px !important;
+  border-left: 4px solid #f59e0b;
+}
+
+/* Payment Methods */
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.payment-option {
+  position: relative;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.payment-option:hover {
+  border-color: #8b5cf6;
+  background: #faf5ff;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+.payment-option.selected {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.1),
+    rgba(236, 72, 153, 0.1)
+  );
+  border-color: #8b5cf6;
+  border-width: 3px;
+}
+
+.payment-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.payment-info {
+  flex: 1;
+}
+
+.payment-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #1f2937;
+}
+
+.fee-breakdown {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.fee-item {
+  margin: 6px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fee-amount {
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.fee-amount.crypto {
+  color: #10b981;
+}
+
+.fee-total {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.platform-fee-bank {
+  color: #dc2626;
+}
+
+.platform-fee-crypto {
+  color: #059669;
+}
+
+/* CRITICAL FIX: Savings badge must not block clicks */
+.savings-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #78350f;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  animation: pulseGlow 2s infinite;
+  pointer-events: none; /* CRITICAL: Allow clicks to pass through */
+  z-index: 10;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .rent-nft-modal {
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-size: 24px;
+  }
+
+  .rent-nft-image {
+    height: 200px;
+  }
+
+  .duration-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rent-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-rent {
+    width: 100%;
+  }
+}

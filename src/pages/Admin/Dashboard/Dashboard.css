@@ -1,0 +1,408 @@
+/* Dashboard.css */
+.dashboard-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  background: #0f172a;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 2rem;
+}
+
+.dashboard-header p {
+  margin: 5px 0 0 0;
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.btn-refresh {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-refresh:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: #475569;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card.properties {
+  border-color: #10b981;
+}
+
+.stat-card.users {
+  border-color: #3b82f6;
+}
+
+.stat-card.nfts {
+  border-color: #f59e0b;
+}
+
+.stat-card.revenue {
+  border-color: #8b5cf6;
+}
+
+.stat-icon {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.stat-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-details span {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* System Health */
+.system-health {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: none;
+  margin-bottom: 30px;
+}
+
+.system-health h2 {
+  margin: 0 0 20px 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.health-card {
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #334155;
+  background: #0f172a;
+  transition: all 0.2s;
+}
+
+.health-card.healthy {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+.health-card.unhealthy {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+}
+
+.health-card.down {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.health-card.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #dc2626;
+}
+
+.health-name {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.health-status {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.health-error {
+  font-size: 0.8rem;
+  color: #f87171;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Recent Activities */
+.recent-activities {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: none;
+  margin-bottom: 30px;
+}
+
+.recent-activities h2 {
+  margin: 0 0 20px 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.activities-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.no-activities {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px;
+  font-style: italic;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #334155;
+  transition: all 0.2s;
+}
+
+.activity-item:hover {
+  background: rgba(51, 65, 85, 0.5);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.activity-action {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.activity-description {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.activity-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.activity-status.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.activity-status.minted {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.activity-status.draft {
+  background: rgba(100, 116, 139, 0.2);
+  color: #64748b;
+}
+
+/* Quick Actions */
+.quick-actions {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.quick-actions h2 {
+  margin: 0 0 20px 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.action-card {
+  display: block;
+  text-decoration: none;
+  padding: 20px;
+  background: #0f172a;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  color: inherit;
+}
+
+.action-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-decoration: none;
+  color: inherit;
+}
+
+.action-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.action-title {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.action-desc {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: #ffffff;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #334155;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 10px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}

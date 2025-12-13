@@ -1,0 +1,318 @@
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { useWeb3 } from "../../contexts/GanacheWeb3Context";
+import "./AdminLayout.css";
+
+const AdminLayout = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { account } = useWeb3();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const menuItems = [
+    {
+      path: "/admin/dashboard",
+      label: "Dashboard",
+      icon: "📊",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/nft",
+      label: "Mint NFT",
+      icon: "🎨",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/properties",
+      label: "Quản lý Bất động sản",
+      icon: "🏠",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/pending",
+      label: "Duyệt BĐS",
+      icon: "👮",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/marketplace",
+      label: "Quản lý Sàn niêm yết",
+      icon: "🏪",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/users",
+      label: "Quản lý Người dùng",
+      icon: "👥",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/list-nft",
+      label: "Quản lý NFT",
+      icon: "📋",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/finance/revenue",
+      label: "💰 Báo cáo Doanh thu",
+      icon: "💰",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/finance/transactions",
+      label: "💳 Lịch sử Giao dịch",
+      icon: "💳",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+          <path
+            fillRule="evenodd"
+            d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/finance/payouts",
+      label: "💸 Quản lý Rút tiền",
+      icon: "💸",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/analytics/sales",
+      label: "📊 Phân tích Bán hàng",
+      icon: "📊",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+        </svg>
+      ),
+    },
+    {
+      path: "/admin/support",
+      label: "🎫 Hỗ trợ Khách hàng",
+      icon: "🎫",
+      iconSvg: (
+        <svg className="nav-icon-svg" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+  ];
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
+  return (
+    <div className="admin-layout">
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="sidebar-content">
+          {/* Logo */}
+          <div className="sidebar-header">
+            <Link to="/admin/dashboard" className="logo-container">
+              <div className="logo-icon">
+                <img
+                  src="/logo-removebg-preview.png"
+                  alt="ViePropChain Logo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </div>
+              <h1 className="logo-text">ViePropChain</h1>
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="sidebar-nav">
+            {menuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`nav-item ${isActive(item.path) ? "active" : ""} ${
+                  item.disabled ? "disabled" : ""
+                }`}
+                onClick={(e) => {
+                  if (item.disabled) {
+                    e.preventDefault();
+                  } else {
+                    setSidebarOpen(false);
+                  }
+                }}
+              >
+                {item.iconSvg || <span className="nav-icon">{item.icon}</span>}
+                <span className="nav-label">{item.label}</span>
+                {item.disabled && <span className="badge-soon">Soon</span>}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Bottom Actions */}
+          <div className="sidebar-footer">
+            <button className="nav-item settings-btn">
+              <svg
+                className="nav-icon-svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="nav-label">Settings</span>
+            </button>
+            <button className="nav-item logout-btn" onClick={handleLogout}>
+              <svg
+                className="nav-icon-svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="nav-label">Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="admin-main">
+        {/* Top Header */}
+        <header className="admin-topbar">
+          <div className="topbar-left">
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              <span className="hamburger-icon">☰</span>
+            </button>
+            <h2 className="page-title">
+              {menuItems.find((item) => item.path === location.pathname)
+                ?.label || "Admin"}
+            </h2>
+          </div>
+
+          <div className="topbar-right">
+            {/* Search */}
+            <div className="search-box">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search..."
+                className="search-input"
+              />
+            </div>
+
+            {/* Notifications */}
+            <button className="icon-btn" title="Notifications">
+              <span className="icon">🔔</span>
+            </button>
+
+            {/* User Info */}
+            <div className="user-info">
+              <div className="user-avatar">
+                {user?.email?.charAt(0).toUpperCase() || "A"}
+              </div>
+              <div className="user-details">
+                <div className="user-name">Admin User</div>
+                <div className="user-email">
+                  {user?.email || "admin@propertychain.io"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="admin-content">{children}</main>
+      </div>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default AdminLayout;

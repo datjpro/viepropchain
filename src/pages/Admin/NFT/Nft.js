@@ -1,241 +1,444 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { API_ENDPOINTS } from "../../../config/api";
+import { formatPrice } from "../../../utils/priceUtils";
 import "./Nft.css";
 
 const Nft = () => {
-  const [formData, setFormData] = useState({
-    recipient: "",
-    name: "",
-    description: "",
-    image: "",
-    attributes: [
-      { trait_type: "Loại BDS", value: "" },
-      { trait_type: "Vị trí", value: "" },
-      { trait_type: "Diện tích", value: "" },
-      { trait_type: "Số phòng ngủ", value: "" },
-      { trait_type: "Giá", value: "" },
-    ],
-  });
-
-  const [loading, setLoading] = useState(false);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [minting, setMinting] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [mintResult, setMintResult] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("verified");
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  useEffect(() => {
+    fetchProperties();
+  }, [filter]);
 
-  const handleAttributeChange = (index, value) => {
-    const newAttributes = [...formData.attributes];
-    newAttributes[index].value = value;
-    setFormData((prev) => ({
-      ...prev,
-      attributes: newAttributes,
-    }));
-  };
-
-  const addAttribute = () => {
-    setFormData((prev) => ({
-      ...prev,
-      attributes: [...prev.attributes, { trait_type: "", value: "" }],
-    }));
-  };
-
-  const removeAttribute = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      attributes: prev.attributes.filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateAttributeType = (index, newType) => {
-    const newAttributes = [...formData.attributes];
-    newAttributes[index].trait_type = newType;
-    setFormData((prev) => ({
-      ...prev,
-      attributes: newAttributes,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ type: "", text: "" });
-
+  const fetchProperties = async () => {
     try {
-      const response = await fetch("http://localhost:3002/mint", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      setLoading(true);
+      let url = `${API_ENDPOINTS.ADMIN.PROPERTIES}?limit=100`;
 
+      if (filter === "verified") {
+        url += "&verificationStatus=verified&blockchainStatus=none";
+      } else if (filter === "minted") {
+        url += "&blockchainStatus=minted";
+      }
+
+      const response = await fetch(url);
       const data = await response.json();
 
-      if (response.ok) {
-        setMessage({ type: "success", text: "NFT đã được tạo thành công!" });
-        // Reset form
-        setFormData({
-          recipient: "",
-          name: "",
-          description: "",
-          image: "",
-          attributes: [
-            { trait_type: "Loại BDS", value: "" },
-            { trait_type: "Vị trí", value: "" },
-            { trait_type: "Diện tích", value: "" },
-            { trait_type: "Số phòng ngủ", value: "" },
-            { trait_type: "Giá", value: "" },
-          ],
-        });
+      if (data.success) {
+        setProperties(data.data.properties || data.data || []);
       } else {
-        setMessage({
-          type: "error",
-          text: data.message || "Có lỗi xảy ra khi tạo NFT",
-        });
+        setMessage({ type: "error", text: "Không thể tải danh sách BĐS" });
       }
     } catch (error) {
-      setMessage({
-        type: "error",
-        text: "Không thể kết nối đến server: " + error.message,
-      });
+      setMessage({ type: "error", text: "Lỗi kết nối: " + error.message });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleMintNFT = async (property) => {
+    if (
+      !window.confirm(
+        `Xác nhận mint NFT cho: ${property.name || property.title}?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setMinting(property._id);
+      setMessage({ type: "", text: "" });
+
+      const token = localStorage.getItem("viepropchain_token");
+      if (!token) {
+        setMessage({ type: "error", text: "⚠️ Vui lòng đăng nhập lại!" });
+        return;
+      }
+
+      const response = await fetch(
+        `${API_ENDPOINTS.ADMIN.PROPERTIES}/${property._id}/mint`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ metadataUri: null }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Không thể mint NFT");
+      }
+
+      setMintResult(data.data);
+      setSelectedProperty(property);
+
+      const custodialMsg = data.data.isCustodial
+        ? `🏦 Mint vào ví Admin (Custodial)\nUser chưa liên kết ví, NFT sẽ được giữ hộ.`
+        : `✅ Mint vào ví User\nNFT đã chuyển vào ví của chủ nhà.`;
+
+      setMessage({
+        type: "success",
+        text: `🎉 Mint NFT thành công!\nToken ID: ${data.data.tokenId}\n\n${custodialMsg}`,
+      });
+
+      // Refresh danh sách
+      fetchProperties();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Lỗi mint NFT: " + error.message,
+      });
+    } finally {
+      setMinting(null);
+    }
+  };
+
+  const getFilteredProperties = () => {
+    if (!searchTerm) return properties;
+
+    return properties.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.location?.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // formatPrice được import từ utils/priceUtils.js
+
+  const getPropertyTypeIcon = (type) => {
+    const icons = {
+      apartment: "🏢",
+      house: "🏡",
+      villa: "🏰",
+      land: "🌍",
+      commercial: "🏪",
+    };
+    return icons[type] || "🏠";
+  };
+
+  const closeMintResult = () => {
+    setMintResult(null);
+    setSelectedProperty(null);
+  };
+
+  const filteredProperties = getFilteredProperties();
+
+  if (loading) {
+    return (
+      <div className="nft-container">
+        <div className="loading-state">
+          <div className="spinner-large"></div>
+          <p>Đang tải danh sách...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="nft-admin-container">
-      <div className="nft-admin-wrapper">
-        <h1 className="nft-admin-title">NFT Hóa Bất Động Sản</h1>
-        <p className="nft-admin-subtitle">Tạo NFT cho tài sản bất động sản</p>
-
-        {message.text && (
-          <div className={`message ${message.type}`}>{message.text}</div>
-        )}
-
-        <form onSubmit={handleSubmit} className="nft-form">
-          {/* Recipient Address */}
-          <div className="form-group">
-            <label htmlFor="recipient">Địa chỉ ví người nhận *</label>
-            <input
-              type="text"
-              id="recipient"
-              name="recipient"
-              value={formData.recipient}
-              onChange={handleInputChange}
-              placeholder="0x..."
-              required
-              className="form-input"
-            />
+    <div className="nft-container">
+      <div className="nft-header">
+        <div className="header-content">
+          <h1>⛏️ Mint NFT</h1>
+          <p>Tạo NFT cho bất động sản đã được duyệt</p>
+        </div>
+        <div className="header-stats">
+          <div className="stat-item">
+            <span className="stat-value">
+              {properties.filter((p) => !p.nft?.isMinted).length}
+            </span>
+            <span className="stat-label">Chờ mint</span>
           </div>
-
-          {/* Property Name */}
-          <div className="form-group">
-            <label htmlFor="name">Tên bất động sản *</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Ví dụ: Căn hộ Vinhomes Central Park"
-              required
-              className="form-input"
-            />
+          <div className="stat-item">
+            <span className="stat-value">
+              {properties.filter((p) => p.nft?.isMinted).length}
+            </span>
+            <span className="stat-label">Đã mint</span>
           </div>
+        </div>
+      </div>
 
-          {/* Description */}
-          <div className="form-group">
-            <label htmlFor="description">Mô tả *</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Mô tả chi tiết về bất động sản..."
-              required
-              className="form-textarea"
-              rows="4"
-            />
+      {message.text && (
+        <div className={`alert alert-${message.type}`}>
+          <div className="alert-icon">
+            {message.type === "success" ? "✅" : "❌"}
           </div>
-
-          {/* Image URL */}
-          <div className="form-group">
-            <label htmlFor="image">URL hình ảnh *</label>
-            <input
-              type="url"
-              id="image"
-              name="image"
-              value={formData.image}
-              onChange={handleInputChange}
-              placeholder="https://example.com/image.jpg"
-              required
-              className="form-input"
-            />
-            {formData.image && (
-              <div className="image-preview">
-                <img src={formData.image} alt="Preview" />
-              </div>
-            )}
+          <div className="alert-content">
+            {message.text.split("\n").map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
           </div>
+          <button
+            className="alert-close"
+            onClick={() => setMessage({ type: "", text: "" })}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
-          {/* Attributes Section */}
-          <div className="form-group">
-            <label className="attributes-label">
-              Thuộc tính
-              <button
-                type="button"
-                onClick={addAttribute}
-                className="btn-add-attribute"
-              >
-                + Thêm thuộc tính
-              </button>
-            </label>
+      {mintResult && (
+        <div className="mint-result-modal">
+          <div className="modal-backdrop" onClick={closeMintResult}></div>
+          <div className="modal-card">
+            <button className="modal-close-btn" onClick={closeMintResult}>
+              ×
+            </button>
 
-            <div className="attributes-list">
-              {formData.attributes.map((attr, index) => (
-                <div key={index} className="attribute-row">
-                  <input
-                    type="text"
-                    value={attr.trait_type}
-                    onChange={(e) => updateAttributeType(index, e.target.value)}
-                    placeholder="Loại thuộc tính"
-                    className="attribute-input attribute-type"
-                  />
-                  <input
-                    type="text"
-                    value={attr.value}
-                    onChange={(e) =>
-                      handleAttributeChange(index, e.target.value)
-                    }
-                    placeholder="Giá trị"
-                    className="attribute-input attribute-value"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeAttribute(index)}
-                    className="btn-remove-attribute"
-                    title="Xóa thuộc tính"
-                  >
-                    ×
-                  </button>
+            <div className="modal-header">
+              <div className="success-icon">🎉</div>
+              <h2>Mint NFT thành công!</h2>
+            </div>
+
+            <div className="modal-body">
+              <div className="result-grid">
+                <div className="result-item">
+                  <label>Token ID</label>
+                  <div className="result-value token-id">
+                    #{mintResult.tokenId}
+                  </div>
                 </div>
-              ))}
+
+                <div className="result-item">
+                  <label>Contract Address</label>
+                  <div className="result-value code">
+                    {mintResult.contractAddress}
+                  </div>
+                </div>
+
+                <div className="result-item full-width">
+                  <label>Owner Address</label>
+                  <div className="result-value code">{mintResult.owner}</div>
+                </div>
+
+                {mintResult.isCustodial && (
+                  <div className="result-item full-width custodial-notice">
+                    <div className="notice-icon">🏦</div>
+                    <div>
+                      <strong>Ví giữ hộ (Custodial Wallet)</strong>
+                      <p>
+                        User chưa liên kết ví MetaMask. NFT được lưu tại ví
+                        Admin và sẽ chuyển về cho user khi họ liên kết ví.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="result-item full-width">
+                  <label>Transaction Hash</label>
+                  <div className="result-value code small">
+                    {mintResult.transactionHash}
+                  </div>
+                </div>
+
+                {mintResult.tokenURI && (
+                  <div className="result-item full-width">
+                    <label>Metadata URI</label>
+                    <a
+                      href={mintResult.tokenURI}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="result-link"
+                    >
+                      {mintResult.tokenURI}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                {mintResult.tokenURI && (
+                  <a
+                    href={mintResult.tokenURI}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary"
+                  >
+                    🔗 Xem Metadata
+                  </a>
+                )}
+                <button className="btn btn-primary" onClick={closeMintResult}>
+                  Đóng
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Submit Button */}
-          <div className="form-actions">
-            <button type="submit" disabled={loading} className="btn-submit">
-              {loading ? "Đang xử lý..." : "Tạo NFT"}
-            </button>
-          </div>
-        </form>
+      <div className="nft-controls">
+        <div className="search-box">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên, địa chỉ..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="filter-tabs">
+          <button
+            className={`filter-tab ${filter === "verified" ? "active" : ""}`}
+            onClick={() => setFilter("verified")}
+          >
+            <span className="tab-icon">⏳</span>
+            Chờ mint
+          </button>
+          <button
+            className={`filter-tab ${filter === "minted" ? "active" : ""}`}
+            onClick={() => setFilter("minted")}
+          >
+            <span className="tab-icon">✅</span>
+            Đã mint
+          </button>
+          <button
+            className={`filter-tab ${filter === "all" ? "active" : ""}`}
+            onClick={() => setFilter("all")}
+          >
+            <span className="tab-icon">📋</span>
+            Tất cả
+          </button>
+        </div>
       </div>
+
+      {filteredProperties.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">📭</div>
+          <h3>Không tìm thấy bất động sản</h3>
+          <p>
+            {filter === "verified"
+              ? "Chưa có BĐS nào đã duyệt chờ mint NFT"
+              : "Không có BĐS nào phù hợp với bộ lọc"}
+          </p>
+        </div>
+      ) : (
+        <div className="pending-grid">
+          {filteredProperties.map((property) => (
+            <div key={property._id} className="pending-card">
+              <div className="pending-image">
+                <img
+                  src={
+                    property.media?.images?.[0]?.url ||
+                    property.images?.[0] ||
+                    "https://via.placeholder.com/400x300?text=No+Image"
+                  }
+                  alt={property.name || property.title}
+                  onError={(e) => {
+                    e.target.src =
+                      "https://via.placeholder.com/400x300?text=No+Image";
+                  }}
+                />
+                <div className="property-type-badge">
+                  {getPropertyTypeIcon(property.propertyType)}{" "}
+                  {property.propertyType}
+                </div>
+                {property.nft?.isMinted && (
+                  <div className="minted-badge">
+                    🎨 NFT #{property.nft.tokenId}
+                  </div>
+                )}
+              </div>
+
+              <div className="pending-body">
+                <h3>{property.name || property.title}</h3>
+
+                <div className="property-info">
+                  <div className="info-item">
+                    <strong>📍 Địa chỉ:</strong>
+                    <span>
+                      {property.location?.address || property.address?.street},{" "}
+                      {property.location?.district}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <strong>💰 Giá:</strong>
+                    <span>{formatPrice(property.price)}</span>
+                  </div>
+                  <div className="info-item">
+                    <strong>🏠 Loại:</strong>
+                    <span>{property.propertyType || "N/A"}</span>
+                  </div>
+                  <div className="info-item">
+                    <strong>📅 Ngày tạo:</strong>
+                    <span>
+                      {new Date(property.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+                  <div className="info-item">
+                    <strong>🔖 Trạng thái:</strong>
+                    <span>
+                      {property.verificationStatus || property.status || "N/A"}
+                    </span>
+                  </div>
+                  {property.nft?.tokenId && (
+                    <div className="info-item">
+                      <strong>🎨 Token ID:</strong>
+                      <span>#{property.nft.tokenId}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pending-actions">
+                  {property.verificationStatus === "verified" &&
+                    !property.nft?.isMinted && (
+                      <button
+                        className="btn-mint"
+                        onClick={() => handleMintNFT(property)}
+                        disabled={minting === property._id}
+                      >
+                        {minting === property._id ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Đang mint...
+                          </>
+                        ) : (
+                          <>⛏️ Mint NFT</>
+                        )}
+                      </button>
+                    )}
+
+                  {!property.verificationStatus &&
+                    property.status === "active" &&
+                    !property.nft?.isMinted && (
+                      <button
+                        className="btn-mint"
+                        onClick={() => handleMintNFT(property)}
+                        disabled={minting === property._id}
+                      >
+                        {minting === property._id ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Đang mint...
+                          </>
+                        ) : (
+                          <>⛏️ Mint NFT</>
+                        )}
+                      </button>
+                    )}
+
+                  {property.nft?.isMinted && (
+                    <div className="nft-info-inline">
+                      <span>✅ Đã mint NFT #{property.nft.tokenId}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

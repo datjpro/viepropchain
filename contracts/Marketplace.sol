@@ -1,140 +1,80 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract Marketplace {
-    uint256 private _listingIds;
+// Interface cho chức năng Thuê (ERC-4907)
+interface IERC4907 is IERC721 {
+    function setUser(uint256 tokenId, address user, uint64 expires) external;
+}
 
-    address payable public immutable feeAccount;
-    uint256 public immutable feePercent;
+contract Marketplace is Ownable {
+    IERC4907 public nftContract;
+    address payable public feeAccount;
+    uint256 public feePercent = 1; // Phí sàn 1%
 
-    IERC721 private immutable nftContract;
-
-    enum ListingStatus {
-        Active,
-        Sold,
-        Cancelled
-    }
-
-    struct Listing {
-        uint256 listingId;
-        address seller;
-        uint256 tokenId;
-        uint256 price;
-        ListingStatus status;
-    }
-
-    mapping(uint256 => Listing) public listings;
-
-    event ItemListed(
-        uint256 indexed listingId,
-        address indexed seller,
-        uint256 indexed tokenId,
-        uint256 price
-    );
-
-    event ItemSold(
-        uint256 indexed listingId,
-        address indexed buyer,
-        uint256 tokenId
-    );
-
-    event ListingCancelled(uint256 indexed listingId);
+    event ItemSold(uint256 indexed tokenId, address buyer, uint256 price);
+    event ItemRented(uint256 indexed tokenId, address tenant, uint256 duration);
 
     constructor(
-        address _nftContractAddress,
-        uint256 _feePercent,
+        address _nftAddress,
         address payable _feeAccount
-    ) {
-        nftContract = IERC721(_nftContractAddress);
-        feePercent = _feePercent;
+    ) Ownable(msg.sender) {
+        nftContract = IERC4907(_nftAddress);
         feeAccount = _feeAccount;
     }
 
-    function listItem(uint256 _tokenId, uint256 _price) external {
-        require(_price > 0, "Price must be greater than zero");
-        require(
-            nftContract.ownerOf(_tokenId) == msg.sender,
-            "You must own the NFT to list it"
-        );
-        require(
-            nftContract.getApproved(_tokenId) == address(this) ||
-                nftContract.isApprovedForAll(msg.sender, address(this)),
-            "Marketplace must be approved to transfer the NFT"
-        );
+    // --- CHỨC NĂNG MUA (BÁN ĐỨT) ---
+    // User gọi hàm này + Gửi ETH => Nhận NFT luôn
+    function buyItemDirect(
+        uint256 _tokenId,
+        address payable _seller
+    ) external payable {
+        require(msg.value > 0, "Price must be > 0");
 
-        _listingIds++;
-        uint256 listingId = _listingIds;
+        // 1. Chia tiền
+        uint256 fee = (msg.value * feePercent) / 100;
+        uint256 sellerAmount = msg.value - fee;
 
-        // Transfer NFT to the contract
-        nftContract.transferFrom(msg.sender, address(this), _tokenId);
+        // 2. Chuyển tiền (Admin nhận phí, Seller nhận cục to)
+        feeAccount.transfer(fee);
+        _seller.transfer(sellerAmount);
 
-        listings[listingId] = Listing(
-            listingId,
-            msg.sender,
-            _tokenId,
-            _price,
-            ListingStatus.Active
-        );
+        // 3. Chuyển NFT từ ví người đang giữ (Admin/Owner) sang người mua
+        // *Lưu ý: Ví đang giữ NFT phải setApprovalForAll cho contract này trước
+        address ownerOfToken = nftContract.ownerOf(_tokenId);
+        // require(
+        //     nftContract.getApproved(_tokenId) == address(this) ||
+        //         nftContract.isApprovedForAll(ownerOfToken, address(this)),
+        //     "NFT not approved for marketplace"
+        // );
+        nftContract.transferFrom(ownerOfToken, msg.sender, _tokenId);
 
-        emit ItemListed(listingId, msg.sender, _tokenId, _price);
+        emit ItemSold(_tokenId, msg.sender, msg.value);
     }
 
-    function buyItem(uint256 _listingId) external payable {
-        Listing storage listing = listings[_listingId];
-        require(listing.listingId != 0, "Listing does not exist");
-        require(
-            listing.status == ListingStatus.Active,
-            "Listing is not active"
-        );
-        require(
-            msg.value >= listing.price,
-            "Not enough Ether to cover item price and market fee"
-        );
+    // --- CHỨC NĂNG THUÊ ---
+    // User gọi hàm này + Gửi ETH => Được cấp quyền sử dụng
+    function rentItemDirect(
+        uint256 _tokenId,
+        address payable _landlord,
+        uint64 _durationDays
+    ) external payable {
+        require(msg.value > 0, "Rent price must be > 0");
 
-        // Pay seller and fee account
-        address seller = listing.seller;
-        uint256 price = listing.price;
-        uint256 fee = (price * feePercent) / 100;
+        // 1. Chia tiền
+        uint256 fee = (msg.value * feePercent) / 100;
+        uint256 landlordAmount = msg.value - fee;
 
-        payable(seller).transfer(price);
-        payable(feeAccount).transfer(fee);
+        // 2. Chuyển tiền
+        feeAccount.transfer(fee);
+        _landlord.transfer(landlordAmount);
 
-        // Update listing status
-        listing.status = ListingStatus.Sold;
+        // 3. Tính hạn sử dụng & Cấp quyền
+        uint64 expires = uint64(block.timestamp + (_durationDays * 1 days));
+        nftContract.setUser(_tokenId, msg.sender, expires);
 
-        // Transfer NFT to the buyer
-        nftContract.transferFrom(address(this), msg.sender, listing.tokenId);
-
-        emit ItemSold(_listingId, msg.sender, listing.tokenId);
-    }
-
-    function cancelListing(uint256 _listingId) external {
-        Listing storage listing = listings[_listingId];
-        require(listing.listingId != 0, "Listing does not exist");
-        require(listing.seller == msg.sender, "You are not the seller");
-        require(
-            listing.status == ListingStatus.Active,
-            "Listing is not active"
-        );
-
-        // Update listing status
-        listing.status = ListingStatus.Cancelled;
-
-        // Return NFT to the seller
-        nftContract.transferFrom(address(this), msg.sender, listing.tokenId);
-
-        emit ListingCancelled(_listingId);
-    }
-
-    function getListing(
-        uint256 _listingId
-    ) public view returns (Listing memory) {
-        return listings[_listingId];
-    }
-
-    function getListingCount() public view returns (uint256) {
-        return _listingIds;
+        emit ItemRented(_tokenId, msg.sender, _durationDays);
     }
 }

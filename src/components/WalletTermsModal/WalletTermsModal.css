@@ -1,0 +1,268 @@
+.wallet-terms-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.wallet-terms-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 28px;
+  border-bottom: 2px solid #e5e7eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.modal-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-header p {
+  margin: 0;
+  opacity: 0.95;
+  font-size: 15px;
+}
+
+.modal-body {
+  padding: 32px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.terms-section {
+  margin-bottom: 28px;
+}
+
+.terms-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.terms-box {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.terms-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.terms-list li {
+  padding: 12px 0 12px 32px;
+  position: relative;
+  color: #374151;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.terms-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 8px;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.warning-box {
+  background: #fef3c7;
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.warning-box h4 {
+  margin: 0 0 12px 0;
+  color: #92400e;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warning-box p {
+  margin: 8px 0;
+  color: #78350f;
+  line-height: 1.6;
+}
+
+.info-box {
+  background: #dbeafe;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.info-box h4 {
+  margin: 0 0 12px 0;
+  color: #1e40af;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-box p {
+  margin: 8px 0;
+  color: #1e3a8a;
+  line-height: 1.6;
+}
+
+.steps-list {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.steps-list li {
+  padding: 14px 0 14px 40px;
+  position: relative;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.steps-list li::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 8px;
+  background: #3b82f6;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.modal-footer {
+  padding: 24px 28px;
+  border-top: 2px solid #e5e7eb;
+  background: #f9fafb;
+  display: flex;
+  gap: 12px;
+}
+
+.btn-agree {
+  flex: 1;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-agree:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+}
+
+.btn-agree:active {
+  transform: translateY(0);
+}
+
+.btn-later {
+  padding: 16px 24px;
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-later:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+@media (max-width: 768px) {
+  .wallet-terms-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 22px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn-agree,
+  .btn-later {
+    width: 100%;
+  }
+}

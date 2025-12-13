@@ -1,0 +1,531 @@
+.pending-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pending-header {
+  margin-bottom: 30px;
+}
+
+.pending-header h1 {
+  font-size: 32px;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.pending-header p {
+  color: #718096;
+  font-size: 16px;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs button {
+  padding: 10px 20px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.filter-tabs button:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.filter-tabs button.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.btn-refresh {
+  margin-left: auto;
+  background: #10b981 !important;
+  color: white !important;
+  border-color: #10b981 !important;
+}
+
+.btn-refresh:hover {
+  background: #059669 !important;
+}
+
+/* Loading & Error */
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  background: #fee2e2;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-retry {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+  font-size: 18px;
+}
+
+/* Properties Grid */
+.pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
+}
+
+.pending-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pending-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.pending-image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.pending-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-badge.kyc-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.approval-pending {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.pending-body {
+  padding: 20px;
+}
+
+.pending-body h3 {
+  font-size: 18px;
+  color: #1a202c;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.property-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.info-item strong {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.info-item span {
+  color: #1e293b;
+}
+
+/* Actions */
+.pending-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pending-actions button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-view {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-view:hover {
+  background: #e2e8f0;
+}
+
+.btn-approve {
+  background: #10b981;
+  color: white;
+}
+
+.btn-approve:hover {
+  background: #059669;
+}
+
+.btn-mint {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-mint:hover {
+  background: #7c3aed;
+}
+
+.btn-reject {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-reject:hover {
+  background: #dc2626;
+}
+
+.pending-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f1f5f9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.modal-close:hover {
+  background: #e2e8f0;
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 32px;
+}
+
+.modal-body h2 {
+  font-size: 28px;
+  color: #1a202c;
+  margin-bottom: 24px;
+}
+
+.detail-section {
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-section:last-of-type {
+  border-bottom: none;
+}
+
+.detail-section h3 {
+  font-size: 18px;
+  color: #1e293b;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.detail-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.detail-item strong {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.detail-item span,
+.detail-item code {
+  color: #1e293b;
+}
+
+.detail-item code {
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+/* Images Grid */
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.detail-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.detail-image:hover {
+  transform: scale(1.05);
+}
+
+/* Legal Section */
+.legal-section {
+  background: #fef3c7;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #fbbf24;
+}
+
+.legal-section h3 {
+  color: #92400e;
+}
+
+.documents-list {
+  margin-top: 12px;
+}
+
+.document-item {
+  margin-top: 8px;
+}
+
+.btn-view-doc {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-view-doc:hover {
+  background: #2563eb;
+}
+
+.warning {
+  color: #92400e;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.btn-action {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-action.approve {
+  background: #10b981;
+  color: white;
+}
+
+.btn-action.approve:hover {
+  background: #059669;
+}
+
+.btn-action.mint {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-action.mint:hover {
+  background: #7c3aed;
+}
+
+.btn-action.info {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-action.info:hover {
+  background: #2563eb;
+}
+
+.btn-action.reject {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-action.reject:hover {
+  background: #dc2626;
+}
+
+.btn-action.cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-action.cancel:hover {
+  background: #e2e8f0;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pending-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-tabs {
+    flex-direction: column;
+  }
+
+  .filter-tabs button {
+    width: 100%;
+  }
+
+  .pending-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .detail-item {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    grid-template-columns: 1fr;
+  }
+}
