@@ -29,12 +29,11 @@ module.exports = async function (deployer, network, accounts) {
   const nftAddress = existingContracts.contracts.ViePropChainNFT.address;
 
   // Prepare deploy parameters
-  const feePercent = 1; // 1% fee
   const feeAccount = accounts[0]; // Admin wallet
 
   console.log("🚀 Deploying new Marketplace...");
   console.log("   NFT Contract:", nftAddress);
-  console.log("   Fee Percent:", feePercent + "%");
+  console.log("   Fee Percent: 1% (hardcoded)");
   console.log("   Fee Account:", feeAccount);
 
   // Ensure existingContracts has proper structure to avoid accidental overwrites
@@ -61,7 +60,7 @@ module.exports = async function (deployer, network, accounts) {
   // Deploy and update contracts.json only on success
   let marketplaceContract;
   try {
-    await deployer.deploy(Marketplace, nftAddress, feePercent, feeAccount);
+    await deployer.deploy(Marketplace, nftAddress, feeAccount);
     marketplaceContract = await Marketplace.deployed();
 
     console.log("\n✅ New Marketplace deployed:", marketplaceContract.address);

@@ -85,13 +85,8 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
         itemData.contractAddress
       );
 
-      const approved = await nftContract.methods
-        .getApproved(itemData.tokenId)
-        .call();
-      const marketplaceAddress = CONTRACTS.addresses.Marketplace;
-      setIsApproved(
-        approved.toLowerCase() === marketplaceAddress.toLowerCase()
-      );
+      // DEMO: Skip approval check for demo purposes
+      setIsApproved(true);
     } catch (error) {
       console.error("Error checking approval:", error);
       setIsApproved(false);

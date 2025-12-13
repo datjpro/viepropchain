@@ -914,6 +914,49 @@ const web3Service = {
   },
 
   /**
+   * Approve NFT for marketplace contract
+   * @param {object} web3 - Web3 instance
+   * @param {number} tokenId - NFT token ID to approve
+   * @param {string} fromAddress - Address approving the NFT
+   */
+  approveForMarketplace: async (web3, tokenId, fromAddress) => {
+    try {
+      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
+      const marketplaceAddress = CONTRACTS.addresses.Marketplace;
+
+      console.log("🔑 Approving NFT for marketplace:", {
+        tokenId,
+        fromAddress,
+        marketplaceAddress,
+      });
+
+      // Check if already approved
+      const currentApproval = await nftContract.methods
+        .getApproved(tokenId)
+        .call();
+
+      if (currentApproval.toLowerCase() === marketplaceAddress.toLowerCase()) {
+        console.log("✅ NFT already approved for marketplace");
+        return { success: true, alreadyApproved: true };
+      }
+
+      // Send approval transaction
+      const approveTx = await nftContract.methods
+        .approve(marketplaceAddress, tokenId)
+        .send({
+          from: fromAddress,
+          gas: 100000,
+        });
+
+      console.log("✅ NFT approved successfully:", approveTx.transactionHash);
+      return { success: true, transactionHash: approveTx.transactionHash };
+    } catch (error) {
+      console.error("❌ Approve failed:", error);
+      return { success: false, error: error.message };
+    }
+  },
+
+  /**
    * Get contract addresses
    */
   getContractAddresses: () => {

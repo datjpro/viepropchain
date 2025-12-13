@@ -5,18 +5,17 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = async function (deployer, network, accounts) {
-  // Deploy ViePropChainNFT contract
-  await deployer.deploy(ViePropChainNFT);
-  const nftContract = await ViePropChainNFT.deployed();
+  // Use existing NFT contract address (don't redeploy)
+  const nftContractAddress = "0xEA4F5F49F396B13CA447FaA792A8702054019Cc8";
 
   // Deploy Marketplace contract with required parameters
-  // Parameters: NFT contract address, fee percentage (1%), fee recipient account
+  // Parameters: NFT contract address, fee percent, fee recipient account
   const feePercent = 1; // 1% fee
   const feeAccount = accounts[0]; // First account as fee recipient
 
   await deployer.deploy(
     Marketplace,
-    nftContract.address,
+    nftContractAddress,
     feePercent,
     feeAccount
   );
@@ -28,8 +27,8 @@ module.exports = async function (deployer, network, accounts) {
     deployedAt: new Date().toISOString(),
     contracts: {
       ViePropChainNFT: {
-        address: nftContract.address,
-        abi: ViePropChainNFT.abi,
+        address: nftContractAddress,
+        abi: [], // ABI not available since not redeployed
       },
       Marketplace: {
         address: marketplaceContract.address,

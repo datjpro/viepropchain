@@ -62,6 +62,14 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
   const tokenId = listing?.tokenId;
   const sellerAddress = listing?.seller?.walletAddress;
 
+  // Tính toán fee và tổng tiền
+  const feeAmount = propertyPrice
+    ? (parseFloat(propertyPrice) * 0.01).toFixed(4)
+    : "0";
+  const totalAmount = propertyPrice
+    ? (parseFloat(propertyPrice) + parseFloat(feeAmount)).toFixed(4)
+    : "0";
+
   // ========================================================================
   // 1. TỰ ĐỘNG LẤY SỐ DƯ KHI MỞ MODAL
   // ========================================================================
@@ -164,42 +172,55 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
         const sellerAddr = sellerAddress.toLowerCase();
 
         // Calculate fee (1%) and total value to send
-        const feeWei = web3.utils
-          .toBN(priceWei)
-          .mul(web3.utils.toBN(1))
-          .div(web3.utils.toBN(100))
-          .toString(); // 1% fee
-        const totalValueWei = web3.utils
-          .toBN(priceWei)
-          .add(web3.utils.toBN(feeWei))
-          .toString();
+        const priceNum = parseInt(priceWei);
+        const feeNum = Math.floor(priceNum * 0.01); // 1% fee
+        const totalValueWei = (priceNum + feeNum).toString();
 
         console.log("📋 Parameters for contract call:");
         console.log("   tokenId:", tokenIdNum, typeof tokenIdNum);
         console.log("   price:", priceWei, typeof priceWei);
-        console.log("   fee (1%):", feeWei, typeof feeWei);
+        console.log(
+          "   fee (1%):",
+          feeNum.toString(),
+          typeof feeNum.toString()
+        );
         console.log(
           "   total value to send:",
           totalValueWei,
           typeof totalValueWei
         );
         console.log("   seller:", sellerAddr, typeof sellerAddr);
+
+        // Check ownership before calling contract (approval not needed with new contract)
+        const nftContract = new web3.eth.Contract(
+          CONTRACTS.abis.ViePropChainNFT,
+          CONTRACTS.addresses.ViePropChainNFT
+        );
+
+        console.log("🔍 Checking ownership...");
+
+        const owner = await nftContract.methods.ownerOf(tokenIdNum).call();
+        console.log("   Owner of token", tokenIdNum, ":", owner.toLowerCase());
+
+        if (owner.toLowerCase() !== sellerAddr) {
+          throw new Error(
+            `Seller ${sellerAddr} does not own token ${tokenIdNum}. Owner is ${owner}`
+          );
+        }
+
         console.log(
-          "   signature:",
-          listing.sellerSignature.substring(0, 20) + "..."
+          "✅ Ownership verified successfully - new contract handles transfer directly"
         );
 
         const tx = await marketplaceContract.methods
           .buyItemDirect(
             tokenIdNum, // uint256 tokenId
-            priceWei, // uint256 price as string
-            sellerAddr, // address seller
-            listing.sellerSignature // bytes signature
+            sellerAddr // address payable seller
           )
           .send({
             from: BUYER_ADDRESS,
             value: totalValueWei,
-            gas: 500000,
+            gas: 2000000,
             gasPrice: web3.utils.toWei("20", "gwei"),
           });
 
@@ -320,9 +341,17 @@ const CryptoPaymentModal = ({ listing, onClose, onSuccess }) => {
                 <span className="label">Mua BĐS:</span>
                 <span className="value">{propertyName}</span>
               </div>
-              <div className="info-row price-row">
-                <span className="label">Giá phải trả:</span>
-                <span className="value price">{propertyPrice} ETH</span>
+              <div className="info-row">
+                <span className="label">Giá gốc:</span>
+                <span className="value">{propertyPrice} ETH</span>
+              </div>
+              <div className="info-row">
+                <span className="label">Phí nền tảng (1%):</span>
+                <span className="value">{feeAmount} ETH</span>
+              </div>
+              <div className="info-row price-row total-row">
+                <span className="label">Tổng tiền:</span>
+                <span className="value price total">{totalAmount} ETH</span>
               </div>
             </div>
 

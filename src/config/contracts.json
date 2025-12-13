@@ -1,6 +1,6 @@
 {
   "network": "development",
-  "deployedAt": "2025-12-12T14:53:06.361Z",
+  "deployedAt": "2025-12-13T16:21:46.925Z",
   "contracts": {
     "ViePropChainNFT": {
       "address": "0xEA4F5F49F396B13CA447FaA792A8702054019Cc8",
@@ -8,29 +8,7 @@
         {
           "inputs": [],
           "stateMutability": "nonpayable",
-          "type": "constructor",
-          "signature": "constructor"
-        },
-        {
-          "inputs": [],
-          "name": "AccessControlBadConfirmation",
-          "type": "error"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "neededRole",
-              "type": "bytes32"
-            }
-          ],
-          "name": "AccessControlUnauthorizedAccount",
-          "type": "error"
+          "type": "constructor"
         },
         {
           "inputs": [
@@ -136,6 +114,28 @@
           "type": "error"
         },
         {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableInvalidOwner",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableUnauthorizedAccount",
+          "type": "error"
+        },
+        {
           "anonymous": false,
           "inputs": [
             {
@@ -158,8 +158,7 @@
             }
           ],
           "name": "Approval",
-          "type": "event",
-          "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+          "type": "event"
         },
         {
           "anonymous": false,
@@ -184,8 +183,7 @@
             }
           ],
           "name": "ApprovalForAll",
-          "type": "event",
-          "signature": "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31"
+          "type": "event"
         },
         {
           "anonymous": false,
@@ -204,22 +202,7 @@
             }
           ],
           "name": "BatchMetadataUpdate",
-          "type": "event",
-          "signature": "0x6bd5c950a8d8df17f772f5af37cb3655737899cbf903264b9795592da439661c"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "Locked",
-          "type": "event",
-          "signature": "0x032bc66be43dbccb7487781d168eb7bda224628a3b2c3388bdf69b532a3a1611"
+          "type": "event"
         },
         {
           "anonymous": false,
@@ -232,170 +215,26 @@
             }
           ],
           "name": "MetadataUpdate",
-          "type": "event",
-          "signature": "0xf8e1a15aba9398e019f0b49df1a4fde98ee17ae345cb5f6b5e2c27f5033e8ce7"
+          "type": "event"
         },
         {
           "anonymous": false,
           "inputs": [
             {
               "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
               "internalType": "address",
-              "name": "adminWallet",
+              "name": "previousOwner",
               "type": "address"
             },
             {
               "indexed": true,
               "internalType": "address",
-              "name": "userWallet",
+              "name": "newOwner",
               "type": "address"
             }
           ],
-          "name": "NFTClaimed",
-          "type": "event",
-          "signature": "0x5b1a331f43e9f7681b9a84319e347d50f14886e11857b9212fa3fa7d47172f02"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "to",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "internalType": "string",
-              "name": "tokenURI",
-              "type": "string"
-            }
-          ],
-          "name": "NFTMinted",
-          "type": "event",
-          "signature": "0x06becd955c918828f6e985541acbf49cc842c9e9bd569fffc7698e721ef13575"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "adminWallet",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "internalType": "string",
-              "name": "tokenURI",
-              "type": "string"
-            },
-            {
-              "indexed": false,
-              "internalType": "bool",
-              "name": "locked",
-              "type": "bool"
-            }
-          ],
-          "name": "NFTMintedCustodial",
-          "type": "event",
-          "signature": "0x68069e94476c3bf41345bf1b9edb59524abc953a1a7c5184f4a27d37e6e77fb0"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "previousAdminRole",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "newAdminRole",
-              "type": "bytes32"
-            }
-          ],
-          "name": "RoleAdminChanged",
-          "type": "event",
-          "signature": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "sender",
-              "type": "address"
-            }
-          ],
-          "name": "RoleGranted",
-          "type": "event",
-          "signature": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "sender",
-              "type": "address"
-            }
-          ],
-          "name": "RoleRevoked",
-          "type": "event",
-          "signature": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+          "name": "OwnershipTransferred",
+          "type": "event"
         },
         {
           "anonymous": false,
@@ -420,78 +259,7 @@
             }
           ],
           "name": "Transfer",
-          "type": "event",
-          "signature": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "Unlocked",
-          "type": "event",
-          "signature": "0xf27b6ce5b2f5e68ddb2fd95a8a909d4ecf1daaac270935fff052feacb24f1842"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "user",
-              "type": "address"
-            },
-            {
-              "indexed": false,
-              "internalType": "uint64",
-              "name": "expires",
-              "type": "uint64"
-            }
-          ],
-          "name": "UpdateUser",
-          "type": "event",
-          "signature": "0x4e06b4e7000e659094299b3533b47b6aa8ad048e95e872d23d1f4ee55af89cfe"
-        },
-        {
-          "inputs": [],
-          "name": "DEFAULT_ADMIN_ROLE",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xa217fddf"
-        },
-        {
-          "inputs": [],
-          "name": "OPERATOR_ROLE",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xf5b541a6"
+          "type": "event"
         },
         {
           "inputs": [
@@ -509,8 +277,7 @@
           "name": "approve",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x095ea7b3"
+          "type": "function"
         },
         {
           "inputs": [
@@ -529,9 +296,7 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x70a08231"
+          "type": "function"
         },
         {
           "inputs": [
@@ -550,75 +315,7 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x081812fc"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            }
-          ],
-          "name": "getRoleAdmin",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x248a9ca3"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "grantRole",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x2f2ff15d"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "hasRole",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x91d14854"
+          "type": "function"
         },
         {
           "inputs": [
@@ -642,30 +339,31 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xe985e9c5"
+          "type": "function"
         },
         {
           "inputs": [
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            }
+          ],
+          "name": "mint",
+          "outputs": [
             {
               "internalType": "uint256",
               "name": "",
               "type": "uint256"
             }
           ],
-          "name": "isLocked",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xf6aacfb1"
+          "stateMutability": "nonpayable",
+          "type": "function"
         },
         {
           "inputs": [],
@@ -678,9 +376,20 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x06fdde03"
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -699,47 +408,14 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x6352211e"
+          "type": "function"
         },
         {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "callerConfirmation",
-              "type": "address"
-            }
-          ],
-          "name": "renounceRole",
+          "inputs": [],
+          "name": "renounceOwnership",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x36568abe"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes32",
-              "name": "role",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "address",
-              "name": "account",
-              "type": "address"
-            }
-          ],
-          "name": "revokeRole",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xd547741f"
+          "type": "function"
         },
         {
           "inputs": [
@@ -762,8 +438,7 @@
           "name": "safeTransferFrom",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x42842e0e"
+          "type": "function"
         },
         {
           "inputs": [
@@ -791,8 +466,7 @@
           "name": "safeTransferFrom",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xb88d4fde"
+          "type": "function"
         },
         {
           "inputs": [
@@ -810,8 +484,26 @@
           "name": "setApprovalForAll",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xa22cb465"
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "interfaceId",
+              "type": "bytes4"
+            }
+          ],
+          "name": "supportsInterface",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [],
@@ -824,9 +516,20 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x95d89b41"
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "tokenCounter",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
         },
         {
           "inputs": [
@@ -845,9 +548,7 @@
             }
           ],
           "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xc87b56dd"
+          "type": "function"
         },
         {
           "inputs": [
@@ -870,243 +571,32 @@
           "name": "transferFrom",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x23b872dd"
+          "type": "function"
         },
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "adminWallet",
+              "name": "newOwner",
               "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "uri",
-              "type": "string"
             }
           ],
-          "name": "mintCustodial",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xc4bd8e13"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "recipient",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "uri",
-              "type": "string"
-            }
-          ],
-          "name": "mint",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xd0def521"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "address",
-              "name": "adminWallet",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "userWallet",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "claimNFT",
+          "name": "transferOwnership",
           "outputs": [],
           "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xba4a0dfb"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "user",
-              "type": "address"
-            },
-            {
-              "internalType": "uint64",
-              "name": "expires",
-              "type": "uint64"
-            }
-          ],
-          "name": "setUser",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0xe030565e"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "userOf",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xc2f1f14a"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "userExpires",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x8fc88c48"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "string",
-              "name": "uri",
-              "type": "string"
-            }
-          ],
-          "name": "tokenURIExists",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x43d32ae7"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "string",
-              "name": "uri",
-              "type": "string"
-            }
-          ],
-          "name": "getTokenIdByURI",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x118f9708"
-        },
-        {
-          "inputs": [],
-          "name": "totalSupply",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x18160ddd"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes4",
-              "name": "interfaceId",
-              "type": "bytes4"
-            }
-          ],
-          "name": "supportsInterface",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x01ffc9a7"
+          "type": "function"
         }
       ]
     },
     "Marketplace": {
-      "address": "0x84e093ED1c99D69739c9B4808a45aa6A159736D0",
+      "address": "0x4CE33E6d5F46eE14620aaAc2938262030f485610",
       "abi": [
         {
           "inputs": [
             {
               "internalType": "address",
-              "name": "_nftContractAddress",
+              "name": "_nftAddress",
               "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_feePercent",
-              "type": "uint256"
             },
             {
               "internalType": "address payable",
@@ -1141,25 +631,8 @@
           "type": "error"
         },
         {
-          "inputs": [],
-          "name": "ReentrancyGuardReentrantCall",
-          "type": "error"
-        },
-        {
           "anonymous": false,
           "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "listingId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
-              "internalType": "address",
-              "name": "seller",
-              "type": "address"
-            },
             {
               "indexed": true,
               "internalType": "uint256",
@@ -1168,52 +641,20 @@
             },
             {
               "indexed": false,
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            },
-            {
-              "indexed": false,
-              "internalType": "enum Marketplace.ListingType",
-              "name": "listingType",
-              "type": "uint8"
-            }
-          ],
-          "name": "ItemListed",
-          "type": "event",
-          "signature": "0x82079eff9b9fca218e303814f1c1d7b5d5de38eedc50b2fb28f9fbbbb1e528c4"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "listingId",
-              "type": "uint256"
-            },
-            {
-              "indexed": true,
               "internalType": "address",
-              "name": "renter",
+              "name": "tenant",
               "type": "address"
             },
             {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
               "indexed": false,
-              "internalType": "uint64",
-              "name": "expires",
-              "type": "uint64"
+              "internalType": "uint256",
+              "name": "duration",
+              "type": "uint256"
             }
           ],
           "name": "ItemRented",
           "type": "event",
-          "signature": "0xc65f06f3b3d927df5cdd517adc0acb67cf478335e499e2893d92606dd3a3ebbd"
+          "signature": "0x6b058b89d35d7c99eca1411ca5b0a3c2460976131e55184ef63b1a0edc20ec76"
         },
         {
           "anonymous": false,
@@ -1221,11 +662,11 @@
             {
               "indexed": true,
               "internalType": "uint256",
-              "name": "listingId",
+              "name": "tokenId",
               "type": "uint256"
             },
             {
-              "indexed": true,
+              "indexed": false,
               "internalType": "address",
               "name": "buyer",
               "type": "address"
@@ -1233,27 +674,13 @@
             {
               "indexed": false,
               "internalType": "uint256",
-              "name": "tokenId",
+              "name": "price",
               "type": "uint256"
             }
           ],
           "name": "ItemSold",
           "type": "event",
           "signature": "0xa574c741071bb18f51fa88c17aeefec514bebf670ca22a3736fba6504ecbb763"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": true,
-              "internalType": "uint256",
-              "name": "listingId",
-              "type": "uint256"
-            }
-          ],
-          "name": "ListingCancelled",
-          "type": "event",
-          "signature": "0x411aee90354c51b1b04cd563fcab2617142a9d50da19232d888547c8a1b7fd8a"
         },
         {
           "anonymous": false,
@@ -1306,55 +733,19 @@
           "signature": "0x7fd6f15c"
         },
         {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "name": "listings",
+          "inputs": [],
+          "name": "nftContract",
           "outputs": [
             {
-              "internalType": "uint256",
-              "name": "listingId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "seller",
+              "internalType": "contract IERC4907",
+              "name": "",
               "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            },
-            {
-              "internalType": "enum Marketplace.ListingStatus",
-              "name": "status",
-              "type": "uint8"
-            },
-            {
-              "internalType": "enum Marketplace.ListingType",
-              "name": "listingType",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "rentalDuration",
-              "type": "uint256"
             }
           ],
           "stateMutability": "view",
           "type": "function",
           "constant": true,
-          "signature": "0xde74e57b"
+          "signature": "0xd56d229d"
         },
         {
           "inputs": [],
@@ -1401,77 +792,9 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint256",
-              "name": "_price",
-              "type": "uint256"
-            }
-          ],
-          "name": "listItem",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x883efa67"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_tokenId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_pricePerDay",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_maxRentalDurationDays",
-              "type": "uint256"
-            }
-          ],
-          "name": "listForRent",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x945ec30e"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_listingId",
-              "type": "uint256"
-            }
-          ],
-          "name": "buyItem",
-          "outputs": [],
-          "stateMutability": "payable",
-          "type": "function",
-          "payable": true,
-          "signature": "0xe7fb74c7"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "tokenId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "price",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "seller",
+              "internalType": "address payable",
+              "name": "_seller",
               "type": "address"
-            },
-            {
-              "internalType": "bytes",
-              "name": "signature",
-              "type": "bytes"
             }
           ],
           "name": "buyItemDirect",
@@ -1485,171 +808,26 @@
           "inputs": [
             {
               "internalType": "uint256",
-              "name": "_listingId",
+              "name": "_tokenId",
               "type": "uint256"
             },
             {
-              "internalType": "uint256",
-              "name": "_rentalDays",
-              "type": "uint256"
+              "internalType": "address payable",
+              "name": "_landlord",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "_durationDays",
+              "type": "uint64"
             }
           ],
-          "name": "rentItem",
+          "name": "rentItemDirect",
           "outputs": [],
           "stateMutability": "payable",
           "type": "function",
           "payable": true,
-          "signature": "0xa29e4e5d"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_listingId",
-              "type": "uint256"
-            }
-          ],
-          "name": "cancelListing",
-          "outputs": [],
-          "stateMutability": "nonpayable",
-          "type": "function",
-          "signature": "0x305a67a8"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_listingId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getListing",
-          "outputs": [
-            {
-              "components": [
-                {
-                  "internalType": "uint256",
-                  "name": "listingId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "address",
-                  "name": "seller",
-                  "type": "address"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "tokenId",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "price",
-                  "type": "uint256"
-                },
-                {
-                  "internalType": "enum Marketplace.ListingStatus",
-                  "name": "status",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "enum Marketplace.ListingType",
-                  "name": "listingType",
-                  "type": "uint8"
-                },
-                {
-                  "internalType": "uint256",
-                  "name": "rentalDuration",
-                  "type": "uint256"
-                }
-              ],
-              "internalType": "struct Marketplace.Listing",
-              "name": "",
-              "type": "tuple"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x107a274a"
-        },
-        {
-          "inputs": [],
-          "name": "getListingCount",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x87ed92d7"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "isRented",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0xaa15d40f"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getCurrentRenter",
-          "outputs": [
-            {
-              "internalType": "address",
-              "name": "",
-              "type": "address"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x0ed75930"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "uint256",
-              "name": "_tokenId",
-              "type": "uint256"
-            }
-          ],
-          "name": "getRentalExpiry",
-          "outputs": [
-            {
-              "internalType": "uint256",
-              "name": "",
-              "type": "uint256"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function",
-          "constant": true,
-          "signature": "0x2517a536"
+          "signature": "0x7d7ac2b2"
         }
       ]
     }

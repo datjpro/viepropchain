@@ -7,6 +7,7 @@ import { useAdmin } from "../../contexts/AdminContext";
 import { useWeb3 } from "../../contexts/GanacheWeb3Context";
 import { translations } from "../../translations/translations";
 import Toast from "../Toast/Toast";
+import TransactionHashChecker from "../TransactionHashChecker";
 import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
@@ -18,10 +19,8 @@ const Header = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [dropdownTimer, setDropdownTimer] = useState(null);
   const [accountBalance, setAccountBalance] = useState(null);
+  const [showTransactionChecker, setShowTransactionChecker] = useState(false);
   const navigate = useNavigate();
-  const handleNavigate = () => {
-    navigate("/");
-  };
   const copyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
@@ -248,6 +247,18 @@ const Header = () => {
                             : "Tin Đăng Của Tôi"}
                         </button>
                         <button
+                          className="dropdown-profile-btn"
+                          onClick={() => {
+                            setShowTransactionChecker(true);
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          <span>🔍</span>
+                          {language === "en"
+                            ? "Check Transaction"
+                            : "Kiểm tra Giao dịch"}
+                        </button>
+                        <button
                           className="dropdown-logout-btn"
                           onClick={logout}
                         >
@@ -285,6 +296,11 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      <TransactionHashChecker
+        isOpen={showTransactionChecker}
+        onClose={() => setShowTransactionChecker(false)}
+      />
     </>
   );
 };

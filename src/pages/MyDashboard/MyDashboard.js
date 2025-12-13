@@ -12,7 +12,8 @@ import "./MyDashboard.css";
 
 const MyDashboard = () => {
   const { user } = useAuth();
-  const { web3Api } = useWeb3();
+  const web3Context = useWeb3();
+  const { web3, account } = web3Context;
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,28 +21,18 @@ const MyDashboard = () => {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [showListingModal, setShowListingModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
-  const [approvalStatus, setApprovalStatus] = useState({}); // { tokenId: boolean }
+  const [approvalStatus, setApprovalStatus] = useState({}); // tokenId => boolean
 
-  useEffect(() => {
-    if (user) {
-      fetchMyProperties();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    filterProperties();
-  }, [properties, activeFilter]);
+  // Debug logs
+  console.log("MyDashboard - web3:", web3);
+  console.log("MyDashboard - account:", account);
+  console.log("MyDashboard - web3Context:", web3Context);
 
   const checkApprovalStatus = useCallback(
     async (tokenId) => {
-      if (!tokenId) return false;
-      try {
-        if (!web3Api?.web3) {
-          console.warn("Web3 not available");
-          return false;
-        }
+      if (!web3 || !tokenId) return false;
 
-        const web3 = web3Api.web3;
+      try {
         const isApproved = await web3Service.isApprovedForMarketplace(
           web3,
           tokenId
@@ -53,29 +44,10 @@ const MyDashboard = () => {
         return false;
       }
     },
-    [web3Api]
+    [web3]
   );
 
-  // Check approval status for NFTs with listings
-  useEffect(() => {
-    const checkApprovals = async () => {
-      const listedProperties = properties.filter(
-        (p) => p.currentListing && p.nftData?.tokenId
-      );
-      for (const property of listedProperties) {
-        const tokenId = property.nftData.tokenId;
-        if (approvalStatus[tokenId] === undefined) {
-          await checkApprovalStatus(tokenId);
-        }
-      }
-    };
-
-    if (properties.length > 0 && window.ethereum) {
-      checkApprovals();
-    }
-  }, [properties, approvalStatus, checkApprovalStatus]);
-
-  const fetchMyProperties = async () => {
+  const fetchMyProperties = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -257,9 +229,9 @@ const MyDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const filterProperties = () => {
+  const filterProperties = useCallback(() => {
     let filtered = [...properties];
 
     switch (activeFilter) {
@@ -282,7 +254,21 @@ const MyDashboard = () => {
     }
 
     setFilteredProperties(filtered);
-  };
+  }, [properties, activeFilter]);
+
+  useEffect(() => {
+    console.log("MyDashboard - web3 changed:", web3);
+  }, [web3]);
+
+  useEffect(() => {
+    if (user) {
+      fetchMyProperties();
+    }
+  }, [user, fetchMyProperties]);
+
+  useEffect(() => {
+    filterProperties();
+  }, [properties, activeFilter, filterProperties]);
 
   const getPropertyCounts = () => {
     const drafts = properties.filter((p) => p.status === "draft").length;
@@ -337,76 +323,39 @@ const MyDashboard = () => {
     }
   };
 
+  // Approval function removed - new contract handles transfers directly
+
   const handleApproveNFT = async (property) => {
+    if (!web3 || !account) {
+      alert("Vui lòng kết nối ví trước!");
+      return;
+    }
+
     const tokenId = property.nftData?.tokenId;
     if (!tokenId) {
-      alert("Không tìm thấy tokenId của NFT");
+      alert("Không tìm thấy Token ID!");
       return;
     }
 
     try {
-      if (!web3Api?.web3) {
-        alert("Web3 không khả dụng");
-        return;
-      }
+      console.log("Approving NFT:", tokenId);
+      const result = await web3Service.approveForMarketplace(
+        web3,
+        tokenId,
+        account
+      );
 
-      const web3 = web3Api.web3;
-
-      // Check network
-      const networkId = await web3.eth.net.getId();
-      console.log("Current network ID:", networkId);
-
-      if (networkId !== 1337) {
-        alert(
-          "Vui lòng kết nối với mạng Ganache (localhost:8545). Hiện tại bạn đang kết nối với network ID: " +
-            networkId
-        );
-        return;
-      }
-
-      const account = web3Api.account;
-
-      console.log("Using account:", account);
-      console.log("Approving tokenId:", tokenId);
-
-      // Check if user owns the NFT
-      const nftContract = web3Service.getContract(web3, "ViePropChainNFT");
-      console.log("NFT Contract address:", nftContract.options.address);
-
-      const owner = await nftContract.methods.ownerOf(tokenId).call();
-      console.log("NFT owner:", owner);
-
-      if (owner.toLowerCase() !== account.toLowerCase()) {
-        alert("Bạn không phải là chủ sở hữu của NFT này");
-        return;
-      }
-
-      if (
-        window.confirm(
-          `Bạn có chắc muốn approve NFT #${tokenId} cho marketplace?`
-        )
-      ) {
-        const result = await web3Service.approveMarketplace(
-          web3,
-          account,
-          tokenId
-        );
-
-        if (result.success) {
-          if (result.alreadyApproved) {
-            alert(`✅ NFT #${tokenId} đã được approve cho marketplace`);
-          } else {
-            alert(`✅ Đã approve thành công NFT #${tokenId} cho marketplace`);
-          }
-          // Update approval status
-          setApprovalStatus((prev) => ({ ...prev, [tokenId]: true }));
-        } else {
-          alert("❌ Approve thất bại: " + result.error);
-        }
+      if (result.success) {
+        alert("NFT đã được approve thành công!");
+        // Update approval status
+        setApprovalStatus((prev) => ({ ...prev, [tokenId]: true }));
+        fetchMyProperties(); // Refresh data
+      } else {
+        alert(`Lỗi khi approve: ${result.error}`);
       }
     } catch (error) {
       console.error("Approve error:", error);
-      alert("❌ Lỗi khi approve: " + error.message);
+      alert("Lỗi khi approve NFT: " + error.message);
     }
   };
 
@@ -688,34 +637,39 @@ const MyDashboard = () => {
                                   )} ETH`
                                 : ""}
                             </div>
-                            {/* Show approval status and button */}
-                            {property.nftData?.tokenId && (
-                              <div className="approval-status">
-                                {approvalStatus[property.nftData.tokenId] ===
-                                true ? (
-                                  <span className="approval-approved">
-                                    ✅ Đã approve marketplace
-                                  </span>
-                                ) : approvalStatus[property.nftData.tokenId] ===
-                                  false ? (
-                                  <div className="approval-needed">
-                                    <span className="approval-warning">
-                                      ⚠️ Chưa approve marketplace
+                            {/* Approval status removed - new contract handles transfers directly */}
+                            <div className="approval-status">
+                              {property.nftData?.tokenId && (
+                                <>
+                                  {approvalStatus[property.nftData.tokenId] ===
+                                  undefined ? (
+                                    <button
+                                      className="btn-action btn-check-approval"
+                                      onClick={() =>
+                                        checkApprovalStatus(
+                                          property.nftData.tokenId
+                                        )
+                                      }
+                                    >
+                                      🔍 Kiểm tra phê duyệt
+                                    </button>
+                                  ) : approvalStatus[
+                                      property.nftData.tokenId
+                                    ] ? (
+                                    <span className="approval-approved">
+                                      ✅ Đã phê duyệt
                                     </span>
+                                  ) : (
                                     <button
                                       className="btn-action btn-approve"
                                       onClick={() => handleApproveNFT(property)}
                                     >
-                                      🔓 Approve Marketplace
+                                      🔑 Phê duyệt NFT
                                     </button>
-                                  </div>
-                                ) : (
-                                  <span className="approval-checking">
-                                    ⏳ Đang kiểm tra...
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                                  )}
+                                </>
+                              )}
+                            </div>
                             <div className="action-buttons">
                               <button
                                 className="btn-action btn-edit"

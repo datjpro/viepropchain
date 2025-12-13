@@ -98,6 +98,10 @@ export const Web3Provider = ({ children }) => {
   }, [privateKey]);
 
   useEffect(() => {
+    console.log("Web3Context - web3Api changed:", web3Api);
+  }, [web3Api]);
+
+  useEffect(() => {
     localStorage.setItem("connectionMethod", connectionMethod);
   }, [connectionMethod]);
 
@@ -119,14 +123,17 @@ export const Web3Provider = ({ children }) => {
         const blockNumber = await web3Instance.eth.getBlockNumber();
         console.log(`✅ Connected to Ganache - Block: ${blockNumber}`);
 
-        setWeb3Api({
+        const newWeb3Api = {
           provider,
           web3: web3Instance,
-        });
+        };
+        console.log("Setting web3Api:", newWeb3Api);
+        setWeb3Api(newWeb3Api);
 
         // Set network ID
         const netId = await web3Instance.eth.net.getId();
         setNetworkId(Number(netId));
+        console.log("Network ID set to:", Number(netId));
 
         // Auto-connect to first Ganache account if no account is set
         if (!account) {

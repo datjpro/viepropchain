@@ -120,11 +120,27 @@
   margin-top: 8px;
 }
 
+.total-row {
+  border-top: 2px solid rgba(255, 255, 255, 0.4);
+  padding-top: 12px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+}
+
 .info-row .value.price {
   color: #ff6b6b;
   font-size: 22px;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.info-row .value.total {
+  color: #ffd700;
+  font-size: 24px;
+  font-weight: 800;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 /* ========================================================================

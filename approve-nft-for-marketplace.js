@@ -12,7 +12,7 @@ const ADMIN_PRIVATE_KEY =
 
 const NFT_CONTRACT_ADDRESS = "0xEA4F5F49F396B13CA447FaA792A8702054019Cc8";
 const MARKETPLACE_CONTRACT_ADDRESS =
-  "0x84e093ED1c99D69739c9B4808a45aa6A159736D0";
+  "0x4CE33E6d5F46eE14620aaAc2938262030f485610";
 
 const NFT_ABI = [
   {
@@ -96,9 +96,12 @@ async function main() {
   }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
+module.exports = async function (callback) {
+  try {
+    await main();
+    callback();
+  } catch (error) {
     console.error(error);
-    process.exit(1);
-  });
+    callback(error);
+  }
+};

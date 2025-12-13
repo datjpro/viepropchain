@@ -3,6 +3,7 @@ import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
 import { Wallet, solidityPackedKeccak256, getBytes } from "ethers";
 import { ethToWei } from "../../utils/priceUtils";
 import { DEV_WALLETS } from "../../config/dev-wallets";
+import web3Service from "../../services/web3Service";
 import "./ListingModal.css";
 
 const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
@@ -38,6 +39,50 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
         alert(
           "Tài sản này chưa được mint thành NFT. Vui lòng mint NFT trước khi niêm yết."
         );
+        setLoading(false);
+        return;
+      }
+
+      // APPROVE NFT FOR MARKETPLACE BEFORE LISTING
+      console.log("🔑 Approving NFT for marketplace...");
+      try {
+        // Get stored wallet account
+        const storedAccount =
+          localStorage.getItem("walletAccount") ||
+          localStorage.getItem("selectedAccount");
+
+        if (!storedAccount) {
+          alert("Không tìm thấy địa chỉ ví. Vui lòng đăng nhập lại.");
+          setLoading(false);
+          return;
+        }
+
+        // Connect to Web3
+        const Web3 = (await import("web3")).default;
+        const ganacheUrl = "http://127.0.0.1:8545";
+        const web3 = new Web3(ganacheUrl);
+
+        // Approve NFT for marketplace
+        const approveResult = await web3Service.approveForMarketplace(
+          web3,
+          tokenId,
+          storedAccount
+        );
+
+        if (!approveResult.success) {
+          alert(`Lỗi khi cấp quyền cho Marketplace: ${approveResult.error}`);
+          setLoading(false);
+          return;
+        }
+
+        if (approveResult.alreadyApproved) {
+          console.log("✅ NFT đã được approve trước đó");
+        } else {
+          console.log("✅ NFT đã được approve thành công");
+        }
+      } catch (approveError) {
+        console.error("❌ Lỗi approve:", approveError);
+        alert(`Lỗi khi cấp quyền: ${approveError.message}`);
         setLoading(false);
         return;
       }
