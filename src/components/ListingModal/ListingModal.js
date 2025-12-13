@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS, getAuthHeaders } from "../../config/api";
 import { Wallet, solidityPackedKeccak256, getBytes } from "ethers";
 import { ethToWei } from "../../utils/priceUtils";
+import { DEV_WALLETS } from "../../config/dev-wallets";
 import "./ListingModal.css";
 
 const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
@@ -60,31 +61,53 @@ const ListingModal = ({ isOpen, onClose, property, userAccount }) => {
         }),
       };
 
-      // DEV: auto-sign the message if a private key is provided via env var
+      // Generate signature for off-chain listing using DEV_WALLETS
       try {
-        const pk = process.env.REACT_APP_SELLER_PRIVATE_KEY;
-        if (pk) {
-          const wallet = new Wallet(pk);
-          const contractAddr = listingData.contractAddress;
-          const hash = solidityPackedKeccak256(
-            ["uint256", "uint256", "address"],
-            [
-              String(listingData.tokenId),
-              String(listingData.price),
-              contractAddr,
-            ]
-          );
-          const signature = await wallet.signMessage(getBytes(hash));
-          listingData.signature = signature;
-          listingData.seller = wallet.address;
-          console.log("🔥 Auto-signed listing with", wallet.address, signature);
-        } else {
-          console.log(
-            "No REACT_APP_SELLER_PRIVATE_KEY provided — listing created without signature"
+        // Get stored wallet account from localStorage
+        const storedAccount =
+          localStorage.getItem("walletAccount") ||
+          localStorage.getItem("selectedAccount");
+        let selectedWallet = null;
+
+        if (storedAccount) {
+          selectedWallet = DEV_WALLETS.find(
+            (wallet) =>
+              wallet.address.toLowerCase() === storedAccount.toLowerCase()
           );
         }
+
+        // Fallback to first wallet if no matching wallet found
+        if (!selectedWallet) {
+          selectedWallet = DEV_WALLETS[0];
+          console.log(
+            "⚠️ No matching wallet found, using default wallet:",
+            selectedWallet.name
+          );
+        }
+
+        console.log(
+          "🔑 Using wallet for signature:",
+          selectedWallet.name,
+          selectedWallet.address
+        );
+
+        const wallet = new Wallet(selectedWallet.privateKey);
+        const contractAddr = listingData.contractAddress;
+        const hash = solidityPackedKeccak256(
+          ["uint256", "uint256", "address"],
+          [String(listingData.tokenId), String(listingData.price), contractAddr]
+        );
+        const signature = await wallet.signMessage(getBytes(hash));
+        listingData.signature = signature;
+        listingData.seller = wallet.address;
+        console.log(
+          "✍️ Auto-signed listing with",
+          selectedWallet.name,
+          signature.substring(0, 20) + "..."
+        );
       } catch (sigErr) {
-        console.error("Signature generation failed:", sigErr);
+        console.error("❌ Signature generation failed:", sigErr);
+        console.log("⚠️ Proceeding with on-chain listing (no signature)");
       }
 
       console.log("🔥 Sending listing request:", listingData);

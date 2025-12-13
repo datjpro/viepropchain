@@ -41,9 +41,39 @@
   transition: all 0.2s;
 }
 
-.modal-close:hover {
-  background: #e5e7eb;
-  transform: rotate(90deg);
+.purchase-type-indicator {
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.offchain-indicator {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.onchain-indicator {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.indicator-icon {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.indicator-text {
+  font-size: 16px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.indicator-desc {
+  font-size: 12px;
+  opacity: 0.9;
+  font-weight: 400;
 }
 
 .modal-title {

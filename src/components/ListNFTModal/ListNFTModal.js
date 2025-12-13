@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ethToWei, isValidPrice } from "../../utils/priceUtils";
 import marketplaceService from "../../services/marketplaceService";
+import { ethers } from "ethers";
+import { DEV_WALLETS } from "../../config/dev-wallets";
 import "./ListNFTModal.css";
 
 const ListNFTModal = ({ nft, onClose, onSuccess }) => {
@@ -11,9 +13,39 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
     expiresAt: "",
     pricePerDay: "",
     maxDurationDays: "30",
+    selectedWallet: "", // Thêm selected wallet
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Auto-select wallet based on stored account
+  useEffect(() => {
+    const storedAccount =
+      localStorage.getItem("walletAccount") ||
+      localStorage.getItem("selectedAccount");
+    if (storedAccount) {
+      const matchingWallet = DEV_WALLETS.find(
+        (wallet) => wallet.address.toLowerCase() === storedAccount.toLowerCase()
+      );
+      if (matchingWallet) {
+        setFormData((prev) => ({
+          ...prev,
+          selectedWallet: matchingWallet.address,
+        }));
+        console.log(
+          "🔑 Auto-selected wallet from localStorage:",
+          matchingWallet.name
+        );
+      } else {
+        console.log(
+          "⚠️ No matching wallet found for stored account:",
+          storedAccount
+        );
+      }
+    } else {
+      console.log("⚠️ No wallet account found in localStorage");
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +54,15 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
     // Validation
     if (formData.listingType === "sale" && !isValidPrice(formData.price)) {
       setError("Vui lòng nhập giá hợp lệ (ETH)");
+      return;
+    }
+
+    // Allow empty selectedWallet (will use default wallet)
+    if (
+      formData.listingType === "sale" &&
+      formData.selectedWallet === undefined
+    ) {
+      setError("Vui lòng chọn ví để ký signature cho off-chain listing");
       return;
     }
 
@@ -63,7 +104,70 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
         listingData.expiresAt = new Date(formData.expiresAt).toISOString();
       }
 
+      // Generate signature for off-chain listing
+      try {
+        if (formData.listingType === "sale") {
+          // Auto-select first wallet if none selected
+          const walletToUse = formData.selectedWallet || DEV_WALLETS[0].address;
+
+          console.log("🔑 Starting signature generation...");
+          console.log("Current selectedWallet:", formData.selectedWallet);
+          console.log("Wallet to use:", walletToUse);
+          console.log(
+            "Available wallets:",
+            DEV_WALLETS.map((w) => `${w.name}: ${w.address.substring(0, 6)}...`)
+          );
+
+          const selectedWalletData = DEV_WALLETS.find(
+            (w) => w.address.toLowerCase() === walletToUse.toLowerCase()
+          );
+          console.log(
+            "Found wallet data:",
+            selectedWalletData ? selectedWalletData.name : "NOT FOUND"
+          );
+
+          if (!selectedWalletData) {
+            throw new Error(`Wallet not found for address: ${walletToUse}`);
+          }
+
+          const wallet = new ethers.Wallet(selectedWalletData.privateKey);
+
+          // Convert price to wei
+          const priceWei = ethers.parseEther(formData.price.toString());
+
+          // Create message hash (same as gen-signature.js)
+          const messageHash = ethers.solidityPackedKeccak256(
+            ["uint256", "uint256", "address"],
+            [listingData.tokenId, priceWei, listingData.contractAddress]
+          );
+          const messageBytes = ethers.getBytes(messageHash);
+
+          // Sign the message
+          const signature = await wallet.signMessage(messageBytes);
+
+          listingData.signature = signature;
+          console.log(
+            "✍️ Signature generated with wallet:",
+            selectedWalletData.name
+          );
+          console.log("Signature:", signature.substring(0, 20) + "...");
+        } else {
+          console.log(
+            "⚠️ Skipping signature generation - listingType:",
+            formData.listingType
+          );
+        }
+      } catch (signError) {
+        console.warn(
+          "⚠️ Could not generate signature, proceeding with on-chain listing:",
+          signError.message
+        );
+        // Continue without signature (on-chain listing)
+      }
+
       console.log("📤 Submitting listing:", listingData);
+      console.log("Form data:", formData);
+      console.log("Selected wallet:", formData.selectedWallet);
 
       const response = await marketplaceService.createListing(listingData);
 
@@ -200,6 +304,37 @@ const ListNFTModal = ({ nft, onClose, onSuccess }) => {
                   />
                 </div>
               </>
+            )}
+
+            {/* Wallet Selection for Sale (Off-chain signature) */}
+            {formData.listingType === "sale" && (
+              <div className="form-group">
+                <label>Chọn ví để ký (Off-chain listing)</label>
+                <select
+                  name="selectedWallet"
+                  value={formData.selectedWallet}
+                  onChange={handleChange}
+                  className="form-control"
+                >
+                  <option value="">-- Dùng ví mặc định --</option>
+                  {DEV_WALLETS.map((wallet) => (
+                    <option key={wallet.address} value={wallet.address}>
+                      {wallet.name} ({wallet.address.substring(0, 6)}...
+                      {wallet.address.substring(wallet.address.length - 4)})
+                    </option>
+                  ))}
+                </select>
+                <small className="form-hint">
+                  📝 Off-chain listing: Tự động tạo signature với private key
+                </small>
+              </div>
+            )}
+
+            {/* On-chain notice for rent */}
+            {formData.listingType === "rent" && (
+              <div className="form-info">
+                🔗 On-chain listing: Cần transaction để niêm yết trên blockchain
+              </div>
             )}
 
             {/* Description */}

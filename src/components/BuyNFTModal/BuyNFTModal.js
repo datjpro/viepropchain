@@ -76,70 +76,115 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
       setError("");
       setStep(2);
 
-      console.log("💰 Buying NFT directly via smart contract...", {
+      console.log("💰 Buying NFT...", {
         tokenId: itemData.tokenId,
         seller: itemData.seller?.walletAddress,
         priceInETH,
         priceInWei,
         buyer: userAccount,
+        isOffchain: itemData.isOffchain,
       });
 
       // ========================================================================
-      // DIRECT BLOCKCHAIN PAYMENT - No MetaMask popup required
+      // OFF-CHAIN PURCHASE FLOW (with signature - no MetaMask required)
       // ========================================================================
+      if (itemData.isOffchain) {
+        console.log("🔐 Processing OFF-CHAIN purchase (signature verified)...");
 
-      // Create direct Web3 connection to Ganache (bypass MetaMask)
-      const directWeb3 = new Web3("http://127.0.0.1:8545");
+        try {
+          // Call marketplace service to verify signature and execute transfer
+          const buyResponse = await fetch(
+            `${API_ENDPOINTS.MARKETPLACE.BASE}/${itemData._id}/buy`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                buyerAddress: userAccount,
+                // No transactionHash needed for off-chain
+              }),
+            }
+          );
 
-      console.log("🔗 Using direct blockchain connection (no MetaMask)...");
+          const buyResult = await buyResponse.json();
 
-      const marketplaceContract = new directWeb3.eth.Contract(
-        CONTRACTS.abis.Marketplace,
-        CONTRACTS.addresses.Marketplace
-      );
+          if (!buyResult.success) {
+            throw new Error(buyResult.message || "Purchase failed");
+          }
 
-      console.log("📝 Calling Marketplace.buyItemDirect()...");
-      console.log("   TokenId:", itemData.tokenId);
-      console.log("   Seller:", itemData.seller?.walletAddress);
-      console.log("   Price:", priceInETH, "ETH (", priceInWei, "Wei )");
-      console.log("   From account:", userAccount);
+          console.log("✅ Off-chain purchase successful:", buyResult.data);
+          setTransactionHash(buyResult.data.transactionHash);
+        } catch (apiError) {
+          console.error("❌ Off-chain purchase error:", apiError);
+          throw new Error(apiError.message || "Off-chain purchase failed");
+        }
+      } else {
+        // ========================================================================
+        // ON-CHAIN PURCHASE FLOW (traditional MetaMask flow)
+        // ========================================================================
+        console.log("🔗 Processing ON-CHAIN purchase (MetaMask required)...");
 
-      // Send transaction directly using the user's linked wallet
-      const tx = await marketplaceContract.methods
-        .buyItemDirect(itemData.tokenId, itemData.seller?.walletAddress)
-        .send({
-          from: userAccount, // Use the user's linked wallet address
-          value: priceInWei,
-          gas: 500000,
-          gasPrice: directWeb3.utils.toWei("20", "gwei"),
-        });
+        // Create direct Web3 connection to Ganache (bypass MetaMask)
+        const directWeb3 = new Web3("http://127.0.0.1:8545");
 
-      console.log("✅ Blockchain transaction successful!");
-      console.log("   TX Hash:", tx.transactionHash);
-      console.log("   Block:", tx.blockNumber);
+        console.log("🔗 Using direct blockchain connection (no MetaMask)...");
 
-      setTransactionHash(tx.transactionHash);
+        const marketplaceContract = new directWeb3.eth.Contract(
+          CONTRACTS.abis.Marketplace,
+          CONTRACTS.addresses.Marketplace
+        );
 
-      // Gọi backend để cập nhật database (status = sold)
-      try {
-        await fetch(`${API_ENDPOINTS.MARKETPLACE.BASE}/orders/finalize-sale`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            listingId: itemData._id, // MongoDB listing ID
-            tokenId: itemData.tokenId,
-            transactionHash: tx.transactionHash,
-            blockNumber: tx.blockNumber,
-            buyer: userAccount,
-          }),
-        });
-        console.log("✅ Database updated");
-      } catch (dbError) {
-        console.warn("⚠️ Database update failed:", dbError);
-        // Không fail transaction vì blockchain đã thành công
+        console.log("📝 Calling Marketplace.buyItemDirect()...");
+        console.log("   TokenId:", itemData.tokenId);
+        console.log("   Seller:", itemData.seller?.walletAddress);
+        console.log("   Price:", priceInETH, "ETH (", priceInWei, "Wei )");
+        console.log("   From account:", userAccount);
+
+        // Send transaction directly using the user's linked wallet
+        const tx = await marketplaceContract.methods
+          .buyItemDirect(itemData.tokenId, itemData.seller?.walletAddress)
+          .send({
+            from: userAccount, // Use the user's linked wallet address
+            value: priceInWei,
+            gas: 500000,
+            gasPrice: directWeb3.utils.toWei("20", "gwei"),
+          });
+
+        console.log("✅ Blockchain transaction successful!");
+        console.log("   TX Hash:", tx.transactionHash);
+        console.log("   Block:", tx.blockNumber);
+
+        setTransactionHash(tx.transactionHash);
+
+        // Gọi backend để cập nhật database (status = sold)
+        try {
+          const buyResponse = await fetch(
+            `${API_ENDPOINTS.MARKETPLACE.BASE}/${itemData._id}/buy`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                buyerAddress: userAccount,
+                transactionHash: tx.transactionHash,
+              }),
+            }
+          );
+
+          const buyResult = await buyResponse.json();
+          if (buyResult.success) {
+            console.log("✅ Database updated");
+          } else {
+            console.warn("⚠️ Database update failed:", buyResult.message);
+          }
+        } catch (dbError) {
+          console.warn("⚠️ Database update failed:", dbError);
+          // Không fail transaction vì blockchain đã thành công
+        }
       }
 
       setStep(3);
@@ -194,7 +239,26 @@ const BuyNFTModal = ({ data, listing, nft, onClose, onSuccess }) => {
               </p>
             </div>
 
-            {/* Price Summary */}
+            {/* Purchase Type Indicator */}
+            <div className="purchase-type-indicator">
+              {itemData.isOffchain ? (
+                <div className="offchain-indicator">
+                  <span className="indicator-icon">⚡</span>
+                  <span className="indicator-text">Off-chain Purchase</span>
+                  <small className="indicator-desc">
+                    Instant purchase with seller signature verification
+                  </small>
+                </div>
+              ) : (
+                <div className="onchain-indicator">
+                  <span className="indicator-icon">🔗</span>
+                  <span className="indicator-text">On-chain Purchase</span>
+                  <small className="indicator-desc">
+                    Traditional blockchain transaction
+                  </small>
+                </div>
+              )}
+            </div>
             <div className="price-summary">
               <div className="price-row">
                 <span>💎 Giá NFT:</span>
